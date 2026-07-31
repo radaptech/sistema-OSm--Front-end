@@ -1,3 +1,5 @@
+import type { Setor } from './maquina'
+
 export const tiposDefeito = [
   'Mecânico',
   'Elétrico',
@@ -14,6 +16,7 @@ export interface NovaSolicitacaoOSPayload {
   tipoDefeito: TipoDefeito
   descricao: string
   setor: string
+  lojaId: string
   solicitante: string
 }
 
@@ -29,4 +32,6 @@ export interface SolicitacaoOS {
   descricao: string
   solicitante: string
   criadoEm: string
+  setor: Setor
+  lojaId: string
 }
