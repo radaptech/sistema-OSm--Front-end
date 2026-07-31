@@ -16,6 +16,7 @@ function construirFormDataMaquina(
   formData.append('modelo', dados.modelo ?? '')
   formData.append('criticidade', dados.criticidade)
   formData.append('setor', dados.setor)
+  formData.append('lojaId', dados.lojaId)
   formData.append('preventivas', JSON.stringify(dados.preventivas))
 
   if (foto) {

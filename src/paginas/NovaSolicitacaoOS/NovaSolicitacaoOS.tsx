@@ -39,6 +39,7 @@ export function NovaSolicitacaoOS() {
       maquinaId: '',
       tipoDefeito: undefined,
       setor: '',
+      lojaId: '',
       solicitante: nomeUsuario ?? '',
       descricao: '',
     },
@@ -50,6 +51,9 @@ export function NovaSolicitacaoOS() {
 
   useEffect(() => {
     setValue('setor', maquinaSelecionada?.setor ?? '', {
+      shouldValidate: Boolean(maquinaSelecionada),
+    })
+    setValue('lojaId', maquinaSelecionada?.lojaId ?? '', {
       shouldValidate: Boolean(maquinaSelecionada),
     })
   }, [maquinaSelecionada, setValue])

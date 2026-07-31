@@ -13,6 +13,7 @@ export const esquemaCadastrarMaquina = z.object({
   modelo: z.string().max(60).optional(),
   criticidade: z.enum(niveisCriticidade, 'Selecione a criticidade.'),
   setor: z.enum(setoresDisponiveis, 'Selecione o setor.'),
+  lojaId: z.string().min(1, 'Selecione a loja.'),
   preventivas: z
     .array(esquemaManutencaoPreventiva)
     .min(1, 'Cadastre pelo menos uma manutenção preventiva.'),

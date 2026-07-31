@@ -8,6 +8,7 @@ import { Botao } from '../../componentes/Botao'
 import { CampoTexto } from '../../componentes/CampoTexto'
 import { useEstadoAutenticacao } from '../../estado/estadoAutenticacao'
 import { derivarNomeUsuario } from '../../utilitarios/derivarNomeUsuario'
+import { ESCOPO_GESTOR_MOCK } from '../../servicos/dadosMockGestores'
 import type { PerfilLogin } from '../../tipos/autenticacao'
 import { esquemaLogin, type DadosLogin } from './esquemaLogin'
 import { SeletorPerfil } from './componentes/SeletorPerfil'
@@ -37,7 +38,8 @@ export function TelaLogin() {
   const perfilSelecionado = useWatch({ control, name: 'perfil' })
 
   function aoEnviar(dados: DadosLogin) {
-    entrar(dados.perfil, derivarNomeUsuario(dados.email))
+    const escoposGestor = dados.perfil === 'gestor' ? ESCOPO_GESTOR_MOCK : undefined
+    entrar(dados.perfil, derivarNomeUsuario(dados.email), escoposGestor)
     toast.success('Login realizado com sucesso.')
     navegar(ROTA_POR_PERFIL[dados.perfil])
   }

@@ -36,7 +36,11 @@ A arquitetura do projeto deve seguir uma separação clara de responsabilidades 
 - **Arquitetura Multi-Locatário (Multi-Tenant) Baseada em Subdomínio:** O sistema atende a múltiplos clientes. O `tenantId` é extraído dinamicamente do subdomínio da URL atual (`window.location.hostname.split(".")[0]`) e deve ser injetado em todas as requisições via header estrito `X-tenant-ID`.
 - **Gerenciamento de Sessão via Cookies:** O token JWT retornado pelo back-end é gerenciado via **Cookies HttpOnly**. É terminantemente proibido armazenar o JWT em `localStorage` ou variáveis globais. O cliente HTTP deve usar `credentials: "include"`.
 - **Tratamento Global de Erros (401 Não Autorizado):** Se a API retornar status 401 e a rota atual não for `/login`, o sistema deve interceptar a falha, disparar um alerta via React-Toastify ("Sua sessão expirou") e redirecionar o usuário forçosamente para o Login.
-- **Controle de Acesso por Setor (Gestor):** O acesso do Gestor é rigidamente delimitado pelo(s) setor(es) sob sua responsabilidade (podendo ser um ou múltiplos). O sistema garante que ele só visualize OS/máquinas do seu domínio, criando separadores visuais na listagem quando múltiplos setores estiverem envolvidos.
+- **Hierarquia Organizacional (Tenant > Loja > Setor):** Cada tenant (cliente SaaS, identificado pelo subdomínio) pode possuir múltiplas Lojas (unidades/filiais), e cada Loja possui seus próprios Setores. Máquinas e Ordens de Serviço pertencem sempre a uma Loja + Setor específicos (`lojaId` + `setor`), definidos em `/src/tipos/loja.ts` e `/src/tipos/maquina.ts`.
+- **Controle de Acesso por Loja e Setor (Gestor):** O acesso do Gestor é definido por uma lista de **escopos** (`EscopoAcessoGestor[]`, em `/src/tipos/autenticacao.ts`), onde cada escopo vincula uma Loja a um conjunto de setores. Um escopo pode ser:
+  - **Restrito a setores específicos** dentro de uma Loja (`setores: Setor[]`) — ex: Gestor que responde apenas pelos setores "Padaria" e "Açougue" da Loja 1, enquanto outro Gestor da mesma loja responde por "Hortifruti" e "Peixaria".
+  - **Total sobre uma Loja inteira** (`setores: 'todos'`) — ex: Gestor que responde por todos os setores das Lojas 2 e 3 simultaneamente (um Gestor pode ter múltiplos escopos, cobrindo múltiplas lojas ao mesmo tempo).
+  O sistema garante que o Gestor só visualize OS/máquinas dentro dos seus escopos (`gestorTemAcesso` / `filtrarPorAcessoGestor` em `/src/utilitarios/acessoGestor.ts`), criando separadores visuais na listagem agrupados por Loja e, dentro dela, por Setor quando múltiplos estiverem envolvidos.
 
 ## Configuração Base de API (`api.ts`) & Variáveis de Ambiente
 Todo o tráfego HTTP passa por um wrapper nativo (`fetch`) padronizado.
@@ -100,11 +104,12 @@ Todo o tráfego HTTP passa por um wrapper nativo (`fetch`) padronizado.
 
 ### 6. Painel do Gestor (`PainelGestor`)
 - **Navegação:** Abas para `Solicitações`, `OS Finalizadas`, `Manutenção Prev.`.
-- **Filtro Setorial Obrigatório:** Listagem separada visualmente em blocos caso o gestor responda por mais de um setor (Ex: Cabeçalho divisor "Setor: Usinagem").
+- **Filtro por Loja e Setor Obrigatório:** Listagem separada visualmente em blocos por Loja (Ex: Cabeçalho divisor "Loja: Loja 2 - Filial Sul") e, dentro de cada bloco, subdividida por Setor caso o escopo do gestor não cubra a loja inteira (Ex: "Setor: Padaria"). Escopos com `setores: 'todos'` exibem a loja sem subdivisão por setor.
+- **Gestão de Setores (Cadastro Dinâmico — Futuro):** O Gestor terá um botão/tela para **cadastrar novos setores** (ex: "Rotisseria", "Bebidas") diretamente pelo painel, por Loja. Quando essa tela for implementada, `setoresDisponiveis`/`Setor` (hoje uma union estática em `/src/tipos/maquina.ts`, usada nos `z.enum` de validação) deve deixar de ser fixa em código e passar a ser carregada dinamicamente via API (React Query) por Loja, com os formulários trocando `z.enum` por validação contra a lista carregada.
 - **Ações Rápidas:** Botões superiores para `Cadastrar Técnico`.
 
 ### 7. Painel de Indicadores de Máquinas (`DashboardGestor`)
-- **Seletor Dinâmico:** Máquinas agrupadas por setor.
+- **Seletor Dinâmico:** Máquinas agrupadas por Loja e, dentro dela, por Setor, respeitando os escopos de acesso do Gestor.
 - **Métricas (via React Query):** Exibição em tempo real de Horas Parada, MTTR, MTBF, Custo Total, gráficos de rosca e barras mensais.
 
 ### 8. Tela Principal do Técnico (`PainelTecnico`)

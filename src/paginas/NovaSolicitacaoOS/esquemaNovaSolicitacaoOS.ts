@@ -5,6 +5,7 @@ export const esquemaNovaSolicitacaoOS = z.object({
   maquinaId: z.string().min(1, 'Selecione uma máquina.'),
   tipoDefeito: z.enum(tiposDefeito, 'Selecione o tipo de defeito.'),
   setor: z.string().min(1, 'Selecione uma máquina para preencher o setor.'),
+  lojaId: z.string().min(1, 'Selecione uma máquina para preencher a loja.'),
   solicitante: z.string().min(1),
   descricao: z
     .string()

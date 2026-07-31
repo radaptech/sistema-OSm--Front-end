@@ -11,6 +11,9 @@ import { CampoSelecao } from '../../componentes/CampoSelecao'
 import { CampoTextoArea } from '../../componentes/CampoTextoArea'
 import { CabecalhoPainelGestor } from '../../componentes/CabecalhoPainelSolicitante'
 import { servicoMaquinas } from '../../servicos/servicoMaquinas'
+import { LOJAS_MOCK } from '../../servicos/dadosMockLojas'
+import { useEstadoAutenticacao } from '../../estado/estadoAutenticacao'
+import { obterLojasIdsPermitidas } from '../../utilitarios/acessoGestor'
 import { niveisCriticidade, setoresDisponiveis } from '../../tipos/maquina'
 import {
   esquemaCadastrarMaquina,
@@ -22,6 +25,13 @@ import { CampoPreventivas } from './componentes/CampoPreventivas'
 export function CadastrarMaquina() {
   const navegar = useNavigate()
   const [foto, setFoto] = useState<File | null>(null)
+  const escoposGestor = useEstadoAutenticacao((estado) => estado.escoposGestor)
+
+  const lojasPermitidas = escoposGestor
+    ? LOJAS_MOCK.filter((loja) =>
+        obterLojasIdsPermitidas(escoposGestor).includes(loja.id),
+      )
+    : LOJAS_MOCK
 
   const {
     register,
@@ -39,6 +49,7 @@ export function CadastrarMaquina() {
       modelo: '',
       criticidade: undefined,
       setor: undefined,
+      lojaId: '',
       preventivas: [],
     },
   })
@@ -136,6 +147,19 @@ export function CadastrarMaquina() {
                 {setoresDisponiveis.map((setor) => (
                   <option key={setor} value={setor}>
                     {setor}
+                  </option>
+                ))}
+              </CampoSelecao>
+
+              <CampoSelecao
+                rotulo="Loja *"
+                mensagemErro={errors.lojaId?.message}
+                {...register('lojaId')}
+              >
+                <option value="">Selecionar...</option>
+                {lojasPermitidas.map((loja) => (
+                  <option key={loja.id} value={loja.id}>
+                    {loja.nome}
                   </option>
                 ))}
               </CampoSelecao>
