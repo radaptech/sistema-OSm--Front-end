@@ -9,11 +9,10 @@ import { Botao } from '../../componentes/Botao'
 import { CampoTexto } from '../../componentes/CampoTexto'
 import { CampoSelecao } from '../../componentes/CampoSelecao'
 import { CampoTextoArea } from '../../componentes/CampoTextoArea'
-import { CabecalhoPainelGestor } from '../../componentes/CabecalhoPainelSolicitante'
+import { CabecalhoSubpagina } from '../../componentes/CabecalhoSubpagina'
 import { servicoMaquinas } from '../../servicos/servicoMaquinas'
 import { LOJAS_MOCK } from '../../servicos/dadosMockLojas'
 import { useEstadoAutenticacao } from '../../estado/estadoAutenticacao'
-import { obterLojasIdsPermitidas } from '../../utilitarios/acessoGestor'
 import { niveisCriticidade, setoresDisponiveis } from '../../tipos/maquina'
 import {
   esquemaCadastrarMaquina,
@@ -25,13 +24,9 @@ import { CampoPreventivas } from './componentes/CampoPreventivas'
 export function CadastrarMaquina() {
   const navegar = useNavigate()
   const [foto, setFoto] = useState<File | null>(null)
-  const escoposGestor = useEstadoAutenticacao((estado) => estado.escoposGestor)
+  const lojaIdUsuario = useEstadoAutenticacao((estado) => estado.lojaId)
 
-  const lojasPermitidas = escoposGestor
-    ? LOJAS_MOCK.filter((loja) =>
-        obterLojasIdsPermitidas(escoposGestor).includes(loja.id),
-      )
-    : LOJAS_MOCK
+  const lojasPermitidas = LOJAS_MOCK.filter((loja) => loja.id === lojaIdUsuario)
 
   const {
     register,
@@ -49,7 +44,7 @@ export function CadastrarMaquina() {
       modelo: '',
       criticidade: undefined,
       setor: undefined,
-      lojaId: '',
+      lojaId: lojaIdUsuario ?? '',
       preventivas: [],
     },
   })
@@ -71,7 +66,11 @@ export function CadastrarMaquina() {
 
   return (
     <div className="flex min-h-svh flex-col bg-slate-600">
-      <CabecalhoPainelGestor titulo="Cadastrar Máquina" Icone={PackagePlus} />
+      <CabecalhoSubpagina
+        contexto="Painel do Solicitante"
+        titulo="Cadastrar Máquina"
+        Icone={PackagePlus}
+      />
 
       <main className="flex flex-1 justify-center px-4 py-8">
         <div className="w-full max-w-2xl overflow-hidden rounded-2xl bg-white shadow-2xl">

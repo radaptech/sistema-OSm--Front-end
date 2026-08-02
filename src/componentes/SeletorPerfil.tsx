@@ -1,5 +1,5 @@
 import { ShieldCheck, User, Wrench, type LucideIcon } from 'lucide-react'
-import type { PerfilLogin } from '../../../tipos/autenticacao'
+import type { PerfilLogin } from '../tipos/autenticacao'
 
 interface OpcaoPerfil {
   valor: PerfilLogin

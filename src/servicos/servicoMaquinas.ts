@@ -3,6 +3,22 @@ import { atrasoSimulado } from './atrasoSimulado'
 import { MAQUINAS_MOCK } from './dadosMockMaquinas'
 import type { NovaMaquinaPayload } from '../tipos/maquina'
 
+export interface ParametrosListagemMaquinas {
+  setor?: string
+  lojaId?: string
+}
+
+function listarMock(parametros: ParametrosListagemMaquinas = {}) {
+  const filtradas = MAQUINAS_MOCK.filter((maquina) => {
+    const combinaSetor = !parametros.setor || maquina.setor === parametros.setor
+    const combinaLoja = !parametros.lojaId || maquina.lojaId === parametros.lojaId
+
+    return combinaSetor && combinaLoja
+  })
+
+  return atrasoSimulado(filtradas)
+}
+
 function construirFormDataMaquina(
   dados: NovaMaquinaPayload,
   foto?: File,
@@ -27,7 +43,7 @@ function construirFormDataMaquina(
 }
 
 export const servicoMaquinas = {
-  listar: () => atrasoSimulado(MAQUINAS_MOCK),
+  listar: listarMock,
 
   cadastrar: (dados: NovaMaquinaPayload, foto?: File) =>
     api.post('/maquinas', construirFormDataMaquina(dados, foto)),

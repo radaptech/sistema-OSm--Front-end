@@ -7,7 +7,6 @@ import { CampoTexto } from '../../componentes/CampoTexto'
 import { CampoSelecao } from '../../componentes/CampoSelecao'
 import { CampoTextoArea } from '../../componentes/CampoTextoArea'
 import { Alternador } from '../../componentes/Alternador'
-import { useMaquinas } from '../../hooks/useMaquinas'
 import type { PreventivaManutencao } from '../../tipos/maquina'
 import {
   esquemaManutencaoPreventiva,
@@ -17,7 +16,7 @@ import {
 interface ModalManutencaoPreventivaProps {
   aoFechar: () => void
   aoSalvar: (preventiva: PreventivaManutencao) => void
-  maquinaFixa?: { id: string; nome: string }
+  maquinaFixa: { id: string; nome: string }
 }
 
 export function ModalManutencaoPreventiva({
@@ -25,8 +24,6 @@ export function ModalManutencaoPreventiva({
   aoSalvar,
   maquinaFixa,
 }: ModalManutencaoPreventivaProps) {
-  const { data: maquinas = [] } = useMaquinas({ habilitado: !maquinaFixa })
-
   const {
     register,
     handleSubmit,
@@ -35,7 +32,7 @@ export function ModalManutencaoPreventiva({
   } = useForm<DadosManutencaoPreventiva>({
     resolver: zodResolver(esquemaManutencaoPreventiva),
     defaultValues: {
-      maquinaId: maquinaFixa?.id ?? '',
+      maquinaId: maquinaFixa.id,
       descricao: '',
       intervaloDias: undefined,
       proximaData: '',
@@ -78,22 +75,11 @@ export function ModalManutencaoPreventiva({
         >
           <CampoSelecao
             rotulo="Máquina *"
-            disabled={Boolean(maquinaFixa)}
+            disabled
             mensagemErro={errors.maquinaId?.message}
             {...register('maquinaId')}
           >
-            {maquinaFixa ? (
-              <option value={maquinaFixa.id}>{maquinaFixa.nome}</option>
-            ) : (
-              <>
-                <option value="">Selecionar máquina...</option>
-                {maquinas.map((maquina) => (
-                  <option key={maquina.id} value={maquina.id}>
-                    {maquina.nome}
-                  </option>
-                ))}
-              </>
-            )}
+            <option value={maquinaFixa.id}>{maquinaFixa.nome}</option>
           </CampoSelecao>
 
           <CampoTextoArea

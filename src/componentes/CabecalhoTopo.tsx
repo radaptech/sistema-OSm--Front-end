@@ -1,8 +1,8 @@
 import { Bell, LogOut } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { useEstadoAutenticacao } from '../../../estado/estadoAutenticacao'
+import { useEstadoAutenticacao } from '../estado/estadoAutenticacao'
 
-export function Cabecalho() {
+export function CabecalhoTopo() {
   const navegar = useNavigate()
   const nomeUsuario = useEstadoAutenticacao((estado) => estado.nomeUsuario)
   const sair = useEstadoAutenticacao((estado) => estado.sair)

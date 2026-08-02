@@ -1,12 +1,13 @@
 import { XCircle, type LucideIcon } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
-interface CabecalhoPainelGestorProps {
+interface CabecalhoSubpaginaProps {
+  contexto: string
   titulo: string
   Icone: LucideIcon
 }
 
-export function CabecalhoPainelGestor({ titulo, Icone }: CabecalhoPainelGestorProps) {
+export function CabecalhoSubpagina({ contexto, titulo, Icone }: CabecalhoSubpaginaProps) {
   const navegar = useNavigate()
 
   return (
@@ -17,7 +18,7 @@ export function CabecalhoPainelGestor({ titulo, Icone }: CabecalhoPainelGestorPr
         </span>
         <div>
           <p className="text-xs font-bold tracking-widest text-white uppercase">
-            Painel do Solicitante
+            {contexto}
           </p>
           <p className="text-sm text-white">{titulo}</p>
         </div>

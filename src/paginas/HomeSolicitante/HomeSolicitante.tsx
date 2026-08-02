@@ -1,6 +1,6 @@
 import { CirclePlus, ClipboardList, PackagePlus } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { Cabecalho } from './componentes/Cabecalho'
+import { CabecalhoTopo } from '../../componentes/CabecalhoTopo'
 import { CardAcao } from './componentes/CardAcao'
 import { CardEstatistica } from './componentes/CardEstatistica'
 
@@ -15,7 +15,7 @@ export function HomeSolicitante() {
 
   return (
     <div className="flex min-h-svh flex-col bg-slate-600">
-      <Cabecalho />
+      <CabecalhoTopo />
 
       <main className="flex flex-1 flex-col items-center justify-center gap-8 px-4 py-10">
         <div className="text-center">

@@ -6,18 +6,13 @@ import { toast } from 'react-toastify'
 import { useNavigate } from 'react-router-dom'
 import { Botao } from '../../componentes/Botao'
 import { CampoTexto } from '../../componentes/CampoTexto'
+import { SeletorPerfil } from '../../componentes/SeletorPerfil'
 import { useEstadoAutenticacao } from '../../estado/estadoAutenticacao'
 import { derivarNomeUsuario } from '../../utilitarios/derivarNomeUsuario'
-import { ESCOPO_GESTOR_MOCK } from '../../servicos/dadosMockGestores'
-import type { PerfilLogin } from '../../tipos/autenticacao'
+import { obterEscoposGestorMock } from '../../servicos/dadosMockGestores'
+import { obterSetorSolicitanteMock } from '../../servicos/dadosMockSolicitantes'
+import { ROTA_POR_PERFIL } from '../../rotas/rotaPorPerfil'
 import { esquemaLogin, type DadosLogin } from './esquemaLogin'
-import { SeletorPerfil } from './componentes/SeletorPerfil'
-
-const ROTA_POR_PERFIL: Record<PerfilLogin, string> = {
-  solicitante: '/home-solicitante',
-  tecnico: '/home-solicitante',
-  gestor: '/home-solicitante',
-}
 
 export function TelaLogin() {
   const [mostrarSenha, setMostrarSenha] = useState(false)
@@ -38,8 +33,14 @@ export function TelaLogin() {
   const perfilSelecionado = useWatch({ control, name: 'perfil' })
 
   function aoEnviar(dados: DadosLogin) {
-    const escoposGestor = dados.perfil === 'gestor' ? ESCOPO_GESTOR_MOCK : undefined
-    entrar(dados.perfil, derivarNomeUsuario(dados.email), escoposGestor)
+    const opcoesSessao =
+      dados.perfil === 'gestor'
+        ? { escoposGestor: obterEscoposGestorMock(dados.email) }
+        : dados.perfil === 'solicitante'
+          ? obterSetorSolicitanteMock(dados.email)
+          : undefined
+
+    entrar(dados.perfil, derivarNomeUsuario(dados.email), opcoesSessao)
     toast.success('Login realizado com sucesso.')
     navegar(ROTA_POR_PERFIL[dados.perfil])
   }

@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { tiposDefeito } from '../../tipos/ordemServico'
+import { marcadoresImpacto, tiposDefeito } from '../../tipos/ordemServico'
 
 export const esquemaNovaSolicitacaoOS = z.object({
   maquinaId: z.string().min(1, 'Selecione uma máquina.'),
@@ -11,6 +11,7 @@ export const esquemaNovaSolicitacaoOS = z.object({
     .string()
     .min(20, 'Descreva o problema com no mínimo 20 caracteres.')
     .max(1000, 'A descrição deve ter no máximo 1000 caracteres.'),
+  impactos: z.array(z.enum(marcadoresImpacto)),
 })
 
 export type DadosNovaSolicitacaoOS = z.infer<typeof esquemaNovaSolicitacaoOS>

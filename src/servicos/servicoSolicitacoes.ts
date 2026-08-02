@@ -1,7 +1,10 @@
 import { api } from './api'
 import { atrasoSimulado } from './atrasoSimulado'
 import { SOLICITACOES_MOCK } from './dadosMockSolicitacoes'
+import { PREVENTIVAS_MOCK } from './dadosMockPreventivas'
+import { gerarSolicitacoesPreventivasVencidas } from '../utilitarios/gerarSolicitacoesPreventivas'
 import type {
+  AberturaOrdemServicoPayload,
   NovaSolicitacaoOSPayload,
   SolicitacaoOS,
   StatusSolicitacao,
@@ -22,7 +25,8 @@ function listarMock(
   const termoBusca = parametros.busca?.trim().toLowerCase()
 
   const filtradas = SOLICITACOES_MOCK.filter((solicitacao) => {
-    const combinaStatus = !parametros.status || solicitacao.status === parametros.status
+    const combinaStatus =
+      !parametros.status || solicitacao.status === parametros.status
     const combinaBusca =
       !termoBusca ||
       solicitacao.maquinaNome.toLowerCase().includes(termoBusca) ||
@@ -49,4 +53,16 @@ export const servicoSolicitacoes = {
     api.post('/solicitacoes-os', dados),
 
   listar: listarMock,
+
+  listarTodas: (): Promise<SolicitacaoOS[]> => {
+    const solicitacoesPreventivas = gerarSolicitacoesPreventivasVencidas(
+      PREVENTIVAS_MOCK,
+      SOLICITACOES_MOCK,
+    )
+
+    return atrasoSimulado([...solicitacoesPreventivas, ...SOLICITACOES_MOCK])
+  },
+
+  abrirOS: (dados: AberturaOrdemServicoPayload) =>
+    api.post(`/solicitacoes-os/${dados.solicitacaoId}/abrir-os`, dados),
 }

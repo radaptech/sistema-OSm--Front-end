@@ -42,6 +42,9 @@ A arquitetura do projeto deve seguir uma separação clara de responsabilidades 
   - **Total sobre uma Loja inteira** (`setores: 'todos'`) — ex: Gestor que responde por todos os setores das Lojas 2 e 3 simultaneamente (um Gestor pode ter múltiplos escopos, cobrindo múltiplas lojas ao mesmo tempo).
   O sistema garante que o Gestor só visualize OS/máquinas dentro dos seus escopos (`gestorTemAcesso` / `filtrarPorAcessoGestor` em `/src/utilitarios/acessoGestor.ts`), criando separadores visuais na listagem agrupados por Loja e, dentro dela, por Setor quando múltiplos estiverem envolvidos.
 
+- **Controle de Acesso por Setor (Solicitante):** O Solicitante está vinculado a exatamente uma Loja + um Setor (`lojaId`/`setor` em `useEstadoAutenticacao`, definidos no momento do login). Ao abrir uma Nova Solicitação OS, ele só pode visualizar e selecionar **máquinas do seu próprio setor** — ex: um solicitante do Açougue só vê as máquinas do Açougue, nunca as da Padaria ou de outra loja. O filtro é aplicado via `useMaquinas({ setor, lojaId })`, que repassa os parâmetros para `servicoMaquinas.listar`.
+- **Rotas Protegidas por Perfil:** `RotaProtegida` (`/src/rotas/RotaProtegida.tsx`) aceita uma prop opcional `perfis?: PerfilLogin[]`. Sem autenticação, redireciona para `/login`; autenticado mas com perfil fora da lista `perfis`, redireciona para a rota inicial do próprio perfil (`ROTA_POR_PERFIL[perfil]`) em vez de deixar renderizar. Em `RotasPrincipais.tsx`, as rotas de Solicitante/Técnico (`/home-solicitante`, `/nova-solicitacao-os`, `/minhas-solicitacoes`, `/cadastrar-maquina`) usam `perfis={['solicitante', 'tecnico']}`, e as rotas de Gestor (`/painel-gestor`, `/cadastrar-usuario`, `/cadastrar-setor`, `/cadastrar-loja`) usam `perfis={['gestor']}` — evitando que, por exemplo, um Solicitante acesse o Painel do Gestor digitando a URL diretamente.
+
 ## Configuração Base de API (`api.ts`) & Variáveis de Ambiente
 Todo o tráfego HTTP passa por um wrapper nativo (`fetch`) padronizado.
 - **Variáveis de Ambiente:** O projeto deve conter um arquivo `.env.example` na raiz documentando as variáveis necessárias (ex: `REACT_APP_URL_API`).
@@ -77,19 +80,22 @@ Todo o tráfego HTTP passa por um wrapper nativo (`fetch`) padronizado.
 
 ### 3. Tela de Nova Solicitação OS (`NovaSolicitacaoOS`)
 - **Formulário Complexo (Zod + React Hook Form):** 
-  - **Máquina:** Seleção atrelada a uma pré-visualização de foto (`object-contain`).
+  - **Máquina:** Seleção atrelada a uma pré-visualização de foto (`object-contain`). A lista é restrita apenas às máquinas do setor/loja do solicitante logado.
   - **Tipo de Defeito:** Seleção fixa (`Mecânico`, `Elétrico`, `Hidráulico`, `Pneumático`, `Software / CNC`, `Estrutural`).
   - **Setor / Solicitante:** Preenchimento automático (somente leitura).
   - **Descrição:** Área de texto (`textarea`) com validação de limite de caracteres.
+  - **Marcadores de Impacto:** Caixas de seleção (checkbox) preenchidas pelo próprio Solicitante no momento do pedido (`Afeta Produção`, `Parada Parcial`, `Retrabalho`), definidas em `marcadoresImpacto`/`MarcadorImpacto` (`/src/tipos/ordemServico.ts`). Fazem parte de `SolicitacaoOS`/`NovaSolicitacaoOSPayload` e ficam visíveis para o Gestor ao visualizar a solicitação (ver item 6).
 - **Ação:** Enviar Solicitação.
 
 ### 4. Tela de Minhas Solicitações (`MinhasSolicitacoes`)
 - **Estrutura:** Layout cinza, barra de pesquisa, filtros em rótulos/badges (`Todos`, `Pendente`, `Convertida`, `Rejeitada`).
 - **Listagem & Paginação:** Cards detalhados com número da OS, status e descrição. Integrado ao TanStack Query para paginação otimizada.
 
-### 5. Tela de Cadastro de Máquinas (`CadastrarMaquina` - Gestor)
+### 5. Tela de Cadastro de Máquinas (`CadastrarMaquina` - Solicitante)
+- **Acesso:** Card "Adicionar Nova Máquina" na `HomeSolicitante`. Não faz parte do Painel do Gestor.
 - **Modal/Tela:** Envio de foto (área pontilhada) e campos primários. 
   - **Estratégia de Envio de Arquivo:** O envio da imagem da máquina DEVE ser feito utilizando o objeto nativo `FormData` multipart para eficiência, gerenciado de forma transparente pelo `api.ts`.
+- **Campos Loja/Setor:** A Loja é travada automaticamente na loja do solicitante logado (`lojaId` em `useEstadoAutenticacao`) — o solicitante só cadastra máquinas na própria loja.
 - **Integração de Preventivas (REGRA DE NEGÓCIO):** O envio do formulário é bloqueado se não houver **pelo menos uma manutenção preventiva** configurada no mesmo fluxo. Array de preventivas validado via Zod.
 
 ### Modal / Tela de Nova Manutenção Preventiva (`ModalManutencaoPreventiva`)
@@ -101,27 +107,45 @@ Todo o tráfego HTTP passa por um wrapper nativo (`fetch`) padronizado.
   - **PRÓXIMA DATA \***: Campo de data (`dd/mm/aaaa`) com seletor de calendário nativo.
   - **Status (Ativa):** Componente de alternância (*switch* / *toggle*) acompanhado do texto descritivo "Preventiva habilitada no sistema".
 - **Botões de Ação:** Botão "Cancelar" com borda e fundo neutro, e botão "Salvar" sólido em verde com ícone de confirmação.
+- **Abertura Automática de Solicitação ao Vencer (REGRA DE NEGÓCIO):** ao chegar (ou passar) a `proximaData` de uma preventiva **ativa**, o sistema abre automaticamente uma Solicitação de OS para o Gestor aprovar — sem exigir ação do Solicitante. Essa solicitação nasce com `origem: 'preventiva'` (`OrigemSolicitacao`, em `/src/tipos/ordemServico.ts`, junto a `preventivaId` referenciando a preventiva de origem) e aparece com **destaque visual** (`BadgeOrigemPreventiva`, borda/ícone em âmbar) tanto no card da listagem (`CardSolicitacaoGestor`) quanto no `ModalDetalhesSolicitacao`, para o Gestor diferenciar de pedidos abertos por um Solicitante. Em produção isso deve ser um job/cron no back-end; no mock atual, `gerarSolicitacoesPreventivasVencidas` (`/src/utilitarios/gerarSolicitacoesPreventivas.ts`) simula o comportamento comparando `proximaData` com a data atual sempre que `servicoSolicitacoes.listarTodas` é chamado (evitando duplicar solicitação para a mesma preventiva). `PREV-007` em `dadosMockPreventivas.ts` já nasce vencida para demonstrar o comportamento.
 
 ### 6. Painel do Gestor (`PainelGestor`)
 - **Navegação:** Abas para `Solicitações`, `OS Finalizadas`, `Manutenção Prev.`.
 - **Filtro por Loja e Setor Obrigatório:** Listagem separada visualmente em blocos por Loja (Ex: Cabeçalho divisor "Loja: Loja 2 - Filial Sul") e, dentro de cada bloco, subdividida por Setor caso o escopo do gestor não cubra a loja inteira (Ex: "Setor: Padaria"). Escopos com `setores: 'todos'` exibem a loja sem subdivisão por setor.
-- **Gestão de Setores (Cadastro Dinâmico — Futuro):** O Gestor terá um botão/tela para **cadastrar novos setores** (ex: "Rotisseria", "Bebidas") diretamente pelo painel, por Loja. Quando essa tela for implementada, `setoresDisponiveis`/`Setor` (hoje uma union estática em `/src/tipos/maquina.ts`, usada nos `z.enum` de validação) deve deixar de ser fixa em código e passar a ser carregada dinamicamente via API (React Query) por Loja, com os formulários trocando `z.enum` por validação contra a lista carregada.
-- **Ações Rápidas:** Botões superiores para `Cadastrar Técnico`.
+- **Ações por Solicitação:** Cada card de solicitação (`CardSolicitacaoGestor`) possui um botão de visualização (ícone de olho) que abre o `ModalDetalhesSolicitacao` — somente leitura, com máquina, loja, setor, solicitante, data/hora, status, descrição e os Marcadores de Impacto informados pelo Solicitante. Na aba `Solicitações`, o card também exibe o botão `Abrir OS`, que abre o `ModalAbrirOrdemServico` (ver item 10). Solicitações com `origem: 'preventiva'` recebem destaque visual (ver regra acima) para o Gestor identificá-las rapidamente.
+- **Gestão de Setores e Lojas (Cadastro Dinâmico):** O Gestor tem, nas Ações Rápidas, botões para **cadastrar novos setores** e **novas lojas** diretamente pelo painel (`/cadastrar-setor`, `/cadastrar-loja`), mockados via `servicoSetores`/`servicoLojas` (setores podem se repetir entre lojas diferentes, cada um como um registro independente por loja). Os formulários existentes (`CadastrarMaquina`, `NovaSolicitacaoOS`, `CadastrarUsuario`) continuam validando `setor` contra a union estática `setoresDisponiveis`/`Setor` (`/src/tipos/maquina.ts`) — a troca desses `z.enum` para validar contra a lista dinâmica de setores cadastrados é um passo futuro ainda não implementado.
+- **Ações Rápidas:** Botões superiores para `Cadastrar Usuário` (ver item 7), `Cadastrar Loja` e `Cadastrar Setor`.
 
-### 7. Painel de Indicadores de Máquinas (`DashboardGestor`)
-- **Seletor Dinâmico:** Máquinas agrupadas por Loja e, dentro dela, por Setor, respeitando os escopos de acesso do Gestor.
-- **Métricas (via React Query):** Exibição em tempo real de Horas Parada, MTTR, MTBF, Custo Total, gráficos de rosca e barras mensais.
+### 7. Tela de Cadastro de Usuário (`CadastrarUsuario` - Gestor)
+- **Acesso:** Ação rápida "Cadastrar Usuário" no Painel do Gestor. É onde o Gestor cria o login de Solicitantes, Técnicos e outros Gestores (não há tela de auto-cadastro).
+- **Campos do Formulário (Validação Zod obrigatória):**
+  - **Perfil (Role) \***: seletor `Solicitante` / `Técnico` / `Gestor` (reaproveita o `SeletorPerfil`, componente compartilhado usado também na Tela de Login).
+  - **Nome \***, **E-mail \***, **Senha \***: campos padrão de identificação/acesso.
+  - **Telefone**: opcional.
+  - **Loja(s) \***: seleção entre as lojas cadastradas (`LOJAS_MOCK`). Solicitante vincula-se a **exatamente uma** loja (seleção única); Técnico e Gestor podem ser vinculados a **múltiplas lojas** (seleção múltipla).
+  - **Setor(es)**: **não aparece para o perfil Técnico** — ele enxerga as OS em que for designado como responsável, independente de setor (tela do técnico ainda não implementada). Para Solicitante é seleção **única** (o setor onde atua). Para Gestor é seleção **múltipla**, com uma alternância adicional **"Acesso total aos setores"** que, quando ativada, dispensa a seleção manual e equivale a `setores: 'todos'` (o mesmo conceito de `EscopoAcessoGestor` usado no Painel do Gestor) para todas as lojas selecionadas.
+  - **Área de Atuação \***: aparece **somente para o perfil Técnico**, em substituição ao campo de Setor(es). Seleção única entre `areasTecnico` (`/src/tipos/tecnico.ts`: `Refrigeração`, `Elétrica`, `Mecânica`, `Hidráulica`, `Máquinas em Geral`). É essa área que aparece junto ao nome do técnico no seletor de "Técnico Responsável" do `ModalAbrirOrdemServico` (ver item 10).
+- **Observação de Modelagem:** O mesmo conjunto de setores/acesso-total selecionado no formulário é aplicado a todas as lojas marcadas nesse cadastro — não há, ainda, configuração de setores distintos por loja dentro de um único cadastro (um Gestor com acesso parcial numa loja e total noutra exigiria editar o usuário depois).
 
-### 8. Tela Principal do Técnico (`PainelTecnico`)
+### 8. Painel de Indicadores de Máquinas (`DashboardGestor`)
+- **Acesso:** Ação rápida "Indicadores" no Painel do Gestor (`/dashboard-gestor`, `perfis={['gestor']}`).
+- **Seletor Dinâmico:** Máquinas agrupadas por Loja e, dentro dela, por Setor, respeitando os escopos de acesso do Gestor — reaproveita `agruparPorEscopoGestor` (mesma função usada no Painel do Gestor, item 6) sobre a listagem completa de `useMaquinas()`.
+- **Métricas (via React Query):** `useIndicadoresMaquina(maquinaId)` exibe Horas Parada, MTTR, MTBF e Custo Total da máquina selecionada, além de um gráfico de rosca (paradas por Tipo de Defeito, ver `tiposDefeito` no item 3) e um gráfico de barras mensais (Custo Total, últimos 6 meses).
+- **Observação de Modelagem:** as métricas dependem de dados históricos de OS finalizada (datas, custo, tempo de reparo) que só existirão de verdade quando o `ModalEncerrarOrdemServico` (item 11, ainda não implementado) passar a gravá-los. Até lá, `servicoIndicadores`/`dadosMockIndicadores.ts` (`/src/tipos/indicadorMaquina.ts`) geram indicadores mockados determinísticos por máquina, seguindo o mesmo padrão mock-first dos demais serviços (`servicoTecnicos`, etc.) — quando o item 11 existir, `servicoIndicadores.obterPorMaquina` deve passar a consumir a API real em vez do gerador mock.
+- **Gráficos:** implementados como SVG/CSS local (`GraficoRosca`, `GraficoBarras` em `DashboardGestor/componentes/`), sem biblioteca de terceiros — consistente com a preferência do projeto por wrappers nativos em vez de dependências extras (ver `api.ts`). Paleta categórica fixa por identidade do tipo de defeito em `coresTipoDefeito.ts`.
+
+### 9. Tela Principal do Técnico (`PainelTecnico`)
 - **Abas e Filtros:** `OS em Aberto` (padrão), `Pendentes / Pausadas` (espera de peças) e `OS Concluídas`.
 - **Listagem de OS:** Botões de ação direta integrados ao card. "Finalizar OS" possui destaque em verde.
 
-### 9. Modal de Abertura de OS (`ModalAbrirOrdemServico` - Gestor)
+### 10. Modal de Abertura de OS (`ModalAbrirOrdemServico` - Gestor)
 - **Nível de Urgência:** Cards coloridos (Baixa/Média/Alta mapeado para `IdUrgencia`).
-- **Marcadores de Impacto:** Caixas de seleção (checkbox) mapeadas diretamente (`Afeta Produção`, `Parada Parcial`, `Retrabalho`).
-- **Campos de Controle:** Data/Hora e vínculo com Técnico Responsável.
+- **Campos de Controle:**
+  - **Data/Hora:** Capturada automaticamente do navegador (`new Date()`) no momento da abertura da OS — não é um campo editável pelo Gestor, apenas exibida como confirmação.
+  - **Técnico Responsável:** Select com os técnicos disponíveis para a loja da solicitação (`useTecnicos`/`servicoTecnicos`, filtrado por `lojasIds`), exibindo nome **e área de atuação** (ex: "Roberto Alves — Refrigeração"), definida no cadastro do técnico (ver item 7).
+- Os **Marcadores de Impacto** (`Afeta Produção`, `Parada Parcial`, `Retrabalho`) **não** são preenchidos aqui — são informados pelo Solicitante na própria Nova Solicitação OS (ver item 3) e exibidos ao Gestor no `ModalDetalhesSolicitacao` (ver item 6).
 
-### 10. Modal de Encerramento de OS (`ModalEncerrarOrdemServico` - Técnico)
+### 11. Modal de Encerramento de OS (`ModalEncerrarOrdemServico` - Técnico)
 - **Formulário de Execução:** Validação rígida Zod para campos críticos.
   - `dataInicio` / `dataFim` (período).
   - `horaEstimada` / `custo` (financeiro).

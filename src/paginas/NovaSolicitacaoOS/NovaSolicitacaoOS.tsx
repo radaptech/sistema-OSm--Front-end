@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { useForm, useWatch } from 'react-hook-form'
+import { useForm, useWatch, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation } from '@tanstack/react-query'
 import { toast } from 'react-toastify'
@@ -12,7 +12,7 @@ import { CabecalhoPagina } from '../../componentes/CabecalhoPagina'
 import { useMaquinas } from '../../hooks/useMaquinas'
 import { useEstadoAutenticacao } from '../../estado/estadoAutenticacao'
 import { servicoSolicitacoes } from '../../servicos/servicoSolicitacoes'
-import { tiposDefeito } from '../../tipos/ordemServico'
+import { marcadoresImpacto, tiposDefeito } from '../../tipos/ordemServico'
 import {
   esquemaNovaSolicitacaoOS,
   type DadosNovaSolicitacaoOS,
@@ -24,7 +24,12 @@ const LIMITE_CARACTERES_DESCRICAO = 1000
 export function NovaSolicitacaoOS() {
   const navegar = useNavigate()
   const nomeUsuario = useEstadoAutenticacao((estado) => estado.nomeUsuario)
-  const { data: maquinas = [], isLoading: carregandoMaquinas } = useMaquinas()
+  const setorUsuario = useEstadoAutenticacao((estado) => estado.setor)
+  const lojaIdUsuario = useEstadoAutenticacao((estado) => estado.lojaId)
+  const { data: maquinas = [], isLoading: carregandoMaquinas } = useMaquinas({
+    setor: setorUsuario ?? undefined,
+    lojaId: lojaIdUsuario ?? undefined,
+  })
 
   const {
     register,
@@ -42,6 +47,7 @@ export function NovaSolicitacaoOS() {
       lojaId: '',
       solicitante: nomeUsuario ?? '',
       descricao: '',
+      impactos: [],
     },
   })
 
@@ -90,11 +96,15 @@ export function NovaSolicitacaoOS() {
               <CampoSelecao
                 rotulo="Máquina"
                 mensagemErro={errors.maquinaId?.message}
-                disabled={carregandoMaquinas}
+                disabled={carregandoMaquinas || maquinas.length === 0}
                 {...register('maquinaId')}
               >
                 <option value="">
-                  {carregandoMaquinas ? 'Carregando...' : 'Selecione uma máquina...'}
+                  {carregandoMaquinas
+                    ? 'Carregando...'
+                    : maquinas.length === 0
+                      ? 'Nenhuma máquina cadastrada no seu setor.'
+                      : 'Selecione uma máquina...'}
                 </option>
                 {maquinas.map((maquina) => (
                   <option key={maquina.id} value={maquina.id}>
@@ -146,6 +156,43 @@ export function NovaSolicitacaoOS() {
               <p className="mt-1 text-right text-xs text-slate-400">
                 {descricao.length}/{LIMITE_CARACTERES_DESCRICAO}
               </p>
+            </div>
+
+            <div className="sm:col-span-2 flex flex-col gap-2">
+              <span className="text-xs font-semibold tracking-wide text-[#4bae70] uppercase">
+                Marcadores de Impacto
+              </span>
+              <Controller
+                control={control}
+                name="impactos"
+                render={({ field }) => (
+                  <div className="flex flex-wrap gap-3">
+                    {marcadoresImpacto.map((marcador) => {
+                      const marcado = field.value.includes(marcador)
+                      return (
+                        <label
+                          key={marcador}
+                          className="flex items-center gap-2 rounded-lg bg-slate-50 px-3 py-2.5 text-sm text-slate-700"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={marcado}
+                            onChange={() =>
+                              field.onChange(
+                                marcado
+                                  ? field.value.filter((item) => item !== marcador)
+                                  : [...field.value, marcador],
+                              )
+                            }
+                            className="h-4 w-4 rounded border-slate-300 text-[#1f4e2c] focus:ring-[#4bae70]"
+                          />
+                          {marcador}
+                        </label>
+                      )
+                    })}
+                  </div>
+                )}
+              />
             </div>
 
             <div className="sm:col-span-2">

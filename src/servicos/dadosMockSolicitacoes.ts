@@ -11,6 +11,8 @@ export const SOLICITACOES_MOCK: SolicitacaoOS[] = [
     criadoEm: '2026-07-17T08:32:00',
     setor: 'Padaria',
     lojaId: 'loja-1',
+    impactos: ['Afeta Produção'],
+    origem: 'solicitante',
   },
   {
     id: 2,
@@ -22,6 +24,8 @@ export const SOLICITACOES_MOCK: SolicitacaoOS[] = [
     criadoEm: '2026-07-16T14:15:00',
     setor: 'Açougue',
     lojaId: 'loja-1',
+    impactos: ['Afeta Produção', 'Parada Parcial'],
+    origem: 'solicitante',
   },
   {
     id: 3,
@@ -33,6 +37,8 @@ export const SOLICITACOES_MOCK: SolicitacaoOS[] = [
     criadoEm: '2026-07-15T09:50:00',
     setor: 'Padaria',
     lojaId: 'loja-1',
+    impactos: ['Retrabalho'],
+    origem: 'solicitante',
   },
   {
     id: 4,
@@ -44,6 +50,8 @@ export const SOLICITACOES_MOCK: SolicitacaoOS[] = [
     criadoEm: '2026-07-14T11:20:00',
     setor: 'Hortifruti',
     lojaId: 'loja-1',
+    impactos: ['Parada Parcial'],
+    origem: 'solicitante',
   },
   {
     id: 5,
@@ -55,6 +63,8 @@ export const SOLICITACOES_MOCK: SolicitacaoOS[] = [
     criadoEm: '2026-07-12T16:05:00',
     setor: 'Açougue',
     lojaId: 'loja-1',
+    impactos: ['Retrabalho'],
+    origem: 'solicitante',
   },
   {
     id: 6,
@@ -66,6 +76,8 @@ export const SOLICITACOES_MOCK: SolicitacaoOS[] = [
     criadoEm: '2026-07-10T07:45:00',
     setor: 'Hortifruti',
     lojaId: 'loja-1',
+    impactos: ['Retrabalho'],
+    origem: 'solicitante',
   },
   {
     id: 7,
@@ -77,6 +89,8 @@ export const SOLICITACOES_MOCK: SolicitacaoOS[] = [
     criadoEm: '2026-07-09T13:10:00',
     setor: 'Açougue',
     lojaId: 'loja-1',
+    impactos: ['Retrabalho'],
+    origem: 'solicitante',
   },
   {
     id: 8,
@@ -88,6 +102,8 @@ export const SOLICITACOES_MOCK: SolicitacaoOS[] = [
     criadoEm: '2026-07-08T10:30:00',
     setor: 'Frios e Laticínios',
     lojaId: 'loja-2',
+    impactos: ['Afeta Produção'],
+    origem: 'solicitante',
   },
   {
     id: 9,
@@ -99,6 +115,8 @@ export const SOLICITACOES_MOCK: SolicitacaoOS[] = [
     criadoEm: '2026-07-07T15:40:00',
     setor: 'Estoque',
     lojaId: 'loja-2',
+    impactos: ['Parada Parcial'],
+    origem: 'solicitante',
   },
   {
     id: 10,
@@ -110,6 +128,8 @@ export const SOLICITACOES_MOCK: SolicitacaoOS[] = [
     criadoEm: '2026-07-06T09:00:00',
     setor: 'Frios e Laticínios',
     lojaId: 'loja-2',
+    impactos: ['Retrabalho'],
+    origem: 'solicitante',
   },
   {
     id: 11,
@@ -121,6 +141,8 @@ export const SOLICITACOES_MOCK: SolicitacaoOS[] = [
     criadoEm: '2026-07-05T12:25:00',
     setor: 'Frente de Loja',
     lojaId: 'loja-3',
+    impactos: ['Afeta Produção'],
+    origem: 'solicitante',
   },
   {
     id: 12,
@@ -132,6 +154,8 @@ export const SOLICITACOES_MOCK: SolicitacaoOS[] = [
     criadoEm: '2026-07-04T08:15:00',
     setor: 'Peixaria',
     lojaId: 'loja-1',
+    impactos: ['Afeta Produção'],
+    origem: 'solicitante',
   },
   {
     id: 13,
@@ -143,6 +167,8 @@ export const SOLICITACOES_MOCK: SolicitacaoOS[] = [
     criadoEm: '2026-07-03T17:00:00',
     setor: 'Peixaria',
     lojaId: 'loja-1',
+    impactos: ['Parada Parcial'],
+    origem: 'solicitante',
   },
   {
     id: 14,
@@ -154,6 +180,8 @@ export const SOLICITACOES_MOCK: SolicitacaoOS[] = [
     criadoEm: '2026-07-02T14:50:00',
     setor: 'Estoque',
     lojaId: 'loja-2',
+    impactos: ['Parada Parcial'],
+    origem: 'solicitante',
   },
   {
     id: 15,
@@ -165,6 +193,8 @@ export const SOLICITACOES_MOCK: SolicitacaoOS[] = [
     criadoEm: '2026-07-01T11:35:00',
     setor: 'Frente de Loja',
     lojaId: 'loja-3',
+    impactos: ['Afeta Produção'],
+    origem: 'solicitante',
   },
   {
     id: 16,
@@ -176,6 +206,8 @@ export const SOLICITACOES_MOCK: SolicitacaoOS[] = [
     criadoEm: '2026-06-30T09:20:00',
     setor: 'Padaria',
     lojaId: 'loja-1',
+    impactos: [],
+    origem: 'solicitante',
   },
   {
     id: 17,
@@ -187,6 +219,8 @@ export const SOLICITACOES_MOCK: SolicitacaoOS[] = [
     criadoEm: '2026-06-29T16:10:00',
     setor: 'Hortifruti',
     lojaId: 'loja-1',
+    impactos: ['Retrabalho'],
+    origem: 'solicitante',
   },
   {
     id: 18,
@@ -198,5 +232,7 @@ export const SOLICITACOES_MOCK: SolicitacaoOS[] = [
     criadoEm: '2026-06-28T10:05:00',
     setor: 'Frios e Laticínios',
     lojaId: 'loja-2',
+    impactos: [],
+    origem: 'solicitante',
   },
 ]
