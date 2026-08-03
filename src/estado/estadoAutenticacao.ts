@@ -6,6 +6,7 @@ interface OpcoesEntrar {
   lojaId?: string
   setor?: Setor
   escoposGestor?: EscopoAcessoGestor[]
+  tecnicoId?: string
 }
 
 interface EstadoAutenticacao {
@@ -15,6 +16,7 @@ interface EstadoAutenticacao {
   lojaId: string | null
   setor: Setor | null
   escoposGestor: EscopoAcessoGestor[] | null
+  tecnicoId: string | null
   entrar: (perfil: PerfilLogin, nomeUsuario: string, opcoes?: OpcoesEntrar) => void
   sair: () => void
 }
@@ -26,6 +28,7 @@ export const useEstadoAutenticacao = create<EstadoAutenticacao>((set) => ({
   lojaId: null,
   setor: null,
   escoposGestor: null,
+  tecnicoId: null,
   entrar: (perfil, nomeUsuario, opcoes) =>
     set({
       autenticado: true,
@@ -34,6 +37,7 @@ export const useEstadoAutenticacao = create<EstadoAutenticacao>((set) => ({
       lojaId: opcoes?.lojaId ?? null,
       setor: opcoes?.setor ?? null,
       escoposGestor: opcoes?.escoposGestor ?? null,
+      tecnicoId: opcoes?.tecnicoId ?? null,
     }),
   sair: () =>
     set({
@@ -43,5 +47,6 @@ export const useEstadoAutenticacao = create<EstadoAutenticacao>((set) => ({
       lojaId: null,
       setor: null,
       escoposGestor: null,
+      tecnicoId: null,
     }),
 }))

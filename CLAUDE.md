@@ -123,7 +123,7 @@ Todo o tráfego HTTP passa por um wrapper nativo (`fetch`) padronizado.
   - **Nome \***, **E-mail \***, **Senha \***: campos padrão de identificação/acesso.
   - **Telefone**: opcional.
   - **Loja(s) \***: seleção entre as lojas cadastradas (`LOJAS_MOCK`). Solicitante vincula-se a **exatamente uma** loja (seleção única); Técnico e Gestor podem ser vinculados a **múltiplas lojas** (seleção múltipla).
-  - **Setor(es)**: **não aparece para o perfil Técnico** — ele enxerga as OS em que for designado como responsável, independente de setor (tela do técnico ainda não implementada). Para Solicitante é seleção **única** (o setor onde atua). Para Gestor é seleção **múltipla**, com uma alternância adicional **"Acesso total aos setores"** que, quando ativada, dispensa a seleção manual e equivale a `setores: 'todos'` (o mesmo conceito de `EscopoAcessoGestor` usado no Painel do Gestor) para todas as lojas selecionadas.
+  - **Setor(es)**: **não aparece para o perfil Técnico** — ele enxerga as OS em que for designado como responsável, independente de setor (ver Painel do Técnico, item 9). Para Solicitante é seleção **única** (o setor onde atua). Para Gestor é seleção **múltipla**, com uma alternância adicional **"Acesso total aos setores"** que, quando ativada, dispensa a seleção manual e equivale a `setores: 'todos'` (o mesmo conceito de `EscopoAcessoGestor` usado no Painel do Gestor) para todas as lojas selecionadas.
   - **Área de Atuação \***: aparece **somente para o perfil Técnico**, em substituição ao campo de Setor(es). Seleção única entre `areasTecnico` (`/src/tipos/tecnico.ts`: `Refrigeração`, `Elétrica`, `Mecânica`, `Hidráulica`, `Máquinas em Geral`). É essa área que aparece junto ao nome do técnico no seletor de "Técnico Responsável" do `ModalAbrirOrdemServico` (ver item 10).
 - **Observação de Modelagem:** O mesmo conjunto de setores/acesso-total selecionado no formulário é aplicado a todas as lojas marcadas nesse cadastro — não há, ainda, configuração de setores distintos por loja dentro de um único cadastro (um Gestor com acesso parcial numa loja e total noutra exigiria editar o usuário depois).
 
@@ -131,12 +131,25 @@ Todo o tráfego HTTP passa por um wrapper nativo (`fetch`) padronizado.
 - **Acesso:** Ação rápida "Indicadores" no Painel do Gestor (`/dashboard-gestor`, `perfis={['gestor']}`).
 - **Seletor Dinâmico:** Máquinas agrupadas por Loja e, dentro dela, por Setor, respeitando os escopos de acesso do Gestor — reaproveita `agruparPorEscopoGestor` (mesma função usada no Painel do Gestor, item 6) sobre a listagem completa de `useMaquinas()`.
 - **Métricas (via React Query):** `useIndicadoresMaquina(maquinaId)` exibe Horas Parada, MTTR, MTBF e Custo Total da máquina selecionada, além de um gráfico de rosca (paradas por Tipo de Defeito, ver `tiposDefeito` no item 3) e um gráfico de barras mensais (Custo Total, últimos 6 meses).
-- **Observação de Modelagem:** as métricas dependem de dados históricos de OS finalizada (datas, custo, tempo de reparo) que só existirão de verdade quando o `ModalEncerrarOrdemServico` (item 11, ainda não implementado) passar a gravá-los. Até lá, `servicoIndicadores`/`dadosMockIndicadores.ts` (`/src/tipos/indicadorMaquina.ts`) geram indicadores mockados determinísticos por máquina, seguindo o mesmo padrão mock-first dos demais serviços (`servicoTecnicos`, etc.) — quando o item 11 existir, `servicoIndicadores.obterPorMaquina` deve passar a consumir a API real em vez do gerador mock.
+- **Observação de Modelagem:** as métricas dependem de dados históricos de OS finalizada (datas, custo, tempo de reparo). O `ModalEncerrarOrdemServico` (item 11) já existe e grava esses dados (`dataInicio`, `dataFim`, `horaEstimada`, `custo`, `defeitoConstatado`, `causaRaiz`, `solucao`) na própria `OrdemServico` mockada, mas `servicoIndicadores`/`dadosMockIndicadores.ts` (`/src/tipos/indicadorMaquina.ts`) ainda geram indicadores mockados determinísticos por máquina, independentes desses dados — ligar `servicoIndicadores.obterPorMaquina` aos fechamentos reais de `ORDENS_SERVICO_MOCK` (e, no futuro, à API real) é um passo seguinte ainda não implementado.
 - **Gráficos:** implementados como SVG/CSS local (`GraficoRosca`, `GraficoBarras` em `DashboardGestor/componentes/`), sem biblioteca de terceiros — consistente com a preferência do projeto por wrappers nativos em vez de dependências extras (ver `api.ts`). Paleta categórica fixa por identidade do tipo de defeito em `coresTipoDefeito.ts`.
 
 ### 9. Tela Principal do Técnico (`PainelTecnico`)
-- **Abas e Filtros:** `OS em Aberto` (padrão), `Pendentes / Pausadas` (espera de peças) e `OS Concluídas`.
-- **Listagem de OS:** Botões de ação direta integrados ao card. "Finalizar OS" possui destaque em verde.
+- **Acesso:** O login com perfil Técnico resolve um `tecnicoId` mockado (`obterTecnicoLogadoMock` em `dadosMockTecnicos.ts`, guardado em `useEstadoAutenticacao`) e redireciona para `/painel-tecnico` (`ROTA_POR_PERFIL`, rota protegida com `perfis={['tecnico']}`). Cada Técnico só visualiza as OS em que `tecnicoId` bate com o seu (`servicoOrdensServico.listarPorTecnico`) — nunca as de outro técnico.
+- **Abas e Filtros:** `OS em Aberto` (padrão, reúne os status `Aberta` e `Em Andamento`), `Pendentes / Pausadas` (espera de peças) e `OS Concluídas`.
+- **Agrupamento por Setor + Loja:** dentro de cada aba, as OS são separadas visualmente em blocos por combinação de Setor e Loja (ex: "Açougue - Loja 1", "Padaria - Loja 3"), via `agruparPorSetorLoja` (`/src/utilitarios/agruparPorSetorLoja.ts`) + `BlocoSetorLoja`. É um agrupamento só de organização visual (sem regra de controle de acesso, diferente do `agruparPorEscopoGestor` do Gestor), útil porque um mesmo Técnico pode atender múltiplas lojas (`lojasIds` em `Tecnico`, `/src/tipos/tecnico.ts`).
+- **Ciclo de Vida da OS (`StatusExecucaoOS`):** `Aberta` → `Em Andamento` → `Concluída`, com `Pausada` acessível a partir de `Aberta` ou `Em Andamento` a qualquer momento:
+  - **Aberta:** OS recém-atribuída pelo Gestor, ainda não iniciada. Card mostra `Pausar` e `Iniciar Atendimento` lado a lado.
+  - **Iniciar Atendimento:** grava `dataInicio` automaticamente (`new Date()`) e move a OS para `Em Andamento`. Card passa a mostrar `Pausar` e `Finalizar OS` (destaque verde, abre o `ModalEncerrarOrdemServico`, item 11).
+  - **Pausar:** abre `ModalPausarOrdemServico` (Zod + textarea obrigatória para o motivo, ex: "aguardando peça"). A OS guarda de qual status veio (`statusAntesDaPausa: 'Aberta' | 'Em Andamento'`) antes de virar `Pausada`, e exibe o motivo no card.
+  - **Retomar Atendimento:** volta a OS para o status salvo em `statusAntesDaPausa` (ou `Em Andamento` se não houver) e limpa o motivo da pausa.
+  - **Concluída:** somente leitura; o card exibe um botão de visualização (ícone de olho) que abre o `ModalDetalhesEncerramento`, mostrando os dados gravados pelo item 11.
+- Toda essa movimentação de estado é mock-first, mutando `ORDENS_SERVICO_MOCK` diretamente via `servicoOrdensServico.ts` (`iniciar`/`pausar`/`retomar`/`encerrar`) — não há endpoint real para o domínio de execução de OS ainda, então (diferente de `criar`/`abrirOS` dos itens 3/10) essas ações não chamam `api.ts`, para manter o painel funcional de ponta a ponta sem backend.
+
+### Modal de Pausa de OS (`ModalPausarOrdemServico` - Técnico)
+- **Cabeçalho:** mesmo padrão dos demais modais — fundo verde escuro, "PAINEL DO TÉCNICO" em letras miúdas e "Pausar OS · #id" em destaque.
+- **Campo:** `Motivo da Pausa *` (`textarea`, Zod obrigatório, ex: "Aguardando peça de reposição do fornecedor.").
+- **Botões:** `Cancelar` (neutro) e `Pausar OS` (verde, com ícone).
 
 ### 10. Modal de Abertura de OS (`ModalAbrirOrdemServico` - Gestor)
 - **Nível de Urgência:** Cards coloridos (Baixa/Média/Alta mapeado para `IdUrgencia`).
@@ -146,8 +159,11 @@ Todo o tráfego HTTP passa por um wrapper nativo (`fetch`) padronizado.
 - Os **Marcadores de Impacto** (`Afeta Produção`, `Parada Parcial`, `Retrabalho`) **não** são preenchidos aqui — são informados pelo Solicitante na própria Nova Solicitação OS (ver item 3) e exibidos ao Gestor no `ModalDetalhesSolicitacao` (ver item 6).
 
 ### 11. Modal de Encerramento de OS (`ModalEncerrarOrdemServico` - Técnico)
+- **Acesso:** abre a partir do botão `Finalizar OS` do card, disponível apenas quando a OS está `Em Andamento` (ver item 9).
 - **Formulário de Execução:** Validação rígida Zod para campos críticos.
-  - `dataInicio` / `dataFim` (período).
-  - `horaEstimada` / `custo` (financeiro).
+  - `dataInicio` / `dataFim` (período): **não são campos editáveis** — mesmo padrão de captura automática do item 10 (`Data/Hora` do `ModalAbrirOrdemServico`). `dataInicio` é o instante em que o Técnico clicou em "Iniciar Atendimento" (gravado na OS); `dataFim` é capturado (`new Date()`) na abertura do próprio modal. Ambos aparecem como confirmação somente leitura ("Início do Atendimento" / "Término do Atendimento").
+  - `horaEstimada` / `custo` (financeiro) — campos numéricos validados via Zod.
   - Áreas de texto amplas: `defeitoConstatado`, `causaRaiz`, `solucao`.
-- Envio utiliza o `api.ts` nativo e exibe notificação (toast) de erro/sucesso via validação global.
+- **Botões:** `Cancelar` (neutro) e `Encerrar OS` (verde, com ícone).
+- Ao salvar, os dados ficam gravados na `OrdemServico` (mock, em `servicoOrdensServico.encerrar`) e ficam disponíveis para consulta posterior via `ModalDetalhesEncerramento` na aba `OS Concluídas` do Painel do Técnico — evitando que essa informação fique "perdida" depois do encerramento.
+- **Desvio deliberado da regra geral de `api.ts`:** diferente dos itens 3/10 (que chamam `api.post` num endpoint real), o encerramento aqui é mock-first (mutação em memória), pelo mesmo motivo do restante do item 9 — ainda não existe backend real para o domínio de execução de OS, e usar `api.ts` quebraria a demonstração (a URL de homologação em `.env` não responde). Trocar para `api.ts` real é um passo futuro, junto com a virada do `servicoIndicadores` (item 8) para consumir esses fechamentos de verdade.

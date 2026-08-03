@@ -1,0 +1,225 @@
+erDiagram
+    %% ==========================================================
+    %% Raiz multi-tenant
+    %% empresa E o tenant: 1 cliente SaaS = 1 empresa = 1 subdominio.
+    %% As demais tabelas referenciam empresa.id pela coluna tenant_id.
+    %% ==========================================================
+    empresa ||--o{ loja : "possui"
+    empresa ||--o{ usuario : "possui"
+    loja ||--o{ setor : "possui"
+
+    empresa {
+        uuid id PK
+        text subdominio UK "extraido de window.location.hostname"
+        text nome
+        boolean ativa
+        timestamptz criado_em
+    }
+
+    loja {
+        uuid id PK
+        uuid tenant_id FK "empresa.id"
+        text nome "unico por tenant"
+        boolean ativa
+        timestamptz criado_em
+    }
+
+    setor {
+        uuid id PK
+        uuid tenant_id FK "empresa.id"
+        uuid loja_id FK
+        text nome "unico por loja - Padaria repete entre lojas"
+        boolean ativo
+        timestamptz criado_em
+    }
+
+    %% ==========================================================
+    %% Usuarios e controle de acesso
+    %% ==========================================================
+    perfil_usuario ||--o{ usuario : "classifica"
+    area_tecnico ||--o{ usuario : "atua em"
+    usuario ||--o{ usuario_escopo : "tem"
+    loja ||--o{ usuario_escopo : "delimita"
+    usuario_escopo ||--o{ usuario_escopo_setor : "detalha"
+    setor ||--o{ usuario_escopo_setor : "restringe"
+
+    perfil_usuario {
+        smallint id PK
+        text codigo UK "solicitante | tecnico | gestor"
+        text nome
+    }
+
+    area_tecnico {
+        smallint id PK
+        text nome UK "Refrigeracao | Eletrica | Mecanica | Hidraulica | Maquinas em Geral"
+    }
+
+    usuario {
+        uuid id PK
+        uuid tenant_id FK "empresa.id"
+        smallint perfil_id FK
+        smallint area_tecnico_id FK "NULL - obrigatorio apenas para tecnico"
+        text nome
+        citext email "unico por tenant"
+        text senha_hash "nunca senha em texto puro"
+        text telefone
+        boolean ativo
+        timestamptz ultimo_acesso
+        timestamptz criado_em
+    }
+
+    usuario_escopo {
+        uuid id PK
+        uuid usuario_id FK
+        uuid loja_id FK
+        boolean acesso_total_setores "true equivale a setores todos"
+        timestamptz criado_em
+    }
+
+    usuario_escopo_setor {
+        uuid escopo_id PK "FK para usuario_escopo"
+        uuid setor_id PK "FK para setor"
+    }
+
+    %% ==========================================================
+    %% Ativos e manutencao preventiva
+    %% ==========================================================
+    setor ||--o{ maquina : "abriga"
+    nivel_criticidade ||--o{ maquina : "classifica"
+    maquina ||--o{ preventiva : "possui"
+
+    nivel_criticidade {
+        smallint id PK
+        text nome UK "Baixa | Media | Alta"
+        smallint ordem
+    }
+
+    maquina {
+        uuid id PK
+        uuid tenant_id FK "empresa.id"
+        uuid setor_id FK "loja derivada via setor"
+        smallint criticidade_id FK
+        text tag "unico por tenant"
+        text nome
+        text descricao
+        text marca
+        text modelo
+        text foto_url
+        boolean ativa
+        timestamptz criado_em
+    }
+
+    preventiva {
+        uuid id PK
+        uuid tenant_id FK "empresa.id"
+        uuid maquina_id FK
+        text descricao
+        integer intervalo_dias "CHECK maior que zero"
+        date proxima_data
+        boolean ativa
+        timestamptz criado_em
+    }
+
+    %% ==========================================================
+    %% Solicitacao de OS
+    %% ==========================================================
+    maquina ||--o{ solicitacao_os : "origina"
+    usuario ||--o{ solicitacao_os : "solicita"
+    tipo_defeito ||--o{ solicitacao_os : "categoriza"
+    status_solicitacao ||--o{ solicitacao_os : "estado"
+    preventiva ||--o{ solicitacao_os : "dispara automaticamente"
+    solicitacao_os ||--o{ solicitacao_impacto : "informa"
+    marcador_impacto ||--o{ solicitacao_impacto : "compoe"
+
+    tipo_defeito {
+        smallint id PK
+        text nome UK "Mecanico | Eletrico | Hidraulico | Pneumatico | Software CNC | Estrutural"
+    }
+
+    status_solicitacao {
+        smallint id PK
+        text nome UK "Pendente | Convertida | Rejeitada"
+    }
+
+    marcador_impacto {
+        smallint id PK
+        text nome UK "Afeta Producao | Parada Parcial | Retrabalho"
+    }
+
+    solicitacao_os {
+        uuid id PK
+        uuid tenant_id FK "empresa.id"
+        uuid maquina_id FK
+        uuid solicitante_id FK "NULL quando origem preventiva"
+        uuid preventiva_id FK "NULL quando origem solicitante"
+        smallint tipo_defeito_id FK
+        smallint status_id FK
+        text origem "CHECK solicitante ou preventiva"
+        text descricao
+        timestamptz criado_em
+    }
+
+    solicitacao_impacto {
+        uuid solicitacao_id PK "FK para solicitacao_os"
+        smallint marcador_id PK "FK para marcador_impacto"
+    }
+
+    %% ==========================================================
+    %% Ordem de servico e execucao
+    %% ==========================================================
+    solicitacao_os ||--o| ordem_servico : "convertida em"
+    nivel_urgencia ||--o{ ordem_servico : "prioriza"
+    usuario ||--o{ ordem_servico : "responsavel tecnico"
+    status_os ||--o{ ordem_servico : "estado"
+    usuario ||--o{ ordem_servico : "aberta pelo gestor"
+    ordem_servico ||--o{ os_pausa : "historico de pausas"
+    status_os ||--o{ os_pausa : "status anterior"
+    ordem_servico ||--o| os_encerramento : "encerrada por"
+    usuario ||--o{ os_encerramento : "registrada por"
+
+    nivel_urgencia {
+        smallint id PK
+        text nome UK "Baixa | Media | Alta"
+        smallint ordem
+    }
+
+    status_os {
+        smallint id PK
+        text nome UK "Aberta | Em Andamento | Pausada | Concluida"
+    }
+
+    ordem_servico {
+        uuid id PK
+        uuid tenant_id FK "empresa.id"
+        uuid solicitacao_id FK "UNIQUE - relacao um para um"
+        uuid tecnico_id FK "usuario com perfil tecnico"
+        uuid aberta_por_id FK "usuario com perfil gestor"
+        smallint urgencia_id FK
+        smallint status_id FK
+        timestamptz aberta_em
+        timestamptz iniciada_em "NULL ate Iniciar Atendimento"
+        timestamptz criado_em
+    }
+
+    os_pausa {
+        uuid id PK
+        uuid ordem_servico_id FK
+        smallint status_anterior_id FK "para onde retomar"
+        text motivo
+        timestamptz pausada_em
+        timestamptz retomada_em "NULL enquanto pausada"
+    }
+
+    os_encerramento {
+        uuid id PK
+        uuid tenant_id FK "empresa.id"
+        uuid ordem_servico_id FK "UNIQUE - relacao um para um"
+        uuid encerrado_por_id FK
+        timestamptz data_fim
+        numeric horas_trabalhadas "5 2 - CHECK maior que zero"
+        numeric custo "12 2 - CHECK nao negativo"
+        text defeito_constatado
+        text causa_raiz
+        text solucao
+        timestamptz criado_em
+    }

@@ -1,5 +1,6 @@
 import { ArrowLeft, Bell, LogOut } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { toast } from 'react-toastify'
 import { useEstadoAutenticacao } from '../estado/estadoAutenticacao'
 
 interface CabecalhoPaginaProps {
@@ -13,6 +14,10 @@ export function CabecalhoPagina({ titulo }: CabecalhoPaginaProps) {
   function aoSair() {
     sair()
     navegar('/login')
+  }
+
+  function aoClicarNotificacoes() {
+    toast.info('Nenhuma notificação no momento.')
   }
 
   return (
@@ -38,6 +43,7 @@ export function CabecalhoPagina({ titulo }: CabecalhoPaginaProps) {
         <button
           type="button"
           aria-label="Notificações"
+          onClick={aoClicarNotificacoes}
           className="relative text-white/90 transition hover:text-white"
         >
           <Bell size={20} />

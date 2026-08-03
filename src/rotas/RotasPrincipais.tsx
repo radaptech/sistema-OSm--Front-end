@@ -9,6 +9,7 @@ import { CadastrarUsuario } from '../paginas/CadastrarUsuario/CadastrarUsuario'
 import { CadastrarSetor } from '../paginas/CadastrarSetor/CadastrarSetor'
 import { CadastrarLoja } from '../paginas/CadastrarLoja/CadastrarLoja'
 import { DashboardGestor } from '../paginas/DashboardGestor/DashboardGestor'
+import { PainelTecnico } from '../paginas/PainelTecnico/PainelTecnico'
 import { RotaProtegida } from './RotaProtegida'
 import { RotaPublica } from './RotaPublica'
 
@@ -24,6 +25,10 @@ export function RotasPrincipais() {
         <Route path="/nova-solicitacao-os" element={<NovaSolicitacaoOS />} />
         <Route path="/minhas-solicitacoes" element={<MinhasSolicitacoes />} />
         <Route path="/cadastrar-maquina" element={<CadastrarMaquina />} />
+      </Route>
+
+      <Route element={<RotaProtegida perfis={['tecnico']} />}>
+        <Route path="/painel-tecnico" element={<PainelTecnico />} />
       </Route>
 
       <Route element={<RotaProtegida perfis={['gestor']} />}>

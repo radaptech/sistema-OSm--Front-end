@@ -1,5 +1,6 @@
 import { Bell, LogOut } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { toast } from 'react-toastify'
 import { useEstadoAutenticacao } from '../estado/estadoAutenticacao'
 
 export function CabecalhoTopo() {
@@ -10,6 +11,10 @@ export function CabecalhoTopo() {
   function aoSair() {
     sair()
     navegar('/login')
+  }
+
+  function aoClicarNotificacoes() {
+    toast.info('Nenhuma notificação no momento.')
   }
 
   return (
@@ -25,6 +30,7 @@ export function CabecalhoTopo() {
         <button
           type="button"
           aria-label="Notificações"
+          onClick={aoClicarNotificacoes}
           className="relative text-white/90 transition hover:text-white"
         >
           <Bell size={20} />

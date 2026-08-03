@@ -15,3 +15,19 @@ export const TECNICOS_MOCK: Tecnico[] = [
     lojasIds: ['loja-2', 'loja-3'],
   },
 ]
+
+const TECNICO_POR_LOGIN_MOCK: Record<string, string> = {
+  roberto: 'tecnico-1',
+  fernanda: 'tecnico-2',
+  joao: 'tecnico-3',
+}
+
+const TECNICO_PADRAO_MOCK = 'tecnico-1'
+
+// Placeholder para o login mockado (sem back-end ainda).
+// Em produção, o back-end deve retornar o tecnicoId do usuário autenticado no payload de login.
+export function obterTecnicoLogadoMock(email: string): string {
+  const parteLocal = email.split('@')[0]?.toLowerCase() ?? ''
+
+  return TECNICO_POR_LOGIN_MOCK[parteLocal] ?? TECNICO_PADRAO_MOCK
+}

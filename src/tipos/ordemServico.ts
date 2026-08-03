@@ -66,3 +66,45 @@ export interface AberturaOrdemServicoPayload {
   dataHora: string
   tecnicoId: string
 }
+
+export const statusExecucaoOS = ['Aberta', 'Em Andamento', 'Pausada', 'Concluída'] as const
+
+export type StatusExecucaoOS = (typeof statusExecucaoOS)[number]
+
+// Status para o qual a OS deve voltar ao ser retomada de uma pausa.
+export type StatusRetomavel = Extract<StatusExecucaoOS, 'Aberta' | 'Em Andamento'>
+
+export interface OrdemServico {
+  id: number
+  solicitacaoId: number
+  maquinaNome: string
+  maquinaCodigo: string
+  descricao: string
+  setor: Setor
+  lojaId: string
+  solicitante: string
+  urgencia: IdUrgencia
+  tecnicoId: string
+  statusExecucao: StatusExecucaoOS
+  dataAbertura: string
+  motivoPausa?: string
+  statusAntesDaPausa?: StatusRetomavel
+  dataInicio?: string
+  dataFim?: string
+  horaEstimada?: number
+  custo?: number
+  defeitoConstatado?: string
+  causaRaiz?: string
+  solucao?: string
+}
+
+export interface EncerramentoOrdemServicoPayload {
+  ordemServicoId: number
+  dataInicio: string
+  dataFim: string
+  horaEstimada: number
+  custo: number
+  defeitoConstatado: string
+  causaRaiz: string
+  solucao: string
+}

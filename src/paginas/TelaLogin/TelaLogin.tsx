@@ -11,6 +11,7 @@ import { useEstadoAutenticacao } from '../../estado/estadoAutenticacao'
 import { derivarNomeUsuario } from '../../utilitarios/derivarNomeUsuario'
 import { obterEscoposGestorMock } from '../../servicos/dadosMockGestores'
 import { obterSetorSolicitanteMock } from '../../servicos/dadosMockSolicitantes'
+import { obterTecnicoLogadoMock } from '../../servicos/dadosMockTecnicos'
 import { ROTA_POR_PERFIL } from '../../rotas/rotaPorPerfil'
 import { esquemaLogin, type DadosLogin } from './esquemaLogin'
 
@@ -38,7 +39,7 @@ export function TelaLogin() {
         ? { escoposGestor: obterEscoposGestorMock(dados.email) }
         : dados.perfil === 'solicitante'
           ? obterSetorSolicitanteMock(dados.email)
-          : undefined
+          : { tecnicoId: obterTecnicoLogadoMock(dados.email) }
 
     entrar(dados.perfil, derivarNomeUsuario(dados.email), opcoesSessao)
     toast.success('Login realizado com sucesso.')
