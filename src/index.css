@@ -1,2 +1,23 @@
 @import 'tailwindcss';
 @config '../tailwind.config.ts';
+
+/* Impressão de OS: esconde toda a aplicação e mostra só o conteúdo marcado
+   com #area-impressao-os (ver ModalDetalhesOS, Painel do Administrador). */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  #area-impressao-os,
+  #area-impressao-os * {
+    visibility: visible;
+  }
+
+  #area-impressao-os {
+    position: absolute;
+    inset: 0;
+    padding: 24px;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+}

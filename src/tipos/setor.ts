@@ -8,3 +8,7 @@ export interface NovoSetorPayload {
   nome: string
   lojaId: string
 }
+
+export interface AtualizarSetorPayload extends NovoSetorPayload {
+  id: string
+}

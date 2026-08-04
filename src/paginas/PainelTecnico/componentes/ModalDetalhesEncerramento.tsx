@@ -2,6 +2,7 @@ import { createPortal } from 'react-dom'
 import { XCircle } from 'lucide-react'
 import { Botao } from '../../../componentes/Botao'
 import { BadgeStatusExecucao } from '../../../componentes/BadgeStatusExecucao'
+import { calcularHoras } from '../../../utilitarios/calcularHoras'
 import { formatarDataHora } from '../../../utilitarios/formatarData'
 import { formatarMoeda } from '../../../utilitarios/formatarMoeda'
 import type { OrdemServico } from '../../../tipos/ordemServico'
@@ -15,6 +16,10 @@ export function ModalDetalhesEncerramento({
   ordemServico,
   aoFechar,
 }: ModalDetalhesEncerramentoProps) {
+  const horasParada = ordemServico.dataFim
+    ? calcularHoras(ordemServico.dataAbertura, ordemServico.dataFim)
+    : undefined
+
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <div className="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl">
@@ -66,17 +71,37 @@ export function ModalDetalhesEncerramento({
                 Horas Trabalhadas
               </p>
               <p className="text-slate-700">
-                {ordemServico.horaEstimada !== undefined
-                  ? `${ordemServico.horaEstimada}h`
+                {ordemServico.horasTrabalhadas !== undefined
+                  ? `${ordemServico.horasTrabalhadas}h`
                   : '—'}
               </p>
             </div>
             <div>
               <p className="text-xs font-semibold tracking-wide text-slate-400 uppercase">
-                Custo Total
+                Horas Parada
+              </p>
+              <p className="text-slate-700">{horasParada !== undefined ? `${horasParada}h` : '—'}</p>
+            </div>
+            <div>
+              <p className="text-xs font-semibold tracking-wide text-slate-400 uppercase">
+                Custo Hora do Técnico
               </p>
               <p className="text-slate-700">
-                {ordemServico.custo !== undefined ? formatarMoeda(ordemServico.custo) : '—'}
+                {ordemServico.custoHoraTecnico !== undefined
+                  ? formatarMoeda(ordemServico.custoHoraTecnico)
+                  : '—'}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs font-semibold tracking-wide text-slate-400 uppercase">
+                Custo Manutenção
+              </p>
+              <p className="text-slate-700">
+                {ordemServico.custoManutencao !== undefined ? (
+                  formatarMoeda(ordemServico.custoManutencao)
+                ) : (
+                  <span className="text-amber-600">Pendente de lançamento</span>
+                )}
               </p>
             </div>
           </div>

@@ -1,14 +1,6 @@
 import { z } from 'zod'
 
 export const esquemaEncerrarOrdemServico = z.object({
-  horaEstimada: z
-    .number('Informe as horas trabalhadas.')
-    .positive('As horas trabalhadas devem ser maiores que zero.')
-    .max(999, 'Informe um valor de até 999 horas.'),
-  custo: z
-    .number('Informe o custo total.')
-    .nonnegative('O custo não pode ser negativo.')
-    .max(999999, 'Informe um valor de até R$ 999.999.'),
   defeitoConstatado: z
     .string()
     .min(10, 'Descreva o defeito constatado.')

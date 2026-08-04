@@ -5,9 +5,16 @@ import { toast } from 'react-toastify'
 interface UploadFotoProps {
   foto: File | null
   aoSelecionarFoto: (arquivo: File | null) => void
+  rotulo?: string
+  textoAlternativo?: string
 }
 
-export function UploadFoto({ foto, aoSelecionarFoto }: UploadFotoProps) {
+export function UploadFoto({
+  foto,
+  aoSelecionarFoto,
+  rotulo = 'Foto da Máquina',
+  textoAlternativo = 'Pré-visualização da máquina',
+}: UploadFotoProps) {
   const inputRef = useRef<HTMLInputElement>(null)
   const previewUrl = useMemo(() => (foto ? URL.createObjectURL(foto) : null), [foto])
 
@@ -38,7 +45,7 @@ export function UploadFoto({ foto, aoSelecionarFoto }: UploadFotoProps) {
   return (
     <div className="flex flex-col gap-1">
       <label className="text-xs font-semibold tracking-wide text-[#4bae70] uppercase">
-        Foto da Máquina
+        {rotulo}
       </label>
 
       <button
@@ -49,7 +56,7 @@ export function UploadFoto({ foto, aoSelecionarFoto }: UploadFotoProps) {
         {previewUrl ? (
           <img
             src={previewUrl}
-            alt="Pré-visualização da máquina"
+            alt={textoAlternativo}
             className="h-full w-full object-contain p-2"
           />
         ) : (

@@ -1,9 +1,10 @@
+import { useEffect } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { CheckCircle2, Store } from 'lucide-react'
 import { toast } from 'react-toastify'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { Botao } from '../../componentes/Botao'
 import { CampoTexto } from '../../componentes/CampoTexto'
 import { CampoSelecao } from '../../componentes/CampoSelecao'
@@ -15,9 +16,17 @@ import { esquemaCadastrarLoja, type DadosCadastrarLoja } from './esquemaCadastra
 
 export function CadastrarLoja() {
   const navegar = useNavigate()
+  const { id } = useParams<{ id: string }>()
+  const emEdicao = Boolean(id)
   const queryClient = useQueryClient()
   const { data: empresas = [] } = useEmpresas()
   const { data: lojas = [] } = useLojas()
+
+  const { data: lojaExistente } = useQuery({
+    queryKey: ['loja', id],
+    queryFn: () => servicoLojas.obterPorId(id as string),
+    enabled: emEdicao,
+  })
 
   const {
     register,
@@ -30,26 +39,45 @@ export function CadastrarLoja() {
     defaultValues: { nome: '', empresaId: '' },
   })
 
+  useEffect(() => {
+    if (lojaExistente) {
+      reset({ nome: lojaExistente.nome, empresaId: lojaExistente.empresaId })
+    }
+  }, [lojaExistente, reset])
+
   const empresaId = useWatch({ control, name: 'empresaId' })
 
-  const { mutateAsync, isPending } = useMutation({
+  const { mutateAsync: criar, isPending: criando } = useMutation({
     mutationFn: servicoLojas.criar,
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['lojas'] }),
   })
 
+  const { mutateAsync: atualizar, isPending: atualizando } = useMutation({
+    mutationFn: servicoLojas.atualizar,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['lojas'] }),
+  })
+
   async function aoEnviar(dados: DadosCadastrarLoja) {
-    await mutateAsync(dados)
+    if (emEdicao && id) {
+      await atualizar({ id, ...dados })
+      toast.success('Loja atualizada com sucesso.')
+      navegar(-1)
+      return
+    }
+
+    await criar(dados)
     toast.success('Loja cadastrada com sucesso.')
     reset({ nome: '', empresaId: dados.empresaId })
   }
 
   const lojasDaEmpresa = lojas.filter((loja) => loja.empresaId === empresaId)
+  const isPending = criando || atualizando
 
   return (
     <div className="flex min-h-svh flex-col bg-slate-600">
       <CabecalhoSubpagina
-        contexto="Painel do Gestor"
-        titulo="Cadastrar Loja"
+        contexto="Painel do Administrador"
+        titulo={emEdicao ? 'Editar Loja' : 'Cadastrar Loja'}
         Icone={Store}
       />
 
@@ -96,12 +124,12 @@ export function CadastrarLoja() {
                   className="flex items-center justify-center gap-2"
                 >
                   <CheckCircle2 size={16} />
-                  {isPending ? 'Cadastrando...' : 'Cadastrar'}
+                  {isPending ? 'Salvando...' : emEdicao ? 'Salvar Alterações' : 'Cadastrar'}
                 </Botao>
               </div>
             </div>
 
-            {empresaId && (
+            {!emEdicao && empresaId && (
               <div className="flex flex-col gap-2 border-t border-slate-100 pt-5">
                 <span className="text-xs font-semibold tracking-wide text-slate-400 uppercase">
                   Lojas já cadastradas dessa empresa

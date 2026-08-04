@@ -66,6 +66,11 @@ export function ModalPausarOrdemServico({
           noValidate
           className="flex flex-col gap-5 p-6"
         >
+          <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-700">
+            Pausar interrompe apenas o relógio de horas trabalhadas do técnico — o tempo de
+            máquina parada continua contando normalmente até o encerramento da OS.
+          </p>
+
           <CampoTextoArea
             rotulo="Motivo da Pausa *"
             rows={4}

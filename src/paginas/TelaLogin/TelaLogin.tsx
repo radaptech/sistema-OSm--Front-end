@@ -39,7 +39,9 @@ export function TelaLogin() {
         ? { escoposGestor: obterEscoposGestorMock(dados.email) }
         : dados.perfil === 'solicitante'
           ? obterSetorSolicitanteMock(dados.email)
-          : { tecnicoId: obterTecnicoLogadoMock(dados.email) }
+          : dados.perfil === 'tecnico'
+            ? { tecnicoId: obterTecnicoLogadoMock(dados.email) }
+            : undefined
 
     entrar(dados.perfil, derivarNomeUsuario(dados.email), opcoesSessao)
     toast.success('Login realizado com sucesso.')

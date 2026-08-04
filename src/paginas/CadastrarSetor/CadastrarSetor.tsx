@@ -1,9 +1,10 @@
+import { useEffect } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { CheckCircle2, Tag } from 'lucide-react'
 import { toast } from 'react-toastify'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { Botao } from '../../componentes/Botao'
 import { CampoTexto } from '../../componentes/CampoTexto'
 import { CampoSelecao } from '../../componentes/CampoSelecao'
@@ -15,8 +16,16 @@ import { esquemaCadastrarSetor, type DadosCadastrarSetor } from './esquemaCadast
 
 export function CadastrarSetor() {
   const navegar = useNavigate()
+  const { id } = useParams<{ id: string }>()
+  const emEdicao = Boolean(id)
   const queryClient = useQueryClient()
   const { data: lojas = [] } = useLojas()
+
+  const { data: setorExistente } = useQuery({
+    queryKey: ['setor', id],
+    queryFn: () => servicoSetores.obterPorId(id as string),
+    enabled: emEdicao,
+  })
 
   const {
     register,
@@ -29,25 +38,45 @@ export function CadastrarSetor() {
     defaultValues: { nome: '', lojaId: '' },
   })
 
+  useEffect(() => {
+    if (setorExistente) {
+      reset({ nome: setorExistente.nome, lojaId: setorExistente.lojaId })
+    }
+  }, [setorExistente, reset])
+
   const lojaId = useWatch({ control, name: 'lojaId' })
   const { data: setoresDaLoja = [] } = useSetores({ lojaId: lojaId || undefined })
 
-  const { mutateAsync, isPending } = useMutation({
+  const { mutateAsync: criar, isPending: criando } = useMutation({
     mutationFn: servicoSetores.criar,
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['setores'] }),
   })
 
+  const { mutateAsync: atualizar, isPending: atualizando } = useMutation({
+    mutationFn: servicoSetores.atualizar,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['setores'] }),
+  })
+
   async function aoEnviar(dados: DadosCadastrarSetor) {
-    await mutateAsync(dados)
+    if (emEdicao && id) {
+      await atualizar({ id, ...dados })
+      toast.success('Setor atualizado com sucesso.')
+      navegar(-1)
+      return
+    }
+
+    await criar(dados)
     toast.success('Setor cadastrado com sucesso.')
     reset({ nome: '', lojaId: dados.lojaId })
   }
 
+  const isPending = criando || atualizando
+
   return (
     <div className="flex min-h-svh flex-col bg-slate-600">
       <CabecalhoSubpagina
-        contexto="Painel do Gestor"
-        titulo="Cadastrar Setor"
+        contexto="Painel do Administrador"
+        titulo={emEdicao ? 'Editar Setor' : 'Cadastrar Setor'}
         Icone={Tag}
       />
 
@@ -99,12 +128,12 @@ export function CadastrarSetor() {
                   className="flex items-center justify-center gap-2"
                 >
                   <CheckCircle2 size={16} />
-                  {isPending ? 'Cadastrando...' : 'Cadastrar'}
+                  {isPending ? 'Salvando...' : emEdicao ? 'Salvar Alterações' : 'Cadastrar'}
                 </Botao>
               </div>
             </div>
 
-            {lojaId && (
+            {!emEdicao && lojaId && (
               <div className="flex flex-col gap-2 border-t border-slate-100 pt-5">
                 <span className="text-xs font-semibold tracking-wide text-slate-400 uppercase">
                   Setores já cadastrados nessa loja

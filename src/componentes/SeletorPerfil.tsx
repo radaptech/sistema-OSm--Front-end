@@ -1,4 +1,4 @@
-import { ShieldCheck, User, Wrench, type LucideIcon } from 'lucide-react'
+import { ShieldCheck, User, UserCog, Wrench, type LucideIcon } from 'lucide-react'
 import type { PerfilLogin } from '../tipos/autenticacao'
 
 interface OpcaoPerfil {
@@ -11,6 +11,7 @@ const OPCOES_PERFIL: OpcaoPerfil[] = [
   { valor: 'solicitante', rotulo: 'Solicitante', Icone: User },
   { valor: 'tecnico', rotulo: 'Técnico', Icone: Wrench },
   { valor: 'gestor', rotulo: 'Gestor', Icone: ShieldCheck },
+  { valor: 'administrador', rotulo: 'Admin', Icone: UserCog },
 ]
 
 interface SeletorPerfilProps {
@@ -22,8 +23,12 @@ export function SeletorPerfil({
   perfilSelecionado,
   aoSelecionar,
 }: SeletorPerfilProps) {
+  // Grade 2x2 fixa (em vez de breakpoint de viewport): este seletor sempre vive dentro
+  // de um card estreito (`max-w-md`, na Tela de Login e no CadastrarUsuario), então o
+  // espaço disponível não cresce com a tela — uma linha única com 4 abas nunca cabe o
+  // texto completo, mesmo em telas grandes.
   return (
-    <div className="flex gap-1 rounded-full bg-lime-100 p-1">
+    <div className="grid grid-cols-2 gap-1 rounded-2xl bg-lime-100 p-1">
       {OPCOES_PERFIL.map(({ valor, rotulo, Icone }) => {
         const ativo = perfilSelecionado === valor
 
@@ -32,14 +37,14 @@ export function SeletorPerfil({
             key={valor}
             type="button"
             onClick={() => aoSelecionar(valor)}
-            className={`flex flex-1 items-center justify-center gap-1.5 rounded-full px-3 py-2 text-sm transition ${
+            className={`flex min-w-0 items-center justify-center gap-1.5 rounded-xl px-3 py-2 text-sm transition ${
               ativo
                 ? 'bg-gradient-to-r from-[#1f4e2c] to-[#4bae70] font-semibold text-white shadow'
                 : 'font-medium text-[#4bae70] hover:text-[#1f4e2c]'
             }`}
           >
-            <Icone size={16} />
-            {rotulo}
+            <Icone size={16} className="shrink-0" />
+            <span className="truncate">{rotulo}</span>
           </button>
         )
       })}

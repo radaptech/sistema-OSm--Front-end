@@ -17,6 +17,11 @@ export type Setor = (typeof setoresDisponiveis)[number]
 export interface Maquina {
   id: string
   nome: string
+  tag?: string
+  descricao?: string
+  marca?: string
+  modelo?: string
+  criticidade?: NivelCriticidade
   setor: Setor
   lojaId: string
   fotoUrl?: string
@@ -47,4 +52,8 @@ export interface NovaMaquinaPayload {
   setor: Setor
   lojaId: string
   preventivas: PreventivaManutencao[]
+}
+
+export interface AtualizarMaquinaPayload extends NovaMaquinaPayload {
+  id: string
 }

@@ -1,14 +1,18 @@
-import { api } from './api'
 import { atrasoSimulado } from './atrasoSimulado'
 import { MAQUINAS_MOCK } from './dadosMockMaquinas'
-import type { NovaMaquinaPayload } from '../tipos/maquina'
+import { PREVENTIVAS_MOCK } from './dadosMockPreventivas'
+import type { AtualizarMaquinaPayload, Maquina, NovaMaquinaPayload } from '../tipos/maquina'
+import type { PreventivaListada } from '../tipos/maquina'
 
 export interface ParametrosListagemMaquinas {
   setor?: string
   lojaId?: string
 }
 
-function listarMock(parametros: ParametrosListagemMaquinas = {}) {
+let proximoIdMaquina = MAQUINAS_MOCK.length + 1
+let proximoIdPreventiva = PREVENTIVAS_MOCK.length + 1
+
+function listar(parametros: ParametrosListagemMaquinas = {}) {
   const filtradas = MAQUINAS_MOCK.filter((maquina) => {
     const combinaSetor = !parametros.setor || maquina.setor === parametros.setor
     const combinaLoja = !parametros.lojaId || maquina.lojaId === parametros.lojaId
@@ -19,32 +23,99 @@ function listarMock(parametros: ParametrosListagemMaquinas = {}) {
   return atrasoSimulado(filtradas)
 }
 
-function construirFormDataMaquina(
-  dados: NovaMaquinaPayload,
+function obterPorId(id: string): Promise<Maquina | undefined> {
+  return atrasoSimulado(MAQUINAS_MOCK.find((item) => item.id === id))
+}
+
+function registrarPreventivas(maquina: Maquina, dados: NovaMaquinaPayload) {
+  for (const preventiva of dados.preventivas) {
+    const preventivaListada: PreventivaListada = {
+      id: `PREV-NOVA-${proximoIdPreventiva++}`,
+      maquinaId: maquina.id,
+      maquinaNome: maquina.nome,
+      setor: maquina.setor,
+      lojaId: maquina.lojaId,
+      descricao: preventiva.descricao,
+      intervaloDias: preventiva.intervaloDias,
+      proximaData: preventiva.proximaData,
+      ativa: preventiva.ativa,
+    }
+    PREVENTIVAS_MOCK.push(preventivaListada)
+  }
+}
+
+// Desvio deliberado (mesmo padrão do item 9/11 do CLAUDE.md): CRUD completo do
+// Administrador precisa funcionar sem back-end real, então opera direto sobre o mock.
+function criar(dados: NovaMaquinaPayload, foto?: File): Promise<Maquina> {
+  const maquina: Maquina = {
+    id: `MAQ-NOVA-${proximoIdMaquina++}`,
+    nome: dados.nome,
+    tag: dados.tag,
+    descricao: dados.descricao,
+    marca: dados.marca,
+    modelo: dados.modelo,
+    criticidade: dados.criticidade,
+    setor: dados.setor,
+    lojaId: dados.lojaId,
+    fotoUrl: foto ? URL.createObjectURL(foto) : undefined,
+  }
+  MAQUINAS_MOCK.push(maquina)
+  registrarPreventivas(maquina, dados)
+
+  return atrasoSimulado(maquina)
+}
+
+function atualizar(
+  { id, ...dados }: AtualizarMaquinaPayload,
   foto?: File,
-): FormData {
-  const formData = new FormData()
+): Promise<Maquina | undefined> {
+  const maquina = MAQUINAS_MOCK.find((item) => item.id === id)
 
-  formData.append('tag', dados.tag)
-  formData.append('nome', dados.nome)
-  formData.append('descricao', dados.descricao ?? '')
-  formData.append('marca', dados.marca ?? '')
-  formData.append('modelo', dados.modelo ?? '')
-  formData.append('criticidade', dados.criticidade)
-  formData.append('setor', dados.setor)
-  formData.append('lojaId', dados.lojaId)
-  formData.append('preventivas', JSON.stringify(dados.preventivas))
+  if (maquina) {
+    maquina.nome = dados.nome
+    maquina.tag = dados.tag
+    maquina.descricao = dados.descricao
+    maquina.marca = dados.marca
+    maquina.modelo = dados.modelo
+    maquina.criticidade = dados.criticidade
+    maquina.setor = dados.setor
+    maquina.lojaId = dados.lojaId
+    if (foto) {
+      maquina.fotoUrl = URL.createObjectURL(foto)
+    }
 
-  if (foto) {
-    formData.append('foto', foto)
+    // Substitui o conjunto de preventivas da máquina pelo enviado no formulário de edição.
+    for (let indice = PREVENTIVAS_MOCK.length - 1; indice >= 0; indice -= 1) {
+      if (PREVENTIVAS_MOCK[indice].maquinaId === id) {
+        PREVENTIVAS_MOCK.splice(indice, 1)
+      }
+    }
+    registrarPreventivas(maquina, dados)
   }
 
-  return formData
+  return atrasoSimulado(maquina)
+}
+
+function deletar(id: string): Promise<void> {
+  const indice = MAQUINAS_MOCK.findIndex((item) => item.id === id)
+
+  if (indice !== -1) {
+    MAQUINAS_MOCK.splice(indice, 1)
+  }
+
+  for (let indicePreventiva = PREVENTIVAS_MOCK.length - 1; indicePreventiva >= 0; indicePreventiva -= 1) {
+    if (PREVENTIVAS_MOCK[indicePreventiva].maquinaId === id) {
+      PREVENTIVAS_MOCK.splice(indicePreventiva, 1)
+    }
+  }
+
+  return atrasoSimulado(undefined)
 }
 
 export const servicoMaquinas = {
-  listar: listarMock,
-
-  cadastrar: (dados: NovaMaquinaPayload, foto?: File) =>
-    api.post('/maquinas', construirFormDataMaquina(dados, foto)),
+  listar,
+  obterPorId,
+  criar,
+  atualizar,
+  deletar,
 }

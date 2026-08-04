@@ -1,9 +1,10 @@
+import { useEffect } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { CheckCircle2, UserPlus } from 'lucide-react'
 import { toast } from 'react-toastify'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { Botao } from '../../componentes/Botao'
 import { CampoTexto } from '../../componentes/CampoTexto'
 import { SeletorPerfil } from '../../componentes/SeletorPerfil'
@@ -15,8 +16,29 @@ import {
 } from './esquemaCadastrarUsuario'
 import { CamposAcesso } from './componentes/CamposAcesso'
 
+const VALORES_PADRAO: DadosCadastrarUsuario = {
+  nome: '',
+  telefone: '',
+  email: '',
+  senha: '',
+  role: 'solicitante',
+  lojasIds: [],
+  setores: [],
+  acessoTotalSetores: false,
+  area: undefined,
+  valorHora: undefined,
+}
+
 export function CadastrarUsuario() {
   const navegar = useNavigate()
+  const { id } = useParams<{ id: string }>()
+  const emEdicao = Boolean(id)
+
+  const { data: usuarioExistente } = useQuery({
+    queryKey: ['usuario', id],
+    queryFn: () => servicoUsuarios.obterPorId(id as string),
+    enabled: emEdicao,
+  })
 
   const {
     register,
@@ -27,41 +49,61 @@ export function CadastrarUsuario() {
     formState: { errors },
   } = useForm<DadosCadastrarUsuario>({
     resolver: zodResolver(esquemaCadastrarUsuario),
-    defaultValues: {
-      nome: '',
-      telefone: '',
-      email: '',
-      senha: '',
-      role: 'solicitante',
-      lojasIds: [],
-      setores: [],
-      acessoTotalSetores: false,
-      area: undefined,
-    },
+    defaultValues: VALORES_PADRAO,
   })
+
+  useEffect(() => {
+    if (!usuarioExistente) {
+      return
+    }
+
+    reset({
+      ...VALORES_PADRAO,
+      nome: usuarioExistente.nome,
+      telefone: usuarioExistente.telefone ?? '',
+      email: usuarioExistente.email,
+      role: usuarioExistente.role,
+      lojasIds: usuarioExistente.lojasIds,
+      setores: usuarioExistente.setores,
+      acessoTotalSetores: usuarioExistente.acessoTotalSetores,
+    })
+  }, [usuarioExistente, reset])
 
   const role = useWatch({ control, name: 'role' })
   const lojasIds = useWatch({ control, name: 'lojasIds' })
   const setores = useWatch({ control, name: 'setores' })
   const acessoTotalSetores = useWatch({ control, name: 'acessoTotalSetores' })
   const area = useWatch({ control, name: 'area' })
+  const valorHora = useWatch({ control, name: 'valorHora' })
 
-  const { mutateAsync, isPending } = useMutation({
-    mutationFn: servicoUsuarios.cadastrar,
+  const { mutateAsync: criar, isPending: criando } = useMutation({
+    mutationFn: servicoUsuarios.criar,
+  })
+
+  const { mutateAsync: atualizar, isPending: atualizando } = useMutation({
+    mutationFn: servicoUsuarios.atualizar,
   })
 
   async function aoEnviar(dados: DadosCadastrarUsuario) {
-    await mutateAsync(dados)
-    toast.success('Usuário cadastrado com sucesso.')
-    reset()
+    if (emEdicao && id) {
+      await atualizar({ id, ...dados })
+      toast.success('Usuário atualizado com sucesso.')
+    } else {
+      await criar(dados)
+      toast.success('Usuário cadastrado com sucesso.')
+    }
+
+    reset(VALORES_PADRAO)
     navegar(-1)
   }
+
+  const isPending = criando || atualizando
 
   return (
     <div className="flex min-h-svh flex-col bg-slate-600">
       <CabecalhoSubpagina
-        contexto="Painel do Gestor"
-        titulo="Cadastrar Usuário"
+        contexto="Painel do Administrador"
+        titulo={emEdicao ? 'Editar Usuário' : 'Cadastrar Usuário'}
         Icone={UserPlus}
       />
 
@@ -84,6 +126,7 @@ export function CadastrarUsuario() {
                   setValue('setores', [])
                   setValue('acessoTotalSetores', false)
                   setValue('area', undefined)
+                  setValue('valorHora', undefined)
                 }}
               />
             </div>
@@ -130,6 +173,7 @@ export function CadastrarUsuario() {
               setores={setores}
               acessoTotalSetores={acessoTotalSetores}
               area={area}
+              valorHora={valorHora}
               aoAlterarLojas={(lojas) => setValue('lojasIds', lojas, { shouldValidate: true })}
               aoAlterarSetores={(novosSetores) =>
                 setValue('setores', novosSetores as DadosCadastrarUsuario['setores'], {
@@ -147,9 +191,13 @@ export function CadastrarUsuario() {
                   shouldValidate: true,
                 })
               }
+              aoAlterarValorHora={(valor) =>
+                setValue('valorHora', valor, { shouldValidate: true })
+              }
               erroLojas={errors.lojasIds?.message}
               erroSetores={errors.setores?.message}
               erroArea={errors.area?.message}
+              erroValorHora={errors.valorHora?.message}
             />
 
             <div className="mt-2 flex flex-col-reverse gap-3 sm:flex-row">
@@ -165,7 +213,7 @@ export function CadastrarUsuario() {
                   className="flex items-center justify-center gap-2"
                 >
                   <CheckCircle2 size={16} />
-                  {isPending ? 'Cadastrando...' : 'Cadastrar'}
+                  {isPending ? 'Salvando...' : emEdicao ? 'Salvar Alterações' : 'Cadastrar'}
                 </Botao>
               </div>
             </div>

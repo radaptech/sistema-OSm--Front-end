@@ -1,18 +1,29 @@
 import type { Tecnico } from '../tipos/tecnico'
 
 export const TECNICOS_MOCK: Tecnico[] = [
-  { id: 'tecnico-1', nome: 'Roberto Alves', area: 'Refrigeração', lojasIds: ['loja-1'] },
+  {
+    id: 'tecnico-1',
+    nome: 'Roberto Alves',
+    email: 'roberto@cooprata.com.br',
+    area: 'Refrigeração',
+    lojasIds: ['loja-1'],
+    valorHora: 45,
+  },
   {
     id: 'tecnico-2',
     nome: 'Fernanda Souza',
+    email: 'fernanda@cooprata.com.br',
     area: 'Elétrica',
     lojasIds: ['loja-1', 'loja-2'],
+    valorHora: 50,
   },
   {
     id: 'tecnico-3',
     nome: 'João Pereira',
+    email: 'joao@cooprata.com.br',
     area: 'Máquinas em Geral',
     lojasIds: ['loja-2', 'loja-3'],
+    valorHora: 40,
   },
 ]
 

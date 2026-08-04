@@ -8,3 +8,7 @@ export interface NovaLojaPayload {
   nome: string
   empresaId: string
 }
+
+export interface AtualizarLojaPayload extends NovaLojaPayload {
+  id: string
+}

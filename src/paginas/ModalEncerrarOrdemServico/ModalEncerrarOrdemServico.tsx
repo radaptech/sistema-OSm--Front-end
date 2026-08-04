@@ -3,19 +3,28 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { CheckCircle2, XCircle } from 'lucide-react'
 import { Botao } from '../../componentes/Botao'
-import { CampoTexto } from '../../componentes/CampoTexto'
 import { CampoTextoArea } from '../../componentes/CampoTextoArea'
+import { TECNICOS_MOCK } from '../../servicos/dadosMockTecnicos'
+import { calcularHoras } from '../../utilitarios/calcularHoras'
 import { formatarDataHora } from '../../utilitarios/formatarData'
+import { formatarMoeda } from '../../utilitarios/formatarMoeda'
 import type { OrdemServico } from '../../tipos/ordemServico'
 import {
   esquemaEncerrarOrdemServico,
   type DadosEncerrarOrdemServico,
 } from './esquemaEncerrarOrdemServico'
 
+interface DadosConfirmarEncerramento extends DadosEncerrarOrdemServico {
+  dataInicio: string
+  dataFim: string
+  horasTrabalhadas: number
+  custoHoraTecnico: number
+}
+
 interface ModalEncerrarOrdemServicoProps {
   ordemServico: OrdemServico
   aoFechar: () => void
-  aoSalvar: (dados: DadosEncerrarOrdemServico & { dataInicio: string; dataFim: string }) => void
+  aoSalvar: (dados: DadosConfirmarEncerramento) => void
 }
 
 export function ModalEncerrarOrdemServico({
@@ -25,6 +34,21 @@ export function ModalEncerrarOrdemServico({
 }: ModalEncerrarOrdemServicoProps) {
   const dataInicio = ordemServico.dataInicio ?? ordemServico.dataAbertura
   const agora = new Date()
+  const agoraIso = agora.toISOString()
+
+  // Horas Trabalhadas soma o que já foi fechado em sessões anteriores (pausas) com a
+  // sessão ativa atual — diferente de Horas Parada, que corre sem interrupção desde a
+  // abertura da OS até o encerramento, independente de pausas do técnico.
+  const horasSessaoAtual = calcularHoras(
+    ordemServico.sessaoAtualInicio ?? dataInicio,
+    agoraIso,
+  )
+  const horasTrabalhadas =
+    Math.round(((ordemServico.horasTrabalhadasAcumuladas ?? 0) + horasSessaoAtual) * 100) / 100
+  const horasParada = calcularHoras(ordemServico.dataAbertura, agoraIso)
+  const tecnico = TECNICOS_MOCK.find((item) => item.id === ordemServico.tecnicoId)
+  const valorHoraTecnico = tecnico?.valorHora ?? 0
+  const custoHoraTecnico = Math.round(horasTrabalhadas * valorHoraTecnico * 100) / 100
 
   const {
     register,
@@ -33,8 +57,6 @@ export function ModalEncerrarOrdemServico({
   } = useForm<DadosEncerrarOrdemServico>({
     resolver: zodResolver(esquemaEncerrarOrdemServico),
     defaultValues: {
-      horaEstimada: undefined,
-      custo: undefined,
       defeitoConstatado: '',
       causaRaiz: '',
       solucao: '',
@@ -42,7 +64,13 @@ export function ModalEncerrarOrdemServico({
   })
 
   function aoSalvarFormulario(dados: DadosEncerrarOrdemServico) {
-    aoSalvar({ ...dados, dataInicio, dataFim: agora.toISOString() })
+    aoSalvar({
+      ...dados,
+      dataInicio,
+      dataFim: agoraIso,
+      horasTrabalhadas,
+      custoHoraTecnico,
+    })
     aoFechar()
   }
 
@@ -91,33 +119,44 @@ export function ModalEncerrarOrdemServico({
                 Término do Atendimento
               </span>
               <p className="rounded-lg bg-lime-100 px-3 py-2.5 text-sm text-[#1f4e2c]">
-                {formatarDataHora(agora.toISOString())}
+                {formatarDataHora(agoraIso)}
               </p>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <CampoTexto
-              rotulo="Horas Trabalhadas *"
-              variante="claro"
-              type="number"
-              min={0}
-              step="0.5"
-              placeholder="Ex: 2.5"
-              mensagemErro={errors.horaEstimada?.message}
-              {...register('horaEstimada', { valueAsNumber: true })}
-            />
-            <CampoTexto
-              rotulo="Custo Total (R$) *"
-              variante="claro"
-              type="number"
-              min={0}
-              step="0.01"
-              placeholder="Ex: 150.00"
-              mensagemErro={errors.custo?.message}
-              {...register('custo', { valueAsNumber: true })}
-            />
+          <div className="grid grid-cols-3 gap-4">
+            <div className="flex flex-col gap-1">
+              <span className="text-xs font-semibold tracking-wide text-[#4bae70] uppercase">
+                Horas Trabalhadas
+              </span>
+              <p className="rounded-lg bg-lime-100 px-3 py-2.5 text-sm text-[#1f4e2c]">
+                {horasTrabalhadas}h
+              </p>
+            </div>
+            <div className="flex flex-col gap-1">
+              <span className="text-xs font-semibold tracking-wide text-[#4bae70] uppercase">
+                Horas Parada
+              </span>
+              <p className="rounded-lg bg-lime-100 px-3 py-2.5 text-sm text-[#1f4e2c]">
+                {horasParada}h
+              </p>
+            </div>
+            <div className="flex flex-col gap-1">
+              <span className="text-xs font-semibold tracking-wide text-[#4bae70] uppercase">
+                Custo Hora Técnico
+              </span>
+              <p className="rounded-lg bg-lime-100 px-3 py-2.5 text-sm text-[#1f4e2c]">
+                {formatarMoeda(custoHoraTecnico)}
+              </p>
+            </div>
           </div>
+
+          <p className="text-xs text-slate-400">
+            Horas Trabalhadas desconta o tempo em que a OS ficou pausada (ex: esperando
+            peça) — Horas Parada conta corrido desde a abertura, sem descontar pausas. O
+            custo de manutenção (peças/nota fiscal) é lançado posteriormente pelo
+            Administrador.
+          </p>
 
           <CampoTextoArea
             rotulo="Defeito Constatado *"

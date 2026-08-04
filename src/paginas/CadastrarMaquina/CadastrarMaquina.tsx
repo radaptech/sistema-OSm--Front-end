@@ -1,32 +1,56 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { CheckCircle2, PackagePlus } from 'lucide-react'
 import { toast } from 'react-toastify'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { Botao } from '../../componentes/Botao'
 import { CampoTexto } from '../../componentes/CampoTexto'
 import { CampoSelecao } from '../../componentes/CampoSelecao'
 import { CampoTextoArea } from '../../componentes/CampoTextoArea'
 import { CabecalhoSubpagina } from '../../componentes/CabecalhoSubpagina'
 import { servicoMaquinas } from '../../servicos/servicoMaquinas'
+import { servicoPreventivas } from '../../servicos/servicoPreventivas'
 import { LOJAS_MOCK } from '../../servicos/dadosMockLojas'
-import { useEstadoAutenticacao } from '../../estado/estadoAutenticacao'
 import { niveisCriticidade, setoresDisponiveis } from '../../tipos/maquina'
 import {
   esquemaCadastrarMaquina,
   type DadosCadastrarMaquina,
 } from './esquemaCadastrarMaquina'
-import { UploadFoto } from './componentes/UploadFoto'
+import { UploadFoto } from '../../componentes/UploadFoto'
 import { CampoPreventivas } from './componentes/CampoPreventivas'
+
+const VALORES_PADRAO = {
+  tag: '',
+  nome: '',
+  descricao: '',
+  marca: '',
+  modelo: '',
+  criticidade: undefined,
+  setor: undefined,
+  lojaId: '',
+  preventivas: [],
+}
 
 export function CadastrarMaquina() {
   const navegar = useNavigate()
+  const { id } = useParams<{ id: string }>()
+  const emEdicao = Boolean(id)
   const [foto, setFoto] = useState<File | null>(null)
-  const lojaIdUsuario = useEstadoAutenticacao((estado) => estado.lojaId)
 
-  const lojasPermitidas = LOJAS_MOCK.filter((loja) => loja.id === lojaIdUsuario)
+  const { data: maquinaExistente } = useQuery({
+    queryKey: ['maquina', id],
+    queryFn: () => servicoMaquinas.obterPorId(id as string),
+    enabled: emEdicao,
+  })
+
+  const { data: preventivasExistentes = [] } = useQuery({
+    queryKey: ['preventivas-da-maquina', id],
+    queryFn: () => servicoPreventivas.listar(),
+    enabled: emEdicao,
+    select: (preventivas) => preventivas.filter((preventiva) => preventiva.maquinaId === id),
+  })
 
   const {
     register,
@@ -36,39 +60,67 @@ export function CadastrarMaquina() {
     formState: { errors },
   } = useForm<DadosCadastrarMaquina>({
     resolver: zodResolver(esquemaCadastrarMaquina),
-    defaultValues: {
-      tag: '',
-      nome: '',
-      descricao: '',
-      marca: '',
-      modelo: '',
-      criticidade: undefined,
-      setor: undefined,
-      lojaId: lojaIdUsuario ?? '',
-      preventivas: [],
-    },
+    defaultValues: VALORES_PADRAO,
   })
+
+  useEffect(() => {
+    if (!maquinaExistente) {
+      return
+    }
+
+    reset({
+      ...VALORES_PADRAO,
+      tag: maquinaExistente.tag ?? '',
+      nome: maquinaExistente.nome,
+      descricao: maquinaExistente.descricao ?? '',
+      marca: maquinaExistente.marca ?? '',
+      modelo: maquinaExistente.modelo ?? '',
+      criticidade: maquinaExistente.criticidade,
+      setor: maquinaExistente.setor,
+      lojaId: maquinaExistente.lojaId,
+      preventivas: preventivasExistentes.map((preventiva) => ({
+        maquinaId: 'nova-maquina',
+        descricao: preventiva.descricao,
+        intervaloDias: preventiva.intervaloDias,
+        proximaData: preventiva.proximaData,
+        ativa: preventiva.ativa,
+      })),
+    })
+  }, [maquinaExistente, preventivasExistentes, reset])
 
   const nomeMaquina = useWatch({ control, name: 'nome' })
 
-  const { mutateAsync, isPending } = useMutation({
+  const { mutateAsync: criar, isPending: criando } = useMutation({
     mutationFn: (dados: DadosCadastrarMaquina) =>
-      servicoMaquinas.cadastrar(dados, foto ?? undefined),
+      servicoMaquinas.criar(dados, foto ?? undefined),
+  })
+
+  const { mutateAsync: atualizar, isPending: atualizando } = useMutation({
+    mutationFn: (dados: DadosCadastrarMaquina) =>
+      servicoMaquinas.atualizar({ id: id as string, ...dados }, foto ?? undefined),
   })
 
   async function aoEnviar(dados: DadosCadastrarMaquina) {
-    await mutateAsync(dados)
-    toast.success('Máquina cadastrada com sucesso.')
-    reset()
+    if (emEdicao) {
+      await atualizar(dados)
+      toast.success('Máquina atualizada com sucesso.')
+    } else {
+      await criar(dados)
+      toast.success('Máquina cadastrada com sucesso.')
+    }
+
+    reset(VALORES_PADRAO)
     setFoto(null)
     navegar(-1)
   }
 
+  const isPending = criando || atualizando
+
   return (
     <div className="flex min-h-svh flex-col bg-slate-600">
       <CabecalhoSubpagina
-        contexto="Painel do Solicitante"
-        titulo="Cadastrar Máquina"
+        contexto="Painel do Administrador"
+        titulo={emEdicao ? 'Editar Máquina' : 'Cadastrar Máquina'}
         Icone={PackagePlus}
       />
 
@@ -156,7 +208,7 @@ export function CadastrarMaquina() {
                 {...register('lojaId')}
               >
                 <option value="">Selecionar...</option>
-                {lojasPermitidas.map((loja) => (
+                {LOJAS_MOCK.map((loja) => (
                   <option key={loja.id} value={loja.id}>
                     {loja.nome}
                   </option>
@@ -183,7 +235,7 @@ export function CadastrarMaquina() {
                   className="flex items-center justify-center gap-2"
                 >
                   <CheckCircle2 size={16} />
-                  {isPending ? 'Cadastrando...' : 'Cadastrar'}
+                  {isPending ? 'Salvando...' : emEdicao ? 'Salvar Alterações' : 'Cadastrar'}
                 </Botao>
               </div>
             </div>

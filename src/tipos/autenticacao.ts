@@ -1,6 +1,6 @@
 import type { Setor } from './maquina'
 
-export const perfisLogin = ['solicitante', 'tecnico', 'gestor'] as const
+export const perfisLogin = ['solicitante', 'tecnico', 'gestor', 'administrador'] as const
 
 export type PerfilLogin = (typeof perfisLogin)[number]
 

@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import { CabecalhoPagina } from '../../componentes/CabecalhoPagina'
 import { useSolicitacoes } from '../../hooks/useSolicitacoes'
+import { Paginacao } from '../../componentes/Paginacao'
 import { BarraFiltros, type FiltroStatus } from './componentes/BarraFiltros'
 import { CardSolicitacao } from './componentes/CardSolicitacao'
-import { Paginacao } from './componentes/Paginacao'
 
 const ATRASO_DEBOUNCE_BUSCA_MS = 400
 

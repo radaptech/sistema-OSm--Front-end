@@ -1,7 +1,7 @@
-import { CirclePlus, ClipboardList, PackagePlus } from 'lucide-react'
+import { CirclePlus, ClipboardList, Hammer } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { CabecalhoTopo } from '../../componentes/CabecalhoTopo'
-import { CardAcao } from './componentes/CardAcao'
+import { CardAcao } from '../../componentes/CardAcao'
 import { CardEstatistica } from './componentes/CardEstatistica'
 
 const ESTATISTICAS_MOCK = [
@@ -35,17 +35,18 @@ export function HomeSolicitante() {
             aoClicar={() => navegar('/minhas-solicitacoes')}
           />
           <CardAcao
-            titulo="Nova Solicitação OS"
-            descricao="Abra uma nova ordem de serviço"
+            titulo="Nova Solicitação OS Maquinário"
+            descricao="Abra uma nova ordem de serviço para uma máquina"
             Icone={CirclePlus}
             variante="destaque"
             aoClicar={() => navegar('/nova-solicitacao-os')}
           />
           <CardAcao
-            titulo="Adicionar Nova Máquina"
-            descricao="Cadastre uma nova máquina no sistema"
-            Icone={PackagePlus}
-            aoClicar={() => navegar('/cadastrar-maquina')}
+            titulo="Nova Solicitação OS Pequenos Reparos"
+            descricao="Lâmpada queimada, vidro quebrado, piso rachado..."
+            Icone={Hammer}
+            variante="reparo"
+            aoClicar={() => navegar('/nova-solicitacao-reparo')}
           />
         </div>
 

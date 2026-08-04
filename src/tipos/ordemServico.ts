@@ -27,6 +27,7 @@ export interface NovaSolicitacaoOSPayload {
   lojaId: string
   solicitante: string
   impactos: MarcadorImpacto[]
+  dataHora: string
 }
 
 export const statusSolicitacao = [
@@ -91,8 +92,15 @@ export interface OrdemServico {
   statusAntesDaPausa?: StatusRetomavel
   dataInicio?: string
   dataFim?: string
-  horaEstimada?: number
-  custo?: number
+  // Controle do relógio de horas do técnico, independente do tempo de máquina parada
+  // (dataAbertura → dataFim, esse sim corrido): horasTrabalhadasAcumuladas guarda o que
+  // já foi fechado em sessões anteriores, e sessaoAtualInicio marca o início da sessão
+  // ativa (undefined enquanto a OS está Pausada ou antes de "Iniciar Atendimento").
+  horasTrabalhadasAcumuladas?: number
+  sessaoAtualInicio?: string
+  horasTrabalhadas?: number
+  custoHoraTecnico?: number
+  custoManutencao?: number
   defeitoConstatado?: string
   causaRaiz?: string
   solucao?: string
@@ -102,9 +110,14 @@ export interface EncerramentoOrdemServicoPayload {
   ordemServicoId: number
   dataInicio: string
   dataFim: string
-  horaEstimada: number
-  custo: number
+  horasTrabalhadas: number
+  custoHoraTecnico: number
   defeitoConstatado: string
   causaRaiz: string
   solucao: string
+}
+
+export interface LancamentoCustoManutencaoPayload {
+  ordemServicoId: number
+  custoManutencao: number
 }

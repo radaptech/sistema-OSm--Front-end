@@ -9,7 +9,7 @@ import { servicoOrdensServico } from '../../servicos/servicoOrdensServico'
 import type { OrdemServico } from '../../tipos/ordemServico'
 import { agruparPorSetorLoja } from '../../utilitarios/agruparPorSetorLoja'
 import { ModalEncerrarOrdemServico } from '../ModalEncerrarOrdemServico/ModalEncerrarOrdemServico'
-import type { DadosEncerrarOrdemServico } from '../ModalEncerrarOrdemServico/esquemaEncerrarOrdemServico'
+import type { EncerramentoOrdemServicoPayload } from '../../tipos/ordemServico'
 import { AbasPainelTecnico, type AbaPainelTecnico } from './componentes/AbasPainelTecnico'
 import { BlocoSetorLoja } from './componentes/BlocoSetorLoja'
 import { CardOrdemServicoTecnico } from './componentes/CardOrdemServicoTecnico'
@@ -74,7 +74,7 @@ export function PainelTecnico() {
   }
 
   async function aoConfirmarEncerramento(
-    dados: DadosEncerrarOrdemServico & { dataInicio: string; dataFim: string },
+    dados: Omit<EncerramentoOrdemServicoPayload, 'ordemServicoId'>,
   ) {
     if (!ordemParaEncerrar) {
       return
@@ -91,13 +91,20 @@ export function PainelTecnico() {
     'pendentes-pausadas': ordensServico.filter(
       (ordem) => ordem.statusExecucao === 'Pausada',
     ),
-    concluidas: ordensServico.filter((ordem) => ordem.statusExecucao === 'Concluída'),
+    // Só aparece aqui depois que o Administrador lança o custo de manutenção — a mesma
+    // regra de "OS Finalizada" usada no Gestor e no Administrador (ver CLAUDE.md, item
+    // 9/13). Uma OS que o Técnico já encerrou mas ainda sem custo lançado fica "invisível"
+    // nas abas dele até esse lançamento.
+    concluidas: ordensServico.filter(
+      (ordem) => ordem.statusExecucao === 'Concluída' && ordem.custoManutencao !== undefined,
+    ),
   }
 
   const MENSAGENS_VAZIO: Record<AbaPainelTecnico, string> = {
     'em-aberto': 'Nenhuma OS em aberto no momento.',
     'pendentes-pausadas': 'Nenhuma OS pendente ou pausada.',
-    concluidas: 'Nenhuma OS concluída ainda.',
+    concluidas:
+      'Nenhuma OS concluída ainda — a OS só aparece aqui depois que o Administrador lança o custo de manutenção.',
   }
 
   const ordensExibidas = ordensPorAba[abaSelecionada]

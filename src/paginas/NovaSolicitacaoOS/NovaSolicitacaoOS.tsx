@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm, useWatch, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation } from '@tanstack/react-query'
@@ -12,6 +12,7 @@ import { CabecalhoPagina } from '../../componentes/CabecalhoPagina'
 import { useMaquinas } from '../../hooks/useMaquinas'
 import { useEstadoAutenticacao } from '../../estado/estadoAutenticacao'
 import { servicoSolicitacoes } from '../../servicos/servicoSolicitacoes'
+import { formatarDataHora } from '../../utilitarios/formatarData'
 import { marcadoresImpacto, tiposDefeito } from '../../tipos/ordemServico'
 import {
   esquemaNovaSolicitacaoOS,
@@ -30,6 +31,7 @@ export function NovaSolicitacaoOS() {
     setor: setorUsuario ?? undefined,
     lojaId: lojaIdUsuario ?? undefined,
   })
+  const [dataHora] = useState(() => new Date().toISOString())
 
   const {
     register,
@@ -48,6 +50,7 @@ export function NovaSolicitacaoOS() {
       solicitante: nomeUsuario ?? '',
       descricao: '',
       impactos: [],
+      dataHora,
     },
   })
 
@@ -143,6 +146,15 @@ export function NovaSolicitacaoOS() {
               placeholder="Selecione uma máquina..."
               {...register('setor')}
             />
+
+            <div className="flex flex-col gap-1">
+              <span className="text-xs font-semibold tracking-wide text-[#4bae70] uppercase">
+                Data/Hora
+              </span>
+              <p className="rounded-lg bg-lime-100 px-3 py-2.5 text-sm text-[#1f4e2c]">
+                {formatarDataHora(dataHora)}
+              </p>
+            </div>
 
             <div className="sm:col-span-2">
               <CampoTextoArea

@@ -12,6 +12,7 @@ export const esquemaNovaSolicitacaoOS = z.object({
     .min(20, 'Descreva o problema com no mínimo 20 caracteres.')
     .max(1000, 'A descrição deve ter no máximo 1000 caracteres.'),
   impactos: z.array(z.enum(marcadoresImpacto)),
+  dataHora: z.string().min(1),
 })
 
 export type DadosNovaSolicitacaoOS = z.infer<typeof esquemaNovaSolicitacaoOS>

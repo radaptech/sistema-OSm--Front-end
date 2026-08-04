@@ -10,12 +10,25 @@ export const esquemaCadastrarUsuario = z
     email: z.email('Informe um e-mail válido.'),
     senha: z.string().min(6, 'A senha deve ter no mínimo 6 caracteres.'),
     role: z.enum(perfisLogin, 'Selecione o perfil.'),
-    lojasIds: z.array(z.string()).min(1, 'Selecione ao menos uma loja.'),
+    lojasIds: z.array(z.string()),
     setores: z.array(z.enum(setoresDisponiveis)),
     acessoTotalSetores: z.boolean(),
     area: z.enum(areasTecnico).optional(),
+    valorHora: z.number().positive('Informe um valor/hora válido.').optional(),
   })
   .superRefine((dados, ctx) => {
+    if (dados.role === 'administrador') {
+      return
+    }
+
+    if (dados.lojasIds.length === 0) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'Selecione ao menos uma loja.',
+        path: ['lojasIds'],
+      })
+    }
+
     if (dados.role === 'solicitante') {
       if (dados.lojasIds.length > 1) {
         ctx.addIssue({
@@ -42,12 +55,22 @@ export const esquemaCadastrarUsuario = z
       })
     }
 
-    if (dados.role === 'tecnico' && !dados.area) {
-      ctx.addIssue({
-        code: 'custom',
-        message: 'Selecione a área de atuação.',
-        path: ['area'],
-      })
+    if (dados.role === 'tecnico') {
+      if (!dados.area) {
+        ctx.addIssue({
+          code: 'custom',
+          message: 'Selecione a área de atuação.',
+          path: ['area'],
+        })
+      }
+
+      if (!dados.valorHora) {
+        ctx.addIssue({
+          code: 'custom',
+          message: 'Informe o valor/hora do técnico.',
+          path: ['valorHora'],
+        })
+      }
     }
   })
 
