@@ -4,7 +4,7 @@ interface CardAcaoProps {
   titulo: string
   descricao: string
   Icone: LucideIcon
-  variante?: 'padrao' | 'destaque' | 'reparo'
+  variante?: 'padrao' | 'destaque' | 'reparo' | 'terceiros'
   aoClicar?: () => void
 }
 
@@ -18,6 +18,9 @@ const ESTILOS_VARIANTE: Record<
   // da OS de Maquinário (verde), sem reaproveitar o âmbar já usado como cor de "alerta"
   // (BadgeOrigemPreventiva, status Pausada) em outras telas.
   reparo: { card: 'bg-orange-600', icone: 'bg-white/15' },
+  // OS Terceiros usa azul para reforçar o caráter "externo/parceiro" do atendimento,
+  // sem repetir verde (Maquinário), laranja (Pequenos Reparos) ou âmbar (alerta).
+  terceiros: { card: 'bg-blue-600', icone: 'bg-white/15' },
 }
 
 export function CardAcao({

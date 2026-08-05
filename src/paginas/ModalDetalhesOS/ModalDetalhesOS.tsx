@@ -3,9 +3,11 @@ import { createPortal } from 'react-dom'
 import { Printer, XCircle } from 'lucide-react'
 import { Botao } from '../../componentes/Botao'
 import { BadgeStatusExecucao } from '../../componentes/BadgeStatusExecucao'
+import { BadgeTipoOS } from '../../componentes/BadgeTipoOS'
 import { BadgeUrgencia } from '../../componentes/BadgeUrgencia'
 import { LOJAS_MOCK } from '../../servicos/dadosMockLojas'
 import { TECNICOS_MOCK } from '../../servicos/dadosMockTecnicos'
+import { EMPRESAS_TERCEIRIZADAS_MOCK } from '../../servicos/dadosMockEmpresasTerceirizadas'
 import { calcularHoras } from '../../utilitarios/calcularHoras'
 import { formatarDataHora } from '../../utilitarios/formatarData'
 import { formatarMoeda } from '../../utilitarios/formatarMoeda'
@@ -26,6 +28,9 @@ export function ModalDetalhesOS({
 }: ModalDetalhesOSProps) {
   const loja = LOJAS_MOCK.find((item) => item.id === ordemServico.lojaId)
   const tecnico = TECNICOS_MOCK.find((item) => item.id === ordemServico.tecnicoId)
+  const empresaTerceirizada = EMPRESAS_TERCEIRIZADAS_MOCK.find(
+    (item) => item.id === ordemServico.empresaTerceirizadaId,
+  )
   const custoTotal = (ordemServico.custoHoraTecnico ?? 0) + (ordemServico.custoManutencao ?? 0)
   const horasParada = ordemServico.dataFim
     ? calcularHoras(ordemServico.dataAbertura, ordemServico.dataFim)
@@ -75,7 +80,8 @@ export function ModalDetalhesOS({
             </div>
             <div className="flex flex-col items-end gap-1.5">
               <BadgeStatusExecucao status={ordemServico.statusExecucao} />
-              <BadgeUrgencia urgencia={ordemServico.urgencia} />
+              <BadgeTipoOS tipo={ordemServico.tipo} />
+              {ordemServico.urgencia && <BadgeUrgencia urgencia={ordemServico.urgencia} />}
             </div>
           </div>
 
@@ -96,10 +102,14 @@ export function ModalDetalhesOS({
             </div>
             <div>
               <p className="text-xs font-semibold tracking-wide text-slate-400 uppercase">
-                Técnico Responsável
+                {ordemServico.tipo === 'terceiros' ? 'Empresa Terceirizada' : 'Técnico Responsável'}
               </p>
               <p className="text-slate-700">
-                {tecnico ? `${tecnico.nome} — ${tecnico.area}` : '—'}
+                {ordemServico.tipo === 'terceiros'
+                  ? (empresaTerceirizada?.nome ?? '—')
+                  : tecnico
+                    ? `${tecnico.nome} — ${tecnico.area}`
+                    : '—'}
               </p>
             </div>
             <div>

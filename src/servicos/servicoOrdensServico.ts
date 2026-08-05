@@ -1,9 +1,11 @@
 import { atrasoSimulado } from './atrasoSimulado'
-import { ORDENS_SERVICO_MOCK } from './dadosMockOrdensServico'
+import { gerarProximoIdOrdemServico, ORDENS_SERVICO_MOCK } from './dadosMockOrdensServico'
 import { calcularHoras } from '../utilitarios/calcularHoras'
 import type {
   EncerramentoOrdemServicoPayload,
   LancamentoCustoManutencaoPayload,
+  NovaOrdemServicoPayload,
+  OrdemServico,
 } from '../tipos/ordemServico'
 
 export interface ParametrosListagemOrdensServico {
@@ -11,13 +13,29 @@ export interface ParametrosListagemOrdensServico {
 }
 
 function listarPorTecnico({ tecnicoId }: ParametrosListagemOrdensServico) {
-  const ordens = ORDENS_SERVICO_MOCK.filter((ordem) => ordem.tecnicoId === tecnicoId)
+  // Copia rasa de CADA item (não só do array): iniciar/pausar/retomar/encerrar/
+  // lancarCustoManutencao mutam o objeto OrdemServico in-place, então devolver a mesma
+  // referência de objeto faria o structuralSharing do React Query considerar aquele item
+  // "igual" (mesma identidade) e nunca detectar a mudança de campo, mesmo com um array
+  // novo por fora — daí a UI ficar presa no snapshot antigo depois de invalidateQueries.
+  const ordens = ORDENS_SERVICO_MOCK.filter((ordem) => ordem.tecnicoId === tecnicoId).map(
+    (ordem) => ({ ...ordem }),
+  )
 
   return atrasoSimulado(ordens)
 }
 
 function listarTodas() {
-  return atrasoSimulado(ORDENS_SERVICO_MOCK)
+  return atrasoSimulado(ORDENS_SERVICO_MOCK.map((ordem) => ({ ...ordem })))
+}
+
+// Criada pelo Gestor ao aprovar uma Solicitação OS (Maquinário/Reparo via abrirOS,
+// Terceiros via aprovarTerceiros em servicoSolicitacoes.ts).
+function criar(dados: NovaOrdemServicoPayload): Promise<OrdemServico> {
+  const ordem: OrdemServico = { id: gerarProximoIdOrdemServico(), ...dados }
+  ORDENS_SERVICO_MOCK.push(ordem)
+
+  return atrasoSimulado(ordem)
 }
 
 function iniciar(id: number) {
@@ -105,6 +123,7 @@ function lancarCustoManutencao(dados: LancamentoCustoManutencaoPayload) {
 export const servicoOrdensServico = {
   listarPorTecnico,
   listarTodas,
+  criar,
   iniciar,
   pausar,
   retomar,

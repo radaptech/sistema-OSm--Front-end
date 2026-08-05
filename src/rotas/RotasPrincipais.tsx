@@ -3,6 +3,7 @@ import { TelaLogin } from '../paginas/TelaLogin/TelaLogin'
 import { HomeSolicitante } from '../paginas/HomeSolicitante/HomeSolicitante'
 import { NovaSolicitacaoOS } from '../paginas/NovaSolicitacaoOS/NovaSolicitacaoOS'
 import { NovaSolicitacaoReparo } from '../paginas/NovaSolicitacaoReparo/NovaSolicitacaoReparo'
+import { NovaSolicitacaoOSTerceiros } from '../paginas/NovaSolicitacaoOSTerceiros/NovaSolicitacaoOSTerceiros'
 import { MinhasSolicitacoes } from '../paginas/MinhasSolicitacoes/MinhasSolicitacoes'
 import { PainelGestor } from '../paginas/PainelGestor/PainelGestor'
 import { DashboardGestor } from '../paginas/DashboardGestor/DashboardGestor'
@@ -15,10 +16,12 @@ import { AdministradorTecnicos } from '../paginas/AdministradorTecnicos/Administ
 import { AdministradorMaquinas } from '../paginas/AdministradorMaquinas/AdministradorMaquinas'
 import { AdministradorCustosPendentes } from '../paginas/AdministradorCustosPendentes/AdministradorCustosPendentes'
 import { AdministradorOSFinalizadas } from '../paginas/AdministradorOSFinalizadas/AdministradorOSFinalizadas'
+import { AdministradorEmpresasTerceirizadas } from '../paginas/AdministradorEmpresasTerceirizadas/AdministradorEmpresasTerceirizadas'
 import { CadastrarUsuario } from '../paginas/CadastrarUsuario/CadastrarUsuario'
 import { CadastrarSetor } from '../paginas/CadastrarSetor/CadastrarSetor'
 import { CadastrarLoja } from '../paginas/CadastrarLoja/CadastrarLoja'
 import { CadastrarMaquina } from '../paginas/CadastrarMaquina/CadastrarMaquina'
+import { CadastrarEmpresaTerceirizada } from '../paginas/CadastrarEmpresaTerceirizada/CadastrarEmpresaTerceirizada'
 import { RotaProtegida } from './RotaProtegida'
 import { RotaPublica } from './RotaPublica'
 
@@ -33,6 +36,7 @@ export function RotasPrincipais() {
         <Route path="/home-solicitante" element={<HomeSolicitante />} />
         <Route path="/nova-solicitacao-os" element={<NovaSolicitacaoOS />} />
         <Route path="/nova-solicitacao-reparo" element={<NovaSolicitacaoReparo />} />
+        <Route path="/nova-solicitacao-os-terceiros" element={<NovaSolicitacaoOSTerceiros />} />
         <Route path="/minhas-solicitacoes" element={<MinhasSolicitacoes />} />
       </Route>
 
@@ -68,6 +72,19 @@ export function RotasPrincipais() {
 
         <Route path="/administrador/custos-pendentes" element={<AdministradorCustosPendentes />} />
         <Route path="/administrador/os-finalizadas" element={<AdministradorOSFinalizadas />} />
+
+        <Route
+          path="/administrador/empresas-terceirizadas"
+          element={<AdministradorEmpresasTerceirizadas />}
+        />
+        <Route
+          path="/cadastrar-empresa-terceirizada"
+          element={<CadastrarEmpresaTerceirizada />}
+        />
+        <Route
+          path="/cadastrar-empresa-terceirizada/:id"
+          element={<CadastrarEmpresaTerceirizada />}
+        />
       </Route>
 
       <Route path="/" element={<Navigate to="/login" replace />} />

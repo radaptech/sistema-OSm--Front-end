@@ -1,5 +1,9 @@
 import type { Setor } from './maquina'
 
+export const tiposOS = ['maquinario', 'terceiros', 'reparo'] as const
+
+export type TipoOS = (typeof tiposOS)[number]
+
 export const tiposDefeito = [
   'Mecânico',
   'Elétrico',
@@ -44,8 +48,10 @@ export type OrigemSolicitacao = (typeof origensSolicitacao)[number]
 
 export interface SolicitacaoOS {
   id: number
+  tipo: TipoOS
   maquinaNome: string
   maquinaCodigo: string
+  tipoDefeito?: TipoDefeito
   status: StatusSolicitacao
   descricao: string
   solicitante: string
@@ -55,6 +61,11 @@ export interface SolicitacaoOS {
   impactos: MarcadorImpacto[]
   origem: OrigemSolicitacao
   preventivaId?: string
+  // Pequenos Reparos (sem máquina cadastrada): foto do item. Maquinário: foto do
+  // defeito constatado na hora da solicitação, evidência para o Gestor avaliar.
+  fotoUrl?: string
+  // Vídeo do defeito, opcional — só na OS de Maquinário (item 3).
+  videoUrl?: string
 }
 
 export const niveisUrgencia = ['Baixa', 'Média', 'Alta'] as const
@@ -68,6 +79,15 @@ export interface AberturaOrdemServicoPayload {
   tecnicoId: string
 }
 
+// Aprovação de OS Terceiros pelo Gestor: diferente da abertura de OS de Maquinário/Reparo
+// (acima), não há Técnico nem Urgência — o Gestor só escolhe a empresa terceirizada
+// responsável pelo reparo. Ver regra de negócio no CLAUDE.md (item 3c/6).
+export interface AprovacaoOSTerceirosPayload {
+  solicitacaoId: number
+  empresaTerceirizadaId: string
+  dataHora: string
+}
+
 export const statusExecucaoOS = ['Aberta', 'Em Andamento', 'Pausada', 'Concluída'] as const
 
 export type StatusExecucaoOS = (typeof statusExecucaoOS)[number]
@@ -78,14 +98,18 @@ export type StatusRetomavel = Extract<StatusExecucaoOS, 'Aberta' | 'Em Andamento
 export interface OrdemServico {
   id: number
   solicitacaoId: number
+  tipo: TipoOS
   maquinaNome: string
   maquinaCodigo: string
   descricao: string
   setor: Setor
   lojaId: string
   solicitante: string
-  urgencia: IdUrgencia
-  tecnicoId: string
+  // Maquinário/Reparo: Técnico interno + Urgência definidos pelo Gestor ao abrir a OS.
+  // Terceiros: sem Urgência, o Gestor escolhe a empresa terceirizada responsável.
+  urgencia?: IdUrgencia
+  tecnicoId?: string
+  empresaTerceirizadaId?: string
   statusExecucao: StatusExecucaoOS
   dataAbertura: string
   motivoPausa?: string
@@ -105,6 +129,10 @@ export interface OrdemServico {
   causaRaiz?: string
   solucao?: string
 }
+
+// Payload interno usado por servicoOrdensServico.criar — construído por
+// servicoSolicitacoes.abrirOS/aprovarTerceiros a partir da SolicitacaoOS de origem.
+export type NovaOrdemServicoPayload = Omit<OrdemServico, 'id'>
 
 export interface EncerramentoOrdemServicoPayload {
   ordemServicoId: number

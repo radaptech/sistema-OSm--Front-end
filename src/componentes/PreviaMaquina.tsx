@@ -1,5 +1,5 @@
 import { PackageSearch } from 'lucide-react'
-import type { Maquina } from '../../../tipos/maquina'
+import type { Maquina } from '../tipos/maquina'
 
 interface PreviaMaquinaProps {
   maquina?: Maquina

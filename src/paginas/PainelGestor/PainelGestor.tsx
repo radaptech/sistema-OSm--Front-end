@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { toast } from 'react-toastify'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { CabecalhoTopo } from '../../componentes/CabecalhoTopo'
+import { FiltroTipoOS } from '../../componentes/FiltroTipoOS'
 import { useEstadoAutenticacao } from '../../estado/estadoAutenticacao'
 import { useTodasSolicitacoes } from '../../hooks/useTodasSolicitacoes'
 import { useOrdensServicoTodas } from '../../hooks/useOrdensServicoTodas'
@@ -9,7 +10,7 @@ import { usePreventivas } from '../../hooks/usePreventivas'
 import { LOJAS_MOCK } from '../../servicos/dadosMockLojas'
 import { servicoSolicitacoes } from '../../servicos/servicoSolicitacoes'
 import { agruparPorEscopoGestor } from '../../utilitarios/acessoGestor'
-import type { OrdemServico, SolicitacaoOS } from '../../tipos/ordemServico'
+import type { OrdemServico, SolicitacaoOS, TipoOS } from '../../tipos/ordemServico'
 import { ModalAbrirOrdemServico } from '../ModalAbrirOrdemServico/ModalAbrirOrdemServico'
 import type { DadosConfirmarAberturaOS } from '../ModalAbrirOrdemServico/esquemaAbrirOrdemServico'
 import { ModalDetalhesOS } from '../ModalDetalhesOS/ModalDetalhesOS'
@@ -20,7 +21,9 @@ import { CardSolicitacaoGestor } from './componentes/CardSolicitacaoGestor'
 import { CardOSEmExecucao } from './componentes/CardOSEmExecucao'
 import { CardOSFinalizada } from './componentes/CardOSFinalizada'
 import { CardPreventiva } from './componentes/CardPreventiva'
+import { ModalAprovarOSTerceiros } from './componentes/ModalAprovarOSTerceiros'
 import { ModalDetalhesSolicitacao } from './componentes/ModalDetalhesSolicitacao'
+import type { DadosConfirmarAprovacaoTerceiros } from './esquemaAprovarOSTerceiros'
 
 interface SelecaoOS {
   ordem: OrdemServico
@@ -28,11 +31,15 @@ interface SelecaoOS {
 }
 
 export function PainelGestor() {
+  const queryClient = useQueryClient()
   const escoposGestor = useEstadoAutenticacao((estado) => estado.escoposGestor) ?? []
   const [abaSelecionada, setAbaSelecionada] = useState<AbaPainelGestor>('solicitacoes')
+  const [filtroTipo, setFiltroTipo] = useState<TipoOS | ''>('')
   const [solicitacaoParaAbrirOS, setSolicitacaoParaAbrirOS] = useState<SolicitacaoOS | null>(
     null,
   )
+  const [solicitacaoParaAprovarTerceiros, setSolicitacaoParaAprovarTerceiros] =
+    useState<SolicitacaoOS | null>(null)
   const [solicitacaoParaVisualizar, setSolicitacaoParaVisualizar] =
     useState<SolicitacaoOS | null>(null)
   const [selecaoOS, setSelecaoOS] = useState<SelecaoOS | null>(null)
@@ -43,8 +50,30 @@ export function PainelGestor() {
     useOrdensServicoTodas()
   const { data: preventivas = [], isLoading: carregandoPreventivas } = usePreventivas()
 
+  function aoAprovarOuAbrirOS(solicitacao: SolicitacaoOS) {
+    if (solicitacao.tipo === 'terceiros') {
+      setSolicitacaoParaAprovarTerceiros(solicitacao)
+      return
+    }
+
+    setSolicitacaoParaAbrirOS(solicitacao)
+  }
+
+  async function invalidarSolicitacoesEOrdens() {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['solicitacoes-os-todas'] }),
+      queryClient.invalidateQueries({ queryKey: ['ordens-servico-todas'] }),
+    ])
+  }
+
   const { mutateAsync: abrirOS } = useMutation({
     mutationFn: servicoSolicitacoes.abrirOS,
+    onSuccess: invalidarSolicitacoesEOrdens,
+  })
+
+  const { mutateAsync: aprovarTerceiros } = useMutation({
+    mutationFn: servicoSolicitacoes.aprovarTerceiros,
+    onSuccess: invalidarSolicitacoesEOrdens,
   })
 
   async function aoConfirmarAberturaOS(dados: DadosConfirmarAberturaOS) {
@@ -56,21 +85,35 @@ export function PainelGestor() {
     toast.success(`OS aberta para a solicitação #${solicitacaoParaAbrirOS.id}.`)
   }
 
+  async function aoConfirmarAprovacaoTerceiros(dados: DadosConfirmarAprovacaoTerceiros) {
+    if (!solicitacaoParaAprovarTerceiros) {
+      return
+    }
+
+    await aprovarTerceiros({ solicitacaoId: solicitacaoParaAprovarTerceiros.id, ...dados })
+    toast.success(`OS Terceiros aprovada para a solicitação #${solicitacaoParaAprovarTerceiros.id}.`)
+  }
+
   const solicitacoesPendentes = solicitacoes.filter(
-    (solicitacao) => solicitacao.status === 'Pendente',
+    (solicitacao) =>
+      solicitacao.status === 'Pendente' && (!filtroTipo || solicitacao.tipo === filtroTipo),
   )
   // Só é "OS Finalizada" para o Gestor quando ela passou por todas as etapas com
   // sucesso: Técnico encerrou (Concluída) e o Administrador já lançou o custo de
   // manutenção — ver regra de negócio no CLAUDE.md (item 11/12/13).
   const ordensFinalizadas = ordensServico.filter(
-    (ordem) => ordem.statusExecucao === 'Concluída' && ordem.custoManutencao !== undefined,
+    (ordem) =>
+      ordem.statusExecucao === 'Concluída' &&
+      ordem.custoManutencao !== undefined &&
+      (!filtroTipo || ordem.tipo === filtroTipo),
   )
   // Acompanhamento em tempo real do que o Técnico está fazendo (Aberta/Em Andamento/
   // Pausada) — o botão de pausa continua com o Técnico (ele é quem está na frente do
   // problema), mas o Gestor enxerga aqui o motivo de cada pausa para dar visibilidade
-  // sem virar gargalo no fluxo. Ver regra de negócio no CLAUDE.md (item 9).
+  // sem virar gargalo no fluxo. Ver regra de negócio no CLAUDE.md (item 9). OS Terceiros
+  // nunca aparece aqui — ela já nasce Concluída (ver aprovarTerceiros).
   const ordensEmExecucao = ordensServico.filter(
-    (ordem) => ordem.statusExecucao !== 'Concluída',
+    (ordem) => ordem.statusExecucao !== 'Concluída' && (!filtroTipo || ordem.tipo === filtroTipo),
   )
 
   const gruposSolicitacoesPendentes = agruparPorEscopoGestor(
@@ -109,6 +152,12 @@ export function PainelGestor() {
           aoSelecionarAba={setAbaSelecionada}
         />
 
+        {abaSelecionada !== 'manutencao-preventiva' && (
+          <div className="sm:w-56">
+            <FiltroTipoOS valor={filtroTipo} aoMudar={setFiltroTipo} />
+          </div>
+        )}
+
         {escoposGestor.length === 0 && (
           <p className="rounded-xl bg-white/10 py-10 text-center text-sm text-slate-200">
             Nenhum setor/loja vinculado a este gestor.
@@ -131,7 +180,7 @@ export function PainelGestor() {
                   renderItem={(solicitacao) => (
                     <CardSolicitacaoGestor
                       solicitacao={solicitacao}
-                      aoAbrirOS={setSolicitacaoParaAbrirOS}
+                      aoAbrirOS={aoAprovarOuAbrirOS}
                       aoVisualizar={setSolicitacaoParaVisualizar}
                     />
                   )}
@@ -217,6 +266,14 @@ export function PainelGestor() {
           solicitacao={solicitacaoParaAbrirOS}
           aoFechar={() => setSolicitacaoParaAbrirOS(null)}
           aoSalvar={aoConfirmarAberturaOS}
+        />
+      )}
+
+      {solicitacaoParaAprovarTerceiros && (
+        <ModalAprovarOSTerceiros
+          solicitacao={solicitacaoParaAprovarTerceiros}
+          aoFechar={() => setSolicitacaoParaAprovarTerceiros(null)}
+          aoSalvar={aoConfirmarAprovacaoTerceiros}
         />
       )}
 

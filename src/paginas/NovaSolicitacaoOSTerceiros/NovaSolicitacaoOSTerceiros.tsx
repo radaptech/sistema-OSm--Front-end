@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useForm, useWatch, Controller } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation } from '@tanstack/react-query'
 import { toast } from 'react-toastify'
@@ -9,22 +9,22 @@ import { CampoTexto } from '../../componentes/CampoTexto'
 import { CampoSelecao } from '../../componentes/CampoSelecao'
 import { CampoTextoArea } from '../../componentes/CampoTextoArea'
 import { CabecalhoPagina } from '../../componentes/CabecalhoPagina'
-import { useMaquinas } from '../../hooks/useMaquinas'
-import { useEstadoAutenticacao } from '../../estado/estadoAutenticacao'
-import { servicoSolicitacoes } from '../../servicos/servicoSolicitacoes'
-import { formatarDataHora } from '../../utilitarios/formatarData'
-import { marcadoresImpacto, tiposDefeito } from '../../tipos/ordemServico'
-import {
-  esquemaNovaSolicitacaoOS,
-  type DadosNovaSolicitacaoOS,
-} from './esquemaNovaSolicitacaoOS'
 import { PreviaMaquina } from '../../componentes/PreviaMaquina'
 import { UploadFoto } from '../../componentes/UploadFoto'
 import { UploadVideo } from '../../componentes/UploadVideo'
+import { useMaquinas } from '../../hooks/useMaquinas'
+import { useEstadoAutenticacao } from '../../estado/estadoAutenticacao'
+import { servicoOSTerceiros } from '../../servicos/servicoOSTerceiros'
+import { formatarDataHora } from '../../utilitarios/formatarData'
+import { tiposDefeito } from '../../tipos/ordemServico'
+import {
+  esquemaNovaSolicitacaoOSTerceiros,
+  type DadosNovaSolicitacaoOSTerceiros,
+} from './esquemaNovaSolicitacaoOSTerceiros'
 
 const LIMITE_CARACTERES_DESCRICAO = 1000
 
-export function NovaSolicitacaoOS() {
+export function NovaSolicitacaoOSTerceiros() {
   const navegar = useNavigate()
   const nomeUsuario = useEstadoAutenticacao((estado) => estado.nomeUsuario)
   const setorUsuario = useEstadoAutenticacao((estado) => estado.setor)
@@ -44,16 +44,16 @@ export function NovaSolicitacaoOS() {
     setValue,
     reset,
     formState: { errors },
-  } = useForm<DadosNovaSolicitacaoOS>({
-    resolver: zodResolver(esquemaNovaSolicitacaoOS),
+  } = useForm<DadosNovaSolicitacaoOSTerceiros>({
+    resolver: zodResolver(esquemaNovaSolicitacaoOSTerceiros),
     defaultValues: {
       maquinaId: '',
+      maquinaNome: '',
       tipoDefeito: undefined,
       setor: '',
       lojaId: '',
       solicitante: nomeUsuario ?? '',
       descricao: '',
-      impactos: [],
       dataHora,
     },
   })
@@ -63,6 +63,9 @@ export function NovaSolicitacaoOS() {
   const maquinaSelecionada = maquinas.find((m) => m.id === maquinaIdSelecionada)
 
   useEffect(() => {
+    setValue('maquinaNome', maquinaSelecionada?.nome ?? '', {
+      shouldValidate: Boolean(maquinaSelecionada),
+    })
     setValue('setor', maquinaSelecionada?.setor ?? '', {
       shouldValidate: Boolean(maquinaSelecionada),
     })
@@ -72,18 +75,18 @@ export function NovaSolicitacaoOS() {
   }, [maquinaSelecionada, setValue])
 
   const { mutateAsync, isPending } = useMutation({
-    mutationFn: (dados: DadosNovaSolicitacaoOS) =>
-      servicoSolicitacoes.criar(dados, fotoDefeito as File, videoDefeito ?? undefined),
+    mutationFn: (dados: DadosNovaSolicitacaoOSTerceiros) =>
+      servicoOSTerceiros.criar(dados, fotoDefeito as File, videoDefeito ?? undefined),
   })
 
-  async function aoEnviar(dados: DadosNovaSolicitacaoOS) {
+  async function aoEnviar(dados: DadosNovaSolicitacaoOSTerceiros) {
     if (!fotoDefeito) {
       toast.error('Anexe uma foto do defeito antes de enviar a solicitação.')
       return
     }
 
     await mutateAsync(dados)
-    toast.success('Solicitação enviada com sucesso.')
+    toast.success('Solicitação de OS Terceiros enviada com sucesso.')
     reset()
     setFotoDefeito(null)
     setVideoDefeito(null)
@@ -92,13 +95,13 @@ export function NovaSolicitacaoOS() {
 
   return (
     <div className="flex min-h-svh flex-col bg-slate-600">
-      <CabecalhoPagina titulo="Nova Solicitação OS" />
+      <CabecalhoPagina titulo="Nova Solicitação OS Terceiros" />
 
       <main className="flex flex-1 justify-center px-4 py-8">
         <div className="w-full max-w-3xl overflow-hidden rounded-2xl bg-white shadow-2xl">
-          <div className="bg-gradient-to-r from-[#1f4e2c] to-[#4bae70] py-3 text-center">
+          <div className="bg-gradient-to-r from-blue-500 to-blue-600 py-3 text-center">
             <p className="text-sm font-bold tracking-widest text-white uppercase">
-              Nova Ordem de Serviço
+              Solicitação OS Terceiros
             </p>
           </div>
 
@@ -131,13 +134,6 @@ export function NovaSolicitacaoOS() {
               <PreviaMaquina maquina={maquinaSelecionada} />
             </div>
 
-            <CampoTexto
-              rotulo="Solicitante"
-              variante="claro"
-              readOnly
-              {...register('solicitante')}
-            />
-
             <CampoSelecao
               rotulo="Tipo de Defeito"
               mensagemErro={errors.tipoDefeito?.message}
@@ -150,6 +146,13 @@ export function NovaSolicitacaoOS() {
                 </option>
               ))}
             </CampoSelecao>
+
+            <CampoTexto
+              rotulo="Solicitante"
+              variante="claro"
+              readOnly
+              {...register('solicitante')}
+            />
 
             <CampoTexto
               rotulo="Setor da Máquina"
@@ -173,7 +176,7 @@ export function NovaSolicitacaoOS() {
                 rotulo="Descrição do Problema"
                 rows={5}
                 maxLength={LIMITE_CARACTERES_DESCRICAO}
-                placeholder="Descreva o problema da máquina..."
+                placeholder="Descreva o defeito e o motivo do encaminhamento para uma empresa terceirizada..."
                 mensagemErro={errors.descricao?.message}
                 {...register('descricao')}
               />
@@ -194,43 +197,6 @@ export function NovaSolicitacaoOS() {
               aoSelecionarVideo={setVideoDefeito}
               rotulo="Vídeo do Defeito (opcional)"
             />
-
-            <div className="sm:col-span-2 flex flex-col gap-2">
-              <span className="text-xs font-semibold tracking-wide text-[#4bae70] uppercase">
-                Marcadores de Impacto
-              </span>
-              <Controller
-                control={control}
-                name="impactos"
-                render={({ field }) => (
-                  <div className="flex flex-wrap gap-3">
-                    {marcadoresImpacto.map((marcador) => {
-                      const marcado = field.value.includes(marcador)
-                      return (
-                        <label
-                          key={marcador}
-                          className="flex items-center gap-2 rounded-lg bg-slate-50 px-3 py-2.5 text-sm text-slate-700"
-                        >
-                          <input
-                            type="checkbox"
-                            checked={marcado}
-                            onChange={() =>
-                              field.onChange(
-                                marcado
-                                  ? field.value.filter((item) => item !== marcador)
-                                  : [...field.value, marcador],
-                              )
-                            }
-                            className="h-4 w-4 rounded border-slate-300 text-[#1f4e2c] focus:ring-[#4bae70]"
-                          />
-                          {marcador}
-                        </label>
-                      )
-                    })}
-                  </div>
-                )}
-              />
-            </div>
 
             <div className="sm:col-span-2">
               <Botao type="submit" disabled={isPending}>

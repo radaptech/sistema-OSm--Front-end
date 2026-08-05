@@ -3,14 +3,16 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { CircleDollarSign } from 'lucide-react'
 import { toast } from 'react-toastify'
 import { CabecalhoSubpagina } from '../../componentes/CabecalhoSubpagina'
+import { BadgeTipoOS } from '../../componentes/BadgeTipoOS'
 import { CampoBusca } from '../../componentes/CampoBusca'
 import { CampoSelecao } from '../../componentes/CampoSelecao'
+import { FiltroTipoOS } from '../../componentes/FiltroTipoOS'
 import { useLojas } from '../../hooks/useLojas'
 import { useOrdensServicoTodas } from '../../hooks/useOrdensServicoTodas'
 import { servicoOrdensServico } from '../../servicos/servicoOrdensServico'
 import { formatarDataHora } from '../../utilitarios/formatarData'
 import { formatarMoeda } from '../../utilitarios/formatarMoeda'
-import type { OrdemServico } from '../../tipos/ordemServico'
+import type { OrdemServico, TipoOS } from '../../tipos/ordemServico'
 import { ModalLancarCustoManutencao } from './componentes/ModalLancarCustoManutencao'
 import type { DadosLancarCustoManutencao } from './esquemaLancarCustoManutencao'
 
@@ -18,6 +20,7 @@ export function AdministradorCustosPendentes() {
   const queryClient = useQueryClient()
   const [busca, setBusca] = useState('')
   const [filtroLoja, setFiltroLoja] = useState('')
+  const [filtroTipo, setFiltroTipo] = useState<TipoOS | ''>('')
   const [ordemParaLancarCusto, setOrdemParaLancarCusto] = useState<OrdemServico | null>(null)
 
   const { data: ordensServico = [], isLoading } = useOrdensServicoTodas()
@@ -39,10 +42,11 @@ export function AdministradorCustosPendentes() {
         ordem.maquinaNome.toLowerCase().includes(termo) ||
         ordem.maquinaCodigo.toLowerCase().includes(termo)
       const combinaLoja = !filtroLoja || ordem.lojaId === filtroLoja
+      const combinaTipo = !filtroTipo || ordem.tipo === filtroTipo
 
-      return concluidaSemCusto && combinaBusca && combinaLoja
+      return concluidaSemCusto && combinaBusca && combinaLoja && combinaTipo
     })
-  }, [ordensServico, busca, filtroLoja])
+  }, [ordensServico, busca, filtroLoja, filtroTipo])
 
   async function aoSalvarCusto(dados: DadosLancarCustoManutencao) {
     if (!ordemParaLancarCusto) {
@@ -89,6 +93,10 @@ export function AdministradorCustosPendentes() {
               ))}
             </CampoSelecao>
           </div>
+
+          <div className="sm:w-56 sm:shrink-0">
+            <FiltroTipoOS valor={filtroTipo} aoMudar={setFiltroTipo} />
+          </div>
         </div>
 
         <div className="flex flex-1 flex-col gap-3">
@@ -114,6 +122,7 @@ export function AdministradorCustosPendentes() {
                   </span>
                   <span className="font-semibold text-slate-800">{ordem.maquinaNome}</span>
                   <span className="text-sm text-slate-400">· {ordem.maquinaCodigo}</span>
+                  <BadgeTipoOS tipo={ordem.tipo} />
                 </div>
                 <p className="mt-1 text-xs text-slate-400">
                   {lojas.find((loja) => loja.id === ordem.lojaId)?.nome ?? ordem.lojaId} ·{' '}

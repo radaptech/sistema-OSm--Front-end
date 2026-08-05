@@ -1,4 +1,5 @@
 import { BadgeStatusExecucao } from '../../../componentes/BadgeStatusExecucao'
+import { BadgeTipoOS } from '../../../componentes/BadgeTipoOS'
 import { BadgeUrgencia } from '../../../componentes/BadgeUrgencia'
 import { TECNICOS_MOCK } from '../../../servicos/dadosMockTecnicos'
 import { calcularHoras } from '../../../utilitarios/calcularHoras'
@@ -37,7 +38,8 @@ export function CardOSEmExecucao({ ordemServico }: CardOSEmExecucaoProps) {
             <span className="font-semibold text-slate-800">{ordemServico.maquinaNome}</span>
             <span className="text-sm text-slate-400">· {ordemServico.maquinaCodigo}</span>
             <BadgeStatusExecucao status={ordemServico.statusExecucao} />
-            <BadgeUrgencia urgencia={ordemServico.urgencia} />
+            <BadgeTipoOS tipo={ordemServico.tipo} />
+            {ordemServico.urgencia && <BadgeUrgencia urgencia={ordemServico.urgencia} />}
           </div>
           <p className="mt-1 text-sm text-slate-500">{ordemServico.descricao}</p>
           <p className="mt-1 text-xs text-slate-400">

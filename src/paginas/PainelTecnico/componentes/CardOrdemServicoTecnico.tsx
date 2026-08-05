@@ -40,7 +40,7 @@ export function CardOrdemServicoTecnico({
               · {ordemServico.maquinaCodigo}
             </span>
             <BadgeStatusExecucao status={ordemServico.statusExecucao} />
-            <BadgeUrgencia urgencia={ordemServico.urgencia} />
+            {ordemServico.urgencia && <BadgeUrgencia urgencia={ordemServico.urgencia} />}
           </div>
           <p className="mt-1 text-sm text-slate-500">{ordemServico.descricao}</p>
           <p className="mt-1 text-xs text-slate-400">

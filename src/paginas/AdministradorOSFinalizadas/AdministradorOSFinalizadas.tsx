@@ -1,14 +1,16 @@
 import { useMemo, useState } from 'react'
 import { ClipboardCheck, Eye, Printer } from 'lucide-react'
 import { CabecalhoSubpagina } from '../../componentes/CabecalhoSubpagina'
+import { BadgeTipoOS } from '../../componentes/BadgeTipoOS'
 import { CampoBusca } from '../../componentes/CampoBusca'
 import { CampoSelecao } from '../../componentes/CampoSelecao'
+import { FiltroTipoOS } from '../../componentes/FiltroTipoOS'
 import { Paginacao } from '../../componentes/Paginacao'
 import { useLojas } from '../../hooks/useLojas'
 import { useOrdensServicoTodas } from '../../hooks/useOrdensServicoTodas'
 import { formatarDataHora } from '../../utilitarios/formatarData'
 import { formatarMoeda } from '../../utilitarios/formatarMoeda'
-import type { OrdemServico } from '../../tipos/ordemServico'
+import type { OrdemServico, TipoOS } from '../../tipos/ordemServico'
 import { ModalDetalhesOS } from '../ModalDetalhesOS/ModalDetalhesOS'
 
 const TAMANHO_PAGINA = 10
@@ -21,6 +23,7 @@ interface SelecaoOS {
 export function AdministradorOSFinalizadas() {
   const [busca, setBusca] = useState('')
   const [filtroLoja, setFiltroLoja] = useState('')
+  const [filtroTipo, setFiltroTipo] = useState<TipoOS | ''>('')
   const [selecao, setSelecao] = useState<SelecaoOS | null>(null)
   const [pagina, setPagina] = useState(1)
 
@@ -37,12 +40,13 @@ export function AdministradorOSFinalizadas() {
         ordem.maquinaNome.toLowerCase().includes(termo) ||
         ordem.maquinaCodigo.toLowerCase().includes(termo)
       const combinaLoja = !filtroLoja || ordem.lojaId === filtroLoja
+      const combinaTipo = !filtroTipo || ordem.tipo === filtroTipo
 
-      return completa && combinaBusca && combinaLoja
+      return completa && combinaBusca && combinaLoja && combinaTipo
     })
-  }, [ordensServico, busca, filtroLoja])
+  }, [ordensServico, busca, filtroLoja, filtroTipo])
 
-  const chaveFiltros = `${busca}|${filtroLoja}`
+  const chaveFiltros = `${busca}|${filtroLoja}|${filtroTipo}`
   const [chaveFiltrosAnterior, setChaveFiltrosAnterior] = useState(chaveFiltros)
   if (chaveFiltros !== chaveFiltrosAnterior) {
     setChaveFiltrosAnterior(chaveFiltros)
@@ -91,6 +95,10 @@ export function AdministradorOSFinalizadas() {
               ))}
             </CampoSelecao>
           </div>
+
+          <div className="sm:w-56 sm:shrink-0">
+            <FiltroTipoOS valor={filtroTipo} aoMudar={setFiltroTipo} />
+          </div>
         </div>
 
         <div className="flex flex-1 flex-col gap-3">
@@ -121,6 +129,7 @@ export function AdministradorOSFinalizadas() {
                       {ordem.maquinaNome}
                     </span>
                     <span className="text-sm text-slate-400">· {ordem.maquinaCodigo}</span>
+                    <BadgeTipoOS tipo={ordem.tipo} />
                   </div>
                   <p className="mt-1 truncate text-xs text-slate-400">
                     {lojas.find((loja) => loja.id === ordem.lojaId)?.nome ?? ordem.lojaId} ·{' '}

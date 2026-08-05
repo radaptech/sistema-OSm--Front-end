@@ -1,6 +1,7 @@
-import { Eye, Wrench } from 'lucide-react'
+import { CheckCircle2, Eye, Wrench } from 'lucide-react'
 import { BadgeOrigemPreventiva } from '../../../componentes/BadgeOrigemPreventiva'
 import { BadgeStatus } from '../../../componentes/BadgeStatus'
+import { BadgeTipoOS } from '../../../componentes/BadgeTipoOS'
 import { formatarDataHora } from '../../../utilitarios/formatarData'
 import type { SolicitacaoOS } from '../../../tipos/ordemServico'
 
@@ -43,6 +44,7 @@ export function CardSolicitacaoGestor({
               · {solicitacao.maquinaCodigo}
             </span>
             <BadgeStatus status={solicitacao.status} />
+            <BadgeTipoOS tipo={solicitacao.tipo} />
             {ehPreventiva && <BadgeOrigemPreventiva />}
           </div>
           <p className="mt-1 text-sm text-slate-500">{solicitacao.descricao}</p>
@@ -74,8 +76,17 @@ export function CardSolicitacaoGestor({
               onClick={() => aoAbrirOS(solicitacao)}
               className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#1f4e2c] to-[#4bae70] px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-white shadow-sm transition hover:brightness-110"
             >
-              <Wrench size={14} />
-              Abrir OS
+              {solicitacao.tipo === 'terceiros' ? (
+                <>
+                  <CheckCircle2 size={14} />
+                  Aprovar
+                </>
+              ) : (
+                <>
+                  <Wrench size={14} />
+                  Abrir OS
+                </>
+              )}
             </button>
           )}
         </div>

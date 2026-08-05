@@ -1,8 +1,30 @@
 import type { SolicitacaoOS } from '../tipos/ordemServico'
 
+// Fotos de exemplo (PNG minúsculo em base64) para as Solicitações OS mockadas — os dados
+// de demonstração originais foram escritos antes da Foto do Defeito existir (ver item 3
+// do CLAUDE.md), então precisam de uma foto "de mentira" pra exibir o recurso sem
+// depender de o Solicitante enviar uma solicitação nova a cada demo.
+const FOTO_MOCK_FERRUGEM =
+  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHgAAABaCAIAAAD8YgW4AAAAj0lEQVR42u3QQQ0AAAgEoOtjIytZ2hbOBxsJyHRxIApEi0a0aNEWRItGtGjRFkSLRrRo0YgWjWjRohEtGtGiRSNaNKJFi0a0aESLFo1o0YgWLRrRohEtWjSiRSNatGhEi0a0aNGIFo1o0aIRLRrRokUjWjSiRYtGtGhEixaNaNGIFi0a0aIRLVo0okUj+osFdMrVlaO98W8AAAAASUVORK5CYII='
+const FOTO_MOCK_FUMACA =
+  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHgAAABaCAIAAAD8YgW4AAAAjklEQVR42u3QMQ0AAAgDsOncg38XuCAcTaqgaYcDUSBaNKJFi7YgWjSiRYu2IFo0okWLRrRoRIsWjWjRiBYtGtGiES1aNKJFI1q0aESLRrRo0YgWjWjRohEtGtGiRSNaNKJFi0a0aESLFo1o0YgWLRrRohEtWjSiRSNatGhEi0a0aNGIFo1o0aIRLRrRXyztWlQ0opCvyAAAAABJRU5ErkJggg=='
+const FOTO_MOCK_VAZAMENTO =
+  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHgAAABaCAIAAAD8YgW4AAAAj0lEQVR42u3QQQ0AAAgEoAtmJjMZ1RbOBxsJSPVwIApEi0a0aNEWRItGtGjRFkSLRrRo0YgWjWjRohEtGtGiRSNaNKJFi0a0aESLFo1o0YgWLRrRohEtWjSiRSNatGhEi0a0aNGIFo1o0aIRLRrRokUjWjSiRYtGtGhEixaNaNGIFi0a0aIRLVo0okUj+osFHo9lC4U8fRQAAAAASUVORK5CYII='
+const FOTO_MOCK_FAISCA =
+  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHgAAABaCAIAAAD8YgW4AAAAj0lEQVR42u3QQQ0AAAgEoItjYjMZyxbOBxsJyHRxIApEi0a0aNEWRItGtGjRFkSLRrRo0YgWjWjRohEtGtGiRSNaNKJFi0a0aESLFo1o0YgWLRrRohEtWjSiRSNatGhEi0a0aNGIFo1o0aIRLRrRokUjWjSiRYtGtGhEixaNaNGIFi0a0aIRLVo0okUj+osFW95I4dA4NsgAAAAASUVORK5CYII='
+const FOTO_MOCK_TRINCA =
+  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHgAAABaCAIAAAD8YgW4AAAAjUlEQVR42u3QMQ0AAAgDsMmZROTjgnA0qYJmWg5EgWjRiBYt2oJo0YgWLdqCaNGIFi0a0aIRLVo0okUjWrRoRItGtGjRiBaNaNGiES0a0aJFI1o0okWLRrRoRIsWjWjRiBYtGtGiES1aNKJFI1q0aESLRrRo0YgWjWjRohEtGtGiRSNaNKJFi0a0aER/sfWI92Fc7eUiAAAAAElFTkSuQmCC'
+const FOTO_MOCK_GELO =
+  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHgAAABaCAIAAAD8YgW4AAAAkElEQVR42u3QQQ0AAAgEoOsfxTg2sIktnA82EpDq4UAUiBaNaNGiLYgWjWjRoi2IFo1o0aIRLRrRokUjWjSiRYtGtGhEixaNaNGIFi0a0aIRLVo0okUjWrRoRItGtGjRiBaNaNGiES0a0aJFI1o0okWLRrRoRIsWjWjRiBYtGtGiES1aNKJFI1q0aESLRvQXC8rXuT4larbOAAAAAElFTkSuQmCC'
+const FOTO_MOCK_VIDRO =
+  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHgAAABaCAIAAAD8YgW4AAAAkElEQVR42u3QMQ0AAAgDsPlXgwhePOGCcDSpgqZ6OBAFokUjWrRoC6JFI1q0aAuiRSNatGhEi0a0aNGIFo1o0aIRLRrRokUjWjSiRYtGtGhEixaNaNGIFi0a0aIRLVo0okUjWrRoRItGtGjRiBaNaNGiES0a0aJFI1o0okWLRrRoRIsWjWjRiBYtGtGiEf3FAkyiG8L0j69UAAAAAElFTkSuQmCC'
+const FOTO_MOCK_HIDRAULICO =
+  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHgAAABaCAIAAAD8YgW4AAAAj0lEQVR42u3QMQ0AAAgDsClBLDeicUE4mlRBUz0ciALRohEtWrQF0aIRLVq0BdGiES1aNKJFI1q0aESLRrRo0YgWjWjRohEtGtGiRSNaNKJFi0a0aESLFo1o0YgWLRrRohEtWjSiRSNatGhEi0a0aNGIFo1o0aIRLRrRokUjWjSiRYtGtGhEixaNaNGI/mIBR4xzILNs88sAAAAASUVORK5CYII='
+
 export const SOLICITACOES_MOCK: SolicitacaoOS[] = [
   {
     id: 1,
+    tipo: 'maquinario',
     maquinaNome: 'Forno Industrial de Pão',
     maquinaCodigo: 'MAQ-001',
     status: 'Pendente',
@@ -13,9 +35,11 @@ export const SOLICITACOES_MOCK: SolicitacaoOS[] = [
     lojaId: 'loja-1',
     impactos: ['Afeta Produção'],
     origem: 'solicitante',
+    fotoUrl: FOTO_MOCK_FERRUGEM,
   },
   {
     id: 2,
+    tipo: 'maquinario',
     maquinaNome: 'Câmara Fria de Carnes',
     maquinaCodigo: 'MAQ-004',
     status: 'Convertida',
@@ -29,6 +53,7 @@ export const SOLICITACOES_MOCK: SolicitacaoOS[] = [
   },
   {
     id: 3,
+    tipo: 'maquinario',
     maquinaNome: 'Masseira Industrial',
     maquinaCodigo: 'MAQ-002',
     status: 'Rejeitada',
@@ -42,6 +67,7 @@ export const SOLICITACOES_MOCK: SolicitacaoOS[] = [
   },
   {
     id: 4,
+    tipo: 'maquinario',
     maquinaNome: 'Câmara Fria de Hortifruti',
     maquinaCodigo: 'MAQ-006',
     status: 'Pendente',
@@ -52,9 +78,11 @@ export const SOLICITACOES_MOCK: SolicitacaoOS[] = [
     lojaId: 'loja-1',
     impactos: ['Parada Parcial'],
     origem: 'solicitante',
+    fotoUrl: FOTO_MOCK_VAZAMENTO,
   },
   {
     id: 5,
+    tipo: 'maquinario',
     maquinaNome: 'Serra Fita para Carnes',
     maquinaCodigo: 'MAQ-003',
     status: 'Convertida',
@@ -68,6 +96,7 @@ export const SOLICITACOES_MOCK: SolicitacaoOS[] = [
   },
   {
     id: 6,
+    tipo: 'maquinario',
     maquinaNome: 'Balança Eletrônica de Pesagem',
     maquinaCodigo: 'MAQ-007',
     status: 'Convertida',
@@ -81,6 +110,7 @@ export const SOLICITACOES_MOCK: SolicitacaoOS[] = [
   },
   {
     id: 7,
+    tipo: 'maquinario',
     maquinaNome: 'Embaladora a Vácuo',
     maquinaCodigo: 'MAQ-005',
     status: 'Pendente',
@@ -91,9 +121,11 @@ export const SOLICITACOES_MOCK: SolicitacaoOS[] = [
     lojaId: 'loja-1',
     impactos: ['Retrabalho'],
     origem: 'solicitante',
+    fotoUrl: FOTO_MOCK_FAISCA,
   },
   {
     id: 8,
+    tipo: 'maquinario',
     maquinaNome: 'Balcão Refrigerado de Frios',
     maquinaCodigo: 'MAQ-010',
     status: 'Rejeitada',
@@ -107,6 +139,7 @@ export const SOLICITACOES_MOCK: SolicitacaoOS[] = [
   },
   {
     id: 9,
+    tipo: 'maquinario',
     maquinaNome: 'Câmara Fria de Estoque',
     maquinaCodigo: 'MAQ-012',
     status: 'Convertida',
@@ -120,6 +153,7 @@ export const SOLICITACOES_MOCK: SolicitacaoOS[] = [
   },
   {
     id: 10,
+    tipo: 'maquinario',
     maquinaNome: 'Fatiadora de Frios',
     maquinaCodigo: 'MAQ-011',
     status: 'Pendente',
@@ -130,9 +164,11 @@ export const SOLICITACOES_MOCK: SolicitacaoOS[] = [
     lojaId: 'loja-2',
     impactos: ['Retrabalho'],
     origem: 'solicitante',
+    fotoUrl: FOTO_MOCK_TRINCA,
   },
   {
     id: 11,
+    tipo: 'maquinario',
     maquinaNome: 'Sistema de Refrigeração de Bebidas',
     maquinaCodigo: 'MAQ-014',
     status: 'Convertida',
@@ -146,6 +182,7 @@ export const SOLICITACOES_MOCK: SolicitacaoOS[] = [
   },
   {
     id: 12,
+    tipo: 'maquinario',
     maquinaNome: 'Balcão Refrigerado de Peixaria',
     maquinaCodigo: 'MAQ-008',
     status: 'Pendente',
@@ -156,9 +193,11 @@ export const SOLICITACOES_MOCK: SolicitacaoOS[] = [
     lojaId: 'loja-1',
     impactos: ['Afeta Produção'],
     origem: 'solicitante',
+    fotoUrl: FOTO_MOCK_GELO,
   },
   {
     id: 13,
+    tipo: 'maquinario',
     maquinaNome: 'Máquina de Gelo em Escamas',
     maquinaCodigo: 'MAQ-009',
     status: 'Rejeitada',
@@ -172,6 +211,7 @@ export const SOLICITACOES_MOCK: SolicitacaoOS[] = [
   },
   {
     id: 14,
+    tipo: 'maquinario',
     maquinaNome: 'Empilhadeira Elétrica',
     maquinaCodigo: 'MAQ-013',
     status: 'Convertida',
@@ -185,6 +225,7 @@ export const SOLICITACOES_MOCK: SolicitacaoOS[] = [
   },
   {
     id: 15,
+    tipo: 'maquinario',
     maquinaNome: 'Ar Condicionado Central do Salão',
     maquinaCodigo: 'MAQ-015',
     status: 'Pendente',
@@ -195,9 +236,11 @@ export const SOLICITACOES_MOCK: SolicitacaoOS[] = [
     lojaId: 'loja-3',
     impactos: ['Afeta Produção'],
     origem: 'solicitante',
+    fotoUrl: FOTO_MOCK_FUMACA,
   },
   {
     id: 16,
+    tipo: 'maquinario',
     maquinaNome: 'Forno Industrial de Pão',
     maquinaCodigo: 'MAQ-001',
     status: 'Convertida',
@@ -211,6 +254,7 @@ export const SOLICITACOES_MOCK: SolicitacaoOS[] = [
   },
   {
     id: 17,
+    tipo: 'maquinario',
     maquinaNome: 'Câmara Fria de Hortifruti',
     maquinaCodigo: 'MAQ-006',
     status: 'Pendente',
@@ -224,6 +268,7 @@ export const SOLICITACOES_MOCK: SolicitacaoOS[] = [
   },
   {
     id: 18,
+    tipo: 'maquinario',
     maquinaNome: 'Balcão Refrigerado de Frios',
     maquinaCodigo: 'MAQ-010',
     status: 'Convertida',
@@ -235,4 +280,109 @@ export const SOLICITACOES_MOCK: SolicitacaoOS[] = [
     impactos: [],
     origem: 'solicitante',
   },
+  // Pequenos Reparos e OS Terceiros pendentes de aprovação — cobrindo os escopos dos
+  // três gestores mockados (gestor1: Loja 1/Padaria+Açougue; gestor2: Loja 1/Hortifruti
+  // +Peixaria; regional: Loja 2 e Loja 3 inteiras).
+  {
+    id: 19,
+    tipo: 'reparo',
+    maquinaNome: 'Lâmpada de LED - Depósito da Padaria',
+    maquinaCodigo: '—',
+    status: 'Pendente',
+    descricao: 'Lâmpada queimada no depósito de farinha, área com iluminação insuficiente para conferência de estoque.',
+    solicitante: 'Eduardo',
+    criadoEm: '2026-08-03T08:10:00',
+    setor: 'Padaria',
+    lojaId: 'loja-1',
+    impactos: [],
+    origem: 'solicitante',
+    fotoUrl: FOTO_MOCK_FUMACA,
+  },
+  {
+    id: 20,
+    tipo: 'terceiros',
+    maquinaNome: 'Serra Fita para Carnes',
+    maquinaCodigo: 'MAQ-003',
+    tipoDefeito: 'Mecânico',
+    status: 'Pendente',
+    descricao: 'Motor com ruído excessivo e superaquecimento constante, necessita revisão especializada do fabricante.',
+    solicitante: 'Eduardo',
+    criadoEm: '2026-08-03T09:40:00',
+    setor: 'Açougue',
+    lojaId: 'loja-1',
+    impactos: ['Parada Parcial'],
+    origem: 'solicitante',
+    fotoUrl: FOTO_MOCK_FERRUGEM,
+  },
+  {
+    id: 21,
+    tipo: 'reparo',
+    maquinaNome: 'Piso da Câmara de Hortifruti',
+    maquinaCodigo: '—',
+    status: 'Pendente',
+    descricao: 'Piso rachado na entrada da câmara de hortifruti, risco de escorregão para os funcionários.',
+    solicitante: 'Marina',
+    criadoEm: '2026-08-02T14:20:00',
+    setor: 'Hortifruti',
+    lojaId: 'loja-1',
+    impactos: ['Afeta Produção'],
+    origem: 'solicitante',
+    fotoUrl: FOTO_MOCK_TRINCA,
+  },
+  {
+    id: 22,
+    tipo: 'terceiros',
+    maquinaNome: 'Balcão Refrigerado de Peixaria',
+    maquinaCodigo: 'MAQ-008',
+    tipoDefeito: 'Elétrico',
+    status: 'Pendente',
+    descricao: 'Painel elétrico do balcão desarmando sozinho, necessita assistência técnica especializada em refrigeração.',
+    solicitante: 'Eduardo',
+    criadoEm: '2026-08-02T16:05:00',
+    setor: 'Peixaria',
+    lojaId: 'loja-1',
+    impactos: ['Afeta Produção', 'Parada Parcial'],
+    origem: 'solicitante',
+    fotoUrl: FOTO_MOCK_FAISCA,
+  },
+  {
+    id: 23,
+    tipo: 'reparo',
+    maquinaNome: 'Vidro da Vitrine Frontal',
+    maquinaCodigo: '—',
+    status: 'Pendente',
+    descricao: 'Vidro trincado na vitrine frontal da loja, próximo à entrada principal.',
+    solicitante: 'Carlos',
+    criadoEm: '2026-08-01T10:50:00',
+    setor: 'Frente de Loja',
+    lojaId: 'loja-3',
+    impactos: [],
+    origem: 'solicitante',
+    fotoUrl: FOTO_MOCK_VIDRO,
+  },
+  {
+    id: 24,
+    tipo: 'terceiros',
+    maquinaNome: 'Câmara Fria de Estoque',
+    maquinaCodigo: 'MAQ-012',
+    tipoDefeito: 'Hidráulico',
+    status: 'Pendente',
+    descricao: 'Vazamento no sistema de refrigeração da câmara, necessita técnico certificado em gás refrigerante.',
+    solicitante: 'Marina',
+    criadoEm: '2026-08-01T13:15:00',
+    setor: 'Estoque',
+    lojaId: 'loja-2',
+    impactos: ['Parada Parcial'],
+    origem: 'solicitante',
+    fotoUrl: FOTO_MOCK_HIDRAULICO,
+  },
 ]
+
+let proximoId = Math.max(...SOLICITACOES_MOCK.map((item) => item.id)) + 1
+
+// Centraliza a geração de id para as novas Solicitações OS (Reparo, Terceiros e,
+// futuramente, Maquinário) — evita colisão de id entre os diferentes serviços que
+// empurram registros para o mesmo SOLICITACOES_MOCK.
+export function gerarProximoIdSolicitacao(): number {
+  return proximoId++
+}

@@ -3,7 +3,9 @@ import { XCircle } from 'lucide-react'
 import { Botao } from '../../../componentes/Botao'
 import { BadgeOrigemPreventiva } from '../../../componentes/BadgeOrigemPreventiva'
 import { BadgeStatus } from '../../../componentes/BadgeStatus'
+import { BadgeTipoOS } from '../../../componentes/BadgeTipoOS'
 import { LOJAS_MOCK } from '../../../servicos/dadosMockLojas'
+import { MAQUINAS_MOCK } from '../../../servicos/dadosMockMaquinas'
 import { formatarDataHora } from '../../../utilitarios/formatarData'
 import type { SolicitacaoOS } from '../../../tipos/ordemServico'
 
@@ -17,6 +19,9 @@ export function ModalDetalhesSolicitacao({
   aoFechar,
 }: ModalDetalhesSolicitacaoProps) {
   const loja = LOJAS_MOCK.find((item) => item.id === solicitacao.lojaId)
+  const maquinaCadastrada = MAQUINAS_MOCK.find(
+    (item) => item.id === solicitacao.maquinaCodigo,
+  )
   const ehPreventiva = solicitacao.origem === 'preventiva'
 
   return createPortal(
@@ -52,10 +57,52 @@ export function ModalDetalhesSolicitacao({
               </p>
             </div>
             <div className="flex flex-col items-end gap-1.5">
-              <BadgeStatus status={solicitacao.status} />
+              <div className="flex gap-1.5">
+                <BadgeStatus status={solicitacao.status} />
+                <BadgeTipoOS tipo={solicitacao.tipo} />
+              </div>
               {ehPreventiva && <BadgeOrigemPreventiva />}
             </div>
           </div>
+
+          {maquinaCadastrada?.fotoUrl && (
+            <div>
+              <p className="mb-1 text-xs font-semibold tracking-wide text-slate-400 uppercase">
+                Foto da Máquina (cadastro)
+              </p>
+              <img
+                src={maquinaCadastrada.fotoUrl}
+                alt={solicitacao.maquinaNome}
+                className="h-40 w-full rounded-lg object-contain bg-slate-50"
+              />
+            </div>
+          )}
+
+          {solicitacao.fotoUrl && (
+            <div>
+              <p className="mb-1 text-xs font-semibold tracking-wide text-slate-400 uppercase">
+                {solicitacao.tipo === 'reparo' ? 'Foto do Item' : 'Foto do Defeito'}
+              </p>
+              <img
+                src={solicitacao.fotoUrl}
+                alt={solicitacao.tipo === 'reparo' ? 'Foto do item' : 'Foto do defeito'}
+                className="h-40 w-full rounded-lg object-contain bg-slate-50"
+              />
+            </div>
+          )}
+
+          {solicitacao.videoUrl && (
+            <div>
+              <p className="mb-1 text-xs font-semibold tracking-wide text-slate-400 uppercase">
+                Vídeo do Defeito
+              </p>
+              <video
+                src={solicitacao.videoUrl}
+                controls
+                className="h-40 w-full rounded-lg bg-black object-contain"
+              />
+            </div>
+          )}
 
           {ehPreventiva && (
             <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-700">
@@ -91,6 +138,14 @@ export function ModalDetalhesSolicitacao({
                 {formatarDataHora(solicitacao.criadoEm)}
               </p>
             </div>
+            {solicitacao.tipoDefeito && (
+              <div>
+                <p className="text-xs font-semibold tracking-wide text-slate-400 uppercase">
+                  Tipo de Defeito
+                </p>
+                <p className="text-slate-700">{solicitacao.tipoDefeito}</p>
+              </div>
+            )}
           </div>
 
           <div>

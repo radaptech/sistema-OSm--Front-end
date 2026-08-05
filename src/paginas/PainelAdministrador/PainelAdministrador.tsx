@@ -1,4 +1,5 @@
 import {
+  Building2,
   CircleDollarSign,
   ClipboardCheck,
   Store,
@@ -63,6 +64,12 @@ export function PainelAdministrador() {
             descricao="Cadastro de máquinas e preventivas"
             Icone={Wrench}
             aoClicar={() => navegar('/administrador/maquinas')}
+          />
+          <CardAcao
+            titulo="Empresas Terceirizadas"
+            descricao="Empresas parceiras para reparo de máquinas"
+            Icone={Building2}
+            aoClicar={() => navegar('/administrador/empresas-terceirizadas')}
           />
           <CardAcao
             titulo="Custos Pendentes"

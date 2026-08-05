@@ -34,6 +34,7 @@ export function gerarSolicitacoesPreventivasVencidas(
     .filter((preventiva) => !preventivasJaSolicitadas.has(preventiva.id))
     .map((preventiva, indice) => ({
       id: ID_BASE_PREVENTIVA + indice,
+      tipo: 'maquinario' as const,
       maquinaNome: preventiva.maquinaNome,
       maquinaCodigo: preventiva.maquinaId,
       status: 'Pendente',

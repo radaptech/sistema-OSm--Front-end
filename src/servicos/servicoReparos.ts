@@ -1,27 +1,34 @@
-import { api } from './api'
+import { atrasoSimulado } from './atrasoSimulado'
+import { gerarProximoIdSolicitacao, SOLICITACOES_MOCK } from './dadosMockSolicitacoes'
 import type { NovaSolicitacaoReparoPayload } from '../tipos/reparo'
+import type { SolicitacaoOS } from '../tipos/ordemServico'
 
-function construirFormDataReparo(
-  dados: NovaSolicitacaoReparoPayload,
-  foto?: File,
-): FormData {
-  const formData = new FormData()
-
-  formData.append('item', dados.item)
-  formData.append('descricao', dados.descricao)
-  formData.append('setor', dados.setor)
-  formData.append('lojaId', dados.lojaId)
-  formData.append('solicitante', dados.solicitante)
-  formData.append('dataHora', dados.dataHora)
-
-  if (foto) {
-    formData.append('foto', foto)
+// Desvio deliberado — mock-first: para o Pequeno Reparo entrar no mesmo pipeline de
+// aprovação do Gestor (item 6/3c), a solicitação precisa existir em SOLICITACOES_MOCK.
+// A foto usa URL.createObjectURL (mesma estratégia de CadastrarMaquina, item 5), já que
+// não há endpoint real de upload.
+function criar(dados: NovaSolicitacaoReparoPayload, foto?: File): Promise<SolicitacaoOS> {
+  const solicitacao: SolicitacaoOS = {
+    id: gerarProximoIdSolicitacao(),
+    tipo: 'reparo',
+    maquinaNome: dados.item,
+    maquinaCodigo: '—',
+    status: 'Pendente',
+    descricao: dados.descricao,
+    solicitante: dados.solicitante,
+    criadoEm: dados.dataHora,
+    setor: dados.setor,
+    lojaId: dados.lojaId,
+    impactos: [],
+    origem: 'solicitante',
+    fotoUrl: foto ? URL.createObjectURL(foto) : undefined,
   }
 
-  return formData
+  SOLICITACOES_MOCK.push(solicitacao)
+
+  return atrasoSimulado(solicitacao)
 }
 
 export const servicoReparos = {
-  criar: (dados: NovaSolicitacaoReparoPayload, foto?: File) =>
-    api.post('/solicitacoes-reparo', construirFormDataReparo(dados, foto)),
+  criar,
 }

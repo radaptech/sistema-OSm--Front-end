@@ -1,4 +1,4 @@
-import { CirclePlus, ClipboardList, Hammer } from 'lucide-react'
+import { CirclePlus, ClipboardList, Hammer, Truck } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { CabecalhoTopo } from '../../componentes/CabecalhoTopo'
 import { CardAcao } from '../../componentes/CardAcao'
@@ -47,6 +47,13 @@ export function HomeSolicitante() {
             Icone={Hammer}
             variante="reparo"
             aoClicar={() => navegar('/nova-solicitacao-reparo')}
+          />
+          <CardAcao
+            titulo="Nova Solicitação OS Terceiros"
+            descricao="Máquina que precisa ser reparada por empresa terceirizada"
+            Icone={Truck}
+            variante="terceiros"
+            aoClicar={() => navegar('/nova-solicitacao-os-terceiros')}
           />
         </div>
 
