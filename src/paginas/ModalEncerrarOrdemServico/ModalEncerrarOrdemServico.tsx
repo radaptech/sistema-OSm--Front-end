@@ -75,14 +75,14 @@ export function ModalEncerrarOrdemServico({
   }
 
   return createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl">
-        <div className="flex items-start justify-between bg-gradient-to-r from-[#1f4e2c] to-[#4bae70] px-6 py-4">
+    <div className="animate-fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+      <div className="animate-pop-in w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-pop">
+        <div className="flex items-start justify-between bg-gradient-to-r from-marca-900 to-marca-500 px-6 py-4">
           <div>
-            <p className="text-xs font-bold tracking-widest text-white/80 uppercase">
+            <p className="font-mono text-xs font-bold tracking-widest text-white/80 uppercase">
               Painel do Técnico
             </p>
-            <p className="text-lg font-bold text-white">
+            <p className="font-display text-lg font-bold text-white">
               Encerrar OS · #{ordemServico.id}
             </p>
             <p className="text-xs text-white/80">{ordemServico.maquinaNome}</p>
@@ -105,50 +105,44 @@ export function ModalEncerrarOrdemServico({
           noValidate
           className="flex max-h-[75vh] flex-col gap-5 overflow-y-auto p-6"
         >
-          <div className="grid grid-cols-2 gap-4">
-            <div className="flex flex-col gap-1">
-              <span className="text-xs font-semibold tracking-wide text-[#4bae70] uppercase">
-                Início do Atendimento
-              </span>
-              <p className="rounded-lg bg-lime-100 px-3 py-2.5 text-sm text-[#1f4e2c]">
-                {formatarDataHora(dataInicio)}
-              </p>
-            </div>
-            <div className="flex flex-col gap-1">
-              <span className="text-xs font-semibold tracking-wide text-[#4bae70] uppercase">
-                Término do Atendimento
-              </span>
-              <p className="rounded-lg bg-lime-100 px-3 py-2.5 text-sm text-[#1f4e2c]">
-                {formatarDataHora(agoraIso)}
-              </p>
-            </div>
+          <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+            <span className="font-mono text-xs font-semibold tracking-wide text-marca-500 uppercase">
+              Início do Atendimento
+            </span>
+            <span className="font-mono text-xs font-semibold tracking-wide text-marca-500 uppercase">
+              Término do Atendimento
+            </span>
+            <p className="rounded-lg bg-lime-100 px-3 py-2.5 font-mono text-sm text-marca-800">
+              {formatarDataHora(dataInicio)}
+            </p>
+            <p className="rounded-lg bg-lime-100 px-3 py-2.5 font-mono text-sm text-marca-800">
+              {formatarDataHora(agoraIso)}
+            </p>
           </div>
 
-          <div className="grid grid-cols-3 gap-4">
-            <div className="flex flex-col gap-1">
-              <span className="text-xs font-semibold tracking-wide text-[#4bae70] uppercase">
-                Horas Trabalhadas
-              </span>
-              <p className="rounded-lg bg-lime-100 px-3 py-2.5 text-sm text-[#1f4e2c]">
-                {horasTrabalhadas}h
-              </p>
-            </div>
-            <div className="flex flex-col gap-1">
-              <span className="text-xs font-semibold tracking-wide text-[#4bae70] uppercase">
-                Horas Parada
-              </span>
-              <p className="rounded-lg bg-lime-100 px-3 py-2.5 text-sm text-[#1f4e2c]">
-                {horasParada}h
-              </p>
-            </div>
-            <div className="flex flex-col gap-1">
-              <span className="text-xs font-semibold tracking-wide text-[#4bae70] uppercase">
-                Custo Hora Técnico
-              </span>
-              <p className="rounded-lg bg-lime-100 px-3 py-2.5 text-sm text-[#1f4e2c]">
-                {formatarMoeda(custoHoraTecnico)}
-              </p>
-            </div>
+          {/* Rótulos e valores em linhas de grid próprias (em vez de um flex-col por
+              coluna) para que, mesmo quando um rótulo quebra em duas linhas e outro não
+              (ex: "Custo Hora Técnico" vs "Horas Parada"), os três valores abaixo fiquem
+              alinhados na mesma altura. */}
+          <div className="grid grid-cols-3 gap-x-4 gap-y-1">
+            <span className="font-mono text-xs font-semibold tracking-wide text-marca-500 uppercase">
+              Horas Trabalhadas
+            </span>
+            <span className="font-mono text-xs font-semibold tracking-wide text-marca-500 uppercase">
+              Horas Parada
+            </span>
+            <span className="font-mono text-xs font-semibold tracking-wide text-marca-500 uppercase">
+              Custo Hora Técnico
+            </span>
+            <p className="rounded-lg bg-lime-100 px-3 py-2.5 font-mono text-sm text-marca-800">
+              {horasTrabalhadas}h
+            </p>
+            <p className="rounded-lg bg-lime-100 px-3 py-2.5 font-mono text-sm text-marca-800">
+              {horasParada}h
+            </p>
+            <p className="rounded-lg bg-lime-100 px-3 py-2.5 font-mono text-sm text-marca-800">
+              {formatarMoeda(custoHoraTecnico)}
+            </p>
           </div>
 
           <p className="text-xs text-slate-400">

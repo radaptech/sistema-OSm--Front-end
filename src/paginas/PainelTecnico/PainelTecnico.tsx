@@ -1,13 +1,16 @@
 import { useState } from 'react'
+import { ClipboardCheck, Inbox, PauseCircle, type LucideIcon } from 'lucide-react'
 import { toast } from 'react-toastify'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { CabecalhoTopo } from '../../componentes/CabecalhoTopo'
 import { useEstadoAutenticacao } from '../../estado/estadoAutenticacao'
 import { useOrdensServicoTecnico } from '../../hooks/useOrdensServicoTecnico'
 import { LOJAS_MOCK } from '../../servicos/dadosMockLojas'
+import { SOLICITACOES_MOCK } from '../../servicos/dadosMockSolicitacoes'
 import { servicoOrdensServico } from '../../servicos/servicoOrdensServico'
-import type { OrdemServico } from '../../tipos/ordemServico'
+import type { OrdemServico, SolicitacaoOS } from '../../tipos/ordemServico'
 import { agruparPorSetorLoja } from '../../utilitarios/agruparPorSetorLoja'
+import { ModalDetalhesSolicitacao } from '../ModalDetalhesSolicitacao/ModalDetalhesSolicitacao'
 import { ModalEncerrarOrdemServico } from '../ModalEncerrarOrdemServico/ModalEncerrarOrdemServico'
 import type { EncerramentoOrdemServicoPayload } from '../../tipos/ordemServico'
 import { AbasPainelTecnico, type AbaPainelTecnico } from './componentes/AbasPainelTecnico'
@@ -26,6 +29,8 @@ export function PainelTecnico() {
   const [ordemParaPausar, setOrdemParaPausar] = useState<OrdemServico | null>(null)
   const [ordemParaEncerrar, setOrdemParaEncerrar] = useState<OrdemServico | null>(null)
   const [ordemParaVerDetalhes, setOrdemParaVerDetalhes] = useState<OrdemServico | null>(null)
+  const [solicitacaoParaVisualizar, setSolicitacaoParaVisualizar] =
+    useState<SolicitacaoOS | null>(null)
 
   const { data: ordensServico = [], isLoading } = useOrdensServicoTecnico(tecnicoId)
 
@@ -73,6 +78,19 @@ export function PainelTecnico() {
     toast.success(`OS #${ordemServico.id} retomada.`)
   }
 
+  function aoVerSolicitacao(ordemServico: OrdemServico) {
+    const solicitacao = SOLICITACOES_MOCK.find(
+      (item) => item.id === ordemServico.solicitacaoId,
+    )
+
+    if (!solicitacao) {
+      toast.error('Solicitação original não encontrada.')
+      return
+    }
+
+    setSolicitacaoParaVisualizar(solicitacao)
+  }
+
   async function aoConfirmarEncerramento(
     dados: Omit<EncerramentoOrdemServicoPayload, 'ordemServicoId'>,
   ) {
@@ -100,15 +118,22 @@ export function PainelTecnico() {
     ),
   }
 
-  const MENSAGENS_VAZIO: Record<AbaPainelTecnico, string> = {
-    'em-aberto': 'Nenhuma OS em aberto no momento.',
-    'pendentes-pausadas': 'Nenhuma OS pendente ou pausada.',
-    concluidas:
-      'Nenhuma OS concluída ainda — a OS só aparece aqui depois que o Administrador lança o custo de manutenção.',
+  const ESTADO_VAZIO: Record<AbaPainelTecnico, { Icone: LucideIcon; mensagem: string }> = {
+    'em-aberto': { Icone: Inbox, mensagem: 'Nenhuma OS em aberto no momento.' },
+    'pendentes-pausadas': {
+      Icone: PauseCircle,
+      mensagem: 'Nenhuma OS pendente ou pausada.',
+    },
+    concluidas: {
+      Icone: ClipboardCheck,
+      mensagem:
+        'Nenhuma OS concluída ainda — a OS só aparece aqui depois que o Administrador lança o custo de manutenção.',
+    },
   }
 
   const ordensExibidas = ordensPorAba[abaSelecionada]
   const gruposExibidos = agruparPorSetorLoja(ordensExibidas, LOJAS_MOCK)
+  const { Icone: IconeVazio, mensagem: mensagemVazia } = ESTADO_VAZIO[abaSelecionada]
 
   function renderizarCard(ordemServico: OrdemServico) {
     return (
@@ -128,6 +153,7 @@ export function PainelTecnico() {
         aoVerDetalhes={
           ordemServico.statusExecucao === 'Concluída' ? setOrdemParaVerDetalhes : undefined
         }
+        aoVerSolicitacao={aoVerSolicitacao}
       />
     )
   }
@@ -138,7 +164,9 @@ export function PainelTecnico() {
 
       <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-5 px-4 py-6 sm:px-8">
         <div>
-          <h1 className="text-xl font-bold text-white sm:text-2xl">Painel do Técnico</h1>
+          <h1 className="font-display text-xl font-bold text-white sm:text-2xl">
+            Painel do Técnico
+          </h1>
           <p className="mt-1 text-sm text-slate-300">
             Acompanhe as ordens de serviço em que você é o técnico responsável.
           </p>
@@ -155,9 +183,10 @@ export function PainelTecnico() {
           )}
 
           {!isLoading && ordensExibidas.length === 0 && (
-            <p className="rounded-xl bg-white/10 py-10 text-center text-sm text-slate-200">
-              {MENSAGENS_VAZIO[abaSelecionada]}
-            </p>
+            <div className="flex flex-col items-center gap-2 rounded-xl bg-white/10 py-12 text-center text-slate-400">
+              <IconeVazio size={32} className="text-slate-400" />
+              <p className="max-w-sm text-sm">{mensagemVazia}</p>
+            </div>
           )}
 
           {!isLoading &&
@@ -173,7 +202,7 @@ export function PainelTecnico() {
       </main>
 
       <footer className="py-4 text-center">
-        <span className="text-[10px] font-semibold tracking-widest text-slate-400 uppercase">
+        <span className="font-mono text-[10px] font-semibold tracking-widest text-slate-400 uppercase">
           Solicitação OS © {new Date().getFullYear()}
         </span>
       </footer>
@@ -198,6 +227,14 @@ export function PainelTecnico() {
         <ModalDetalhesEncerramento
           ordemServico={ordemParaVerDetalhes}
           aoFechar={() => setOrdemParaVerDetalhes(null)}
+        />
+      )}
+
+      {solicitacaoParaVisualizar && (
+        <ModalDetalhesSolicitacao
+          solicitacao={solicitacaoParaVisualizar}
+          contexto="Painel do Técnico"
+          aoFechar={() => setSolicitacaoParaVisualizar(null)}
         />
       )}
     </div>

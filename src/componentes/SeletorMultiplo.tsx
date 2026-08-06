@@ -39,9 +39,9 @@ export function SeletorMultiplo({
             key={opcao.valor}
             type="button"
             onClick={() => aoClicarOpcao(opcao.valor)}
-            className={`rounded-full px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition ${
+            className={`rounded-full px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition-all duration-200 ${
               ativo
-                ? 'bg-gradient-to-r from-[#1f4e2c] to-[#4bae70] text-white'
+                ? 'bg-gradient-to-r from-marca-900 to-marca-500 text-white shadow-card'
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
             }`}
           >

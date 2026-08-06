@@ -24,19 +24,21 @@ export function CardOSEmExecucao({ ordemServico }: CardOSEmExecucaoProps) {
 
   return (
     <div
-      className={`flex flex-col gap-3 rounded-xl bg-white p-4 shadow-sm ${
+      className={`flex flex-col gap-3 rounded-xl bg-white p-4 shadow-card ${
         ordemServico.statusExecucao === 'Pausada' ? 'border-l-4 border-amber-400' : ''
       }`}
     >
       <div className="flex items-start gap-4">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-r from-[#1f4e2c] to-[#4bae70] text-sm font-bold text-white">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-r from-marca-900 to-marca-500 font-mono text-sm font-bold text-white">
           #{ordemServico.id}
         </span>
 
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <span className="font-semibold text-slate-800">{ordemServico.maquinaNome}</span>
-            <span className="text-sm text-slate-400">· {ordemServico.maquinaCodigo}</span>
+            <span className="font-mono text-sm text-slate-400">
+              · {ordemServico.maquinaCodigo}
+            </span>
             <BadgeStatusExecucao status={ordemServico.statusExecucao} />
             <BadgeTipoOS tipo={ordemServico.tipo} />
             {ordemServico.urgencia && <BadgeUrgencia urgencia={ordemServico.urgencia} />}
@@ -48,7 +50,7 @@ export function CardOSEmExecucao({ ordemServico }: CardOSEmExecucaoProps) {
               {tecnico ? `${tecnico.nome} — ${tecnico.area}` : '—'}
             </span>
           </p>
-          <p className="mt-1 text-xs text-slate-400">
+          <p className="mt-1 font-mono text-xs text-slate-400">
             Aberta em {formatarDataHora(ordemServico.dataAbertura)}
             {ordemServico.dataInicio &&
               ` · Iniciada em ${formatarDataHora(ordemServico.dataInicio)}`}

@@ -19,7 +19,7 @@ export function SeletorMaquinaDashboard({
         <div key={grupo.loja.id} className="flex flex-col gap-2">
           <div className="flex items-center gap-2">
             <Store size={14} className="text-emerald-300" />
-            <h2 className="text-xs font-bold tracking-wide text-white uppercase">
+            <h2 className="font-display text-xs font-bold tracking-wide text-white uppercase">
               {grupo.loja.nome}
             </h2>
           </div>
@@ -52,9 +52,9 @@ export function SeletorMaquinaDashboard({
                         key={maquina.id}
                         type="button"
                         onClick={() => aoSelecionar(maquina)}
-                        className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition ${
+                        className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition-all duration-200 ${
                           selecionada
-                            ? 'bg-gradient-to-r from-[#1f4e2c] to-[#4bae70] text-white'
+                            ? 'bg-gradient-to-r from-marca-900 to-marca-500 text-white shadow-card'
                             : 'bg-slate-700 text-slate-200 hover:bg-slate-600'
                         }`}
                       >

@@ -26,6 +26,7 @@ interface CamposAcessoProps {
   erroSetores?: string
   erroArea?: string
   erroValorHora?: string
+  className?: string
 }
 
 export function CamposAcesso({
@@ -44,19 +45,20 @@ export function CamposAcesso({
   erroSetores,
   erroArea,
   erroValorHora,
+  className = '',
 }: CamposAcessoProps) {
   if (role === 'administrador') {
     return (
-      <p className="rounded-lg bg-lime-50 px-4 py-3 text-sm text-[#1f4e2c]">
+      <p className={`rounded-lg bg-lime-50 px-4 py-3 text-sm text-marca-800 ${className}`}>
         Administrador tem acesso total ao tenant, sem restrição de loja ou setor.
       </p>
     )
   }
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className={`flex flex-col gap-5 ${className}`}>
       <div className="flex flex-col gap-1.5">
-        <span className="text-xs font-semibold tracking-wide text-[#4bae70] uppercase">
+        <span className="font-mono text-xs font-semibold tracking-wider text-marca-500 uppercase">
           Loja(s) * {role !== 'solicitante' && '(seleção múltipla)'}
         </span>
         <SeletorMultiplo
@@ -70,7 +72,7 @@ export function CamposAcesso({
 
       {role !== 'tecnico' && (
         <div className="flex flex-col gap-3">
-          <span className="text-xs font-semibold tracking-wide text-[#4bae70] uppercase">
+          <span className="font-mono text-xs font-semibold tracking-wider text-marca-500 uppercase">
             Setor(es) * {role === 'gestor' && '(seleção múltipla)'}
           </span>
 

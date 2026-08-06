@@ -9,14 +9,14 @@ interface CampoTextoProps extends InputHTMLAttributes<HTMLInputElement> {
 
 const ESTILOS_ROTULO = {
   padrao: 'text-sm font-medium text-slate-700',
-  claro: 'text-xs font-semibold tracking-wide text-[#4bae70] uppercase',
+  claro: 'font-mono text-xs font-semibold tracking-wider text-marca-500 uppercase',
 }
 
 const ESTILOS_INPUT = {
   padrao:
     'border border-slate-300 bg-white text-slate-900 focus:ring-emerald-500',
   claro:
-    'border-0 bg-lime-100 text-[#1f4e2c] placeholder:text-[#1f4e2c]/40 focus:ring-[#4bae70]',
+    'border-0 bg-lime-100 text-marca-800 placeholder:text-marca-800/40 focus:ring-marca-500',
 }
 
 export const CampoTexto = forwardRef<HTMLInputElement, CampoTextoProps>(

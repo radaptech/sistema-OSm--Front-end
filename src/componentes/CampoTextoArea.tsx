@@ -13,7 +13,7 @@ export const CampoTextoArea = forwardRef<HTMLTextAreaElement, CampoTextoAreaProp
       <div className="flex flex-col gap-1">
         <label
           htmlFor={textareaId}
-          className="text-xs font-semibold tracking-wide text-[#4bae70] uppercase"
+          className="font-mono text-xs font-semibold tracking-wider text-marca-500 uppercase"
         >
           {rotulo}
         </label>
@@ -21,7 +21,7 @@ export const CampoTextoArea = forwardRef<HTMLTextAreaElement, CampoTextoAreaProp
           id={textareaId}
           name={name}
           ref={ref}
-          className={`w-full resize-none rounded-lg border-0 bg-lime-100 px-3 py-2.5 text-sm text-[#1f4e2c] placeholder:text-[#1f4e2c]/40 outline-none transition focus:ring-2 focus:ring-[#4bae70] ${
+          className={`w-full resize-none rounded-lg border-0 bg-lime-100 px-3 py-2.5 text-sm text-marca-800 placeholder:text-marca-800/40 outline-none transition focus:ring-2 focus:ring-marca-500 ${
             mensagemErro ? 'ring-2 ring-red-400' : ''
           } ${className}`}
           {...props}

@@ -27,9 +27,9 @@ export function AbasPainelGestor({ abaSelecionada, aoSelecionarAba }: AbasPainel
             key={aba.chave}
             type="button"
             onClick={() => aoSelecionarAba(aba.chave)}
-            className={`rounded-full px-4 py-2 text-sm font-semibold whitespace-nowrap transition ${
+            className={`rounded-full px-4 py-2 text-sm font-semibold whitespace-nowrap transition-all duration-200 ${
               ativa
-                ? 'bg-gradient-to-r from-[#1f4e2c] to-[#4bae70] text-white'
+                ? 'bg-gradient-to-r from-marca-900 to-marca-500 text-white shadow-card'
                 : 'bg-slate-700 text-slate-200 hover:bg-slate-600'
             }`}
           >

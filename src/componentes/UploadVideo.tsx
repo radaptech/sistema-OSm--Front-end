@@ -42,7 +42,7 @@ export function UploadVideo({
 
   return (
     <div className="flex flex-col gap-1">
-      <label className="text-xs font-semibold tracking-wide text-[#4bae70] uppercase">
+      <label className="font-mono text-xs font-semibold tracking-wider text-marca-500 uppercase">
         {rotulo}
       </label>
 
@@ -56,7 +56,7 @@ export function UploadVideo({
         <button
           type="button"
           onClick={() => inputRef.current?.click()}
-          className="flex h-40 w-full items-center justify-center overflow-hidden rounded-lg border-2 border-dashed border-emerald-300 bg-emerald-50/40 transition hover:bg-emerald-50 sm:h-48"
+          className="flex h-40 w-full items-center justify-center overflow-hidden rounded-lg border-2 border-dashed border-emerald-300 bg-emerald-50/40 transition-all duration-200 hover:border-emerald-400 hover:bg-emerald-50 sm:h-48"
         >
           <span className="flex flex-col items-center gap-2 text-slate-500">
             <span className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-emerald-300 text-emerald-500">
@@ -72,7 +72,7 @@ export function UploadVideo({
           <button
             type="button"
             onClick={() => inputRef.current?.click()}
-            className="self-start text-xs font-medium text-[#1f4e2c] hover:underline"
+            className="self-start text-xs font-medium text-marca-800 hover:underline"
           >
             Trocar vídeo
           </button>

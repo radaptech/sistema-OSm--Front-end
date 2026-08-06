@@ -19,7 +19,7 @@ export function HomeSolicitante() {
 
       <main className="flex flex-1 flex-col items-center justify-center gap-8 px-4 py-10">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-white sm:text-3xl">
+          <h1 className="font-display text-2xl font-bold text-white sm:text-3xl">
             O que deseja fazer?
           </h1>
           <p className="mt-1 text-sm text-slate-300">
@@ -65,7 +65,7 @@ export function HomeSolicitante() {
       </main>
 
       <footer className="py-4 text-center">
-        <span className="text-[10px] font-semibold tracking-widest text-slate-400 uppercase">
+        <span className="font-mono text-[10px] font-semibold tracking-widest text-slate-400 uppercase">
           Solicitação OS © {new Date().getFullYear()}
         </span>
       </footer>

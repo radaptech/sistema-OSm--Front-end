@@ -35,8 +35,8 @@ export function GraficoRosca({
   )
 
   return (
-    <div className="rounded-xl bg-white p-4 shadow-sm">
-      <h3 className="text-sm font-semibold text-slate-700">{titulo}</h3>
+    <div className="rounded-2xl bg-white p-4 shadow-card">
+      <h3 className="font-display text-sm font-semibold text-slate-700">{titulo}</h3>
 
       {total === 0 ? (
         <p className="py-10 text-center text-sm text-slate-400">
@@ -89,8 +89,8 @@ export function GraficoRosca({
             </svg>
 
             <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-              <p className="text-lg font-bold text-slate-800">{valorCentral}</p>
-              <p className="text-[10px] text-slate-400 uppercase">
+              <p className="font-mono text-lg font-bold text-slate-800">{valorCentral}</p>
+              <p className="font-mono text-[10px] text-slate-400 uppercase">
                 {rotuloCentral}
               </p>
             </div>
@@ -109,7 +109,7 @@ export function GraficoRosca({
                   />
                   <span className="truncate text-slate-600">{item.rotulo}</span>
                 </span>
-                <span className="shrink-0 font-semibold text-slate-800">
+                <span className="shrink-0 font-mono font-semibold text-slate-800">
                   {item.valorFormatado}
                 </span>
               </li>

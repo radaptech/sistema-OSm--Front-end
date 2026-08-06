@@ -3,6 +3,7 @@ import {
   Activity,
   Clock,
   Gauge,
+  PackageSearch,
   Timer,
   Wrench,
   CircleDollarSign,
@@ -70,7 +71,7 @@ export function DashboardGestor() {
 
       <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-5 px-4 py-6 sm:px-8">
         <div>
-          <h1 className="text-xl font-bold text-white sm:text-2xl">
+          <h1 className="font-display text-xl font-bold text-white sm:text-2xl">
             Indicadores de Máquinas
           </h1>
           <p className="mt-1 text-sm text-slate-300">
@@ -86,9 +87,10 @@ export function DashboardGestor() {
         )}
 
         {!carregandoMaquinas && grupos.length === 0 && (
-          <p className="rounded-xl bg-white/10 py-10 text-center text-sm text-slate-200">
-            Nenhuma máquina disponível nos seus setores/lojas.
-          </p>
+          <div className="flex flex-col items-center gap-2 rounded-2xl bg-white/10 py-12 text-slate-300">
+            <PackageSearch size={28} className="text-slate-400" />
+            <p className="text-sm">Nenhuma máquina disponível nos seus setores/lojas.</p>
+          </div>
         )}
 
         {!carregandoMaquinas && grupos.length > 0 && (
@@ -103,10 +105,10 @@ export function DashboardGestor() {
           <div className="flex flex-col gap-4">
             <div className="flex flex-wrap items-center gap-x-2 gap-y-1 border-b border-white/10 pb-2">
               <Wrench size={16} className="shrink-0 text-emerald-300" />
-              <h2 className="min-w-0 text-sm font-bold break-words text-white">
+              <h2 className="min-w-0 font-display text-sm font-bold break-words text-white">
                 {maquinaSelecionada.nome}
               </h2>
-              <span className="shrink-0 text-xs text-slate-400">
+              <span className="shrink-0 font-mono text-xs text-slate-400">
                 · {maquinaSelecionada.setor}
               </span>
             </div>

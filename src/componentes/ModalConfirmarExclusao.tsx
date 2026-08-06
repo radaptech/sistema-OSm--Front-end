@@ -18,12 +18,12 @@ export function ModalConfirmarExclusao({
   confirmando = false,
 }: ModalConfirmarExclusaoProps) {
   return createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-sm overflow-hidden rounded-2xl bg-white shadow-2xl">
+    <div className="animate-fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+      <div className="animate-pop-in w-full max-w-sm overflow-hidden rounded-2xl bg-white shadow-pop">
         <div className="flex items-start justify-between bg-gradient-to-r from-red-500 to-red-600 px-6 py-4">
           <div className="flex items-center gap-2">
             <AlertTriangle className="text-white" size={20} />
-            <p className="text-lg font-bold text-white">{titulo}</p>
+            <p className="font-display text-lg font-bold text-white">{titulo}</p>
           </div>
           <button
             type="button"

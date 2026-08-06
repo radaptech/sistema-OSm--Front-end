@@ -19,11 +19,11 @@ export function PainelAdministrador() {
     <div className="flex min-h-svh flex-col bg-slate-600">
       <CabecalhoTopo />
 
-      <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 px-4 py-8 sm:px-8">
+      <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 px-4 py-8 sm:px-8 lg:max-w-5xl">
         <div>
           <div className="mb-1 flex items-center gap-2">
-            <UserCog className="text-emerald-300" size={20} />
-            <h1 className="text-xl font-bold text-white sm:text-2xl">
+            <UserCog className="text-marca-300" size={20} />
+            <h1 className="font-display text-xl font-bold text-white sm:text-2xl">
               Painel do Administrador
             </h1>
           </div>
@@ -33,7 +33,7 @@ export function PainelAdministrador() {
           </p>
         </div>
 
-        <div className="flex flex-col gap-3">
+        <div className="grid grid-cols-1 gap-3 lg:grid-cols-2 lg:gap-4 xl:grid-cols-3">
           <CardAcao
             titulo="Usuários"
             descricao="Solicitantes, gestores e administradores"
@@ -87,7 +87,7 @@ export function PainelAdministrador() {
       </main>
 
       <footer className="py-4 text-center">
-        <span className="text-[10px] font-semibold tracking-widest text-slate-400 uppercase">
+        <span className="font-mono text-[10px] font-semibold tracking-widest text-slate-400 uppercase">
           Solicitação OS © {new Date().getFullYear()}
         </span>
       </footer>

@@ -12,12 +12,12 @@ export function Botao({
 }: BotaoProps) {
   const estilosVariante =
     variante === 'primario'
-      ? 'bg-gradient-to-r from-[#1f4e2c] to-[#4bae70] text-white hover:brightness-110'
+      ? 'bg-gradient-to-r from-marca-900 to-marca-500 text-white shadow-card hover:shadow-card-hover hover:brightness-110'
       : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
 
   return (
     <button
-      className={`w-full rounded-xl px-4 py-2.5 text-sm font-semibold shadow-sm transition disabled:cursor-not-allowed disabled:opacity-60 ${estilosVariante} ${className}`}
+      className={`w-full rounded-xl px-4 py-2.5 text-sm font-semibold transition-all duration-200 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 disabled:active:scale-100 ${estilosVariante} ${className}`}
       {...props}
     >
       {children}

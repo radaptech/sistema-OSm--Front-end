@@ -38,14 +38,14 @@ export function ModalLancarCustoManutencao({
   }
 
   return createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl">
-        <div className="flex items-start justify-between bg-gradient-to-r from-[#1f4e2c] to-[#4bae70] px-6 py-4">
+    <div className="animate-fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+      <div className="animate-pop-in w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-pop">
+        <div className="flex items-start justify-between bg-gradient-to-r from-marca-900 to-marca-500 px-6 py-4">
           <div>
-            <p className="text-xs font-bold tracking-widest text-white/80 uppercase">
+            <p className="font-mono text-xs font-bold tracking-widest text-white/80 uppercase">
               Painel do Administrador
             </p>
-            <p className="text-lg font-bold text-white">
+            <p className="font-display text-lg font-bold text-white">
               Lançar Custo · OS #{ordemServico.id}
             </p>
             <p className="text-xs text-white/80">{ordemServico.maquinaNome}</p>
@@ -70,28 +70,28 @@ export function ModalLancarCustoManutencao({
         >
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
-              <p className="text-xs font-semibold tracking-wide text-slate-400 uppercase">
+              <p className="font-mono text-xs font-semibold tracking-wider text-slate-400 uppercase">
                 Encerrada em
               </p>
-              <p className="text-slate-700">
+              <p className="font-mono text-slate-700">
                 {ordemServico.dataFim ? formatarDataHora(ordemServico.dataFim) : '—'}
               </p>
             </div>
             <div>
-              <p className="text-xs font-semibold tracking-wide text-slate-400 uppercase">
+              <p className="font-mono text-xs font-semibold tracking-wider text-slate-400 uppercase">
                 Horas Trabalhadas
               </p>
-              <p className="text-slate-700">
+              <p className="font-mono text-slate-700">
                 {ordemServico.horasTrabalhadas !== undefined
                   ? `${ordemServico.horasTrabalhadas}h`
                   : '—'}
               </p>
             </div>
             <div>
-              <p className="text-xs font-semibold tracking-wide text-slate-400 uppercase">
+              <p className="font-mono text-xs font-semibold tracking-wider text-slate-400 uppercase">
                 Custo Hora do Técnico
               </p>
-              <p className="text-slate-700">
+              <p className="font-mono text-slate-700">
                 {ordemServico.custoHoraTecnico !== undefined
                   ? formatarMoeda(ordemServico.custoHoraTecnico)
                   : '—'}

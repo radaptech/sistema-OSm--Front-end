@@ -9,7 +9,7 @@ export function AcoesRapidas() {
       <button
         type="button"
         onClick={() => navegar('/dashboard-gestor')}
-        className="flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-[#1f4e2c] shadow-sm transition hover:brightness-95"
+        className="flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-marca-800 shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card-hover hover:brightness-95"
       >
         <Gauge size={16} />
         Indicadores

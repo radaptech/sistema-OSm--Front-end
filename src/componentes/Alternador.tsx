@@ -22,12 +22,12 @@ export function Alternador({ marcado, aoAlternar, rotulo, descricao, id }: Alter
         aria-checked={marcado}
         id={id}
         onClick={() => aoAlternar(!marcado)}
-        className={`relative h-6 w-11 shrink-0 rounded-full transition ${
-          marcado ? 'bg-gradient-to-r from-[#1f4e2c] to-[#4bae70]' : 'bg-slate-300'
+        className={`relative h-6 w-11 shrink-0 rounded-full transition-colors duration-200 ${
+          marcado ? 'bg-gradient-to-r from-marca-900 to-marca-500' : 'bg-slate-300'
         }`}
       >
         <span
-          className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${
+          className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform duration-200 ${
             marcado ? 'translate-x-5' : 'translate-x-0.5'
           }`}
         />

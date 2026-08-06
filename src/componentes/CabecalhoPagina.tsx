@@ -21,42 +21,45 @@ export function CabecalhoPagina({ titulo }: CabecalhoPaginaProps) {
   }
 
   return (
-    <header className="flex w-full items-center justify-between bg-gradient-to-r from-[#1f4e2c] to-[#4bae70] px-4 py-3 sm:px-8">
-      <div className="flex items-center gap-3">
-        <button
-          type="button"
-          aria-label="Voltar"
-          onClick={() => navegar(-1)}
-          className="text-white/90 transition hover:text-white"
-        >
-          <ArrowLeft size={20} />
-        </button>
-        <div>
-          <p className="text-xs font-bold tracking-widest text-white uppercase">
-            Solicitação OS
-          </p>
-          <p className="text-sm text-white">{titulo}</p>
+    <header className="relative isolate overflow-hidden bg-gradient-to-r from-marca-900 to-marca-500 px-4 py-3 shadow-card sm:px-8">
+      <div className="bg-grade-industrial bg-grade pointer-events-none absolute inset-0 opacity-20" />
+      <div className="relative flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            aria-label="Voltar"
+            onClick={() => navegar(-1)}
+            className="text-white/90 transition hover:-translate-x-0.5 hover:text-white"
+          >
+            <ArrowLeft size={20} />
+          </button>
+          <div>
+            <p className="font-mono text-xs font-bold tracking-widest text-white uppercase">
+              Solicitação OS
+            </p>
+            <p className="text-sm text-white/90">{titulo}</p>
+          </div>
         </div>
-      </div>
 
-      <div className="flex items-center gap-4">
-        <button
-          type="button"
-          aria-label="Notificações"
-          onClick={aoClicarNotificacoes}
-          className="relative text-white/90 transition hover:text-white"
-        >
-          <Bell size={20} />
-          <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-white" />
-        </button>
-        <button
-          type="button"
-          aria-label="Sair"
-          onClick={aoSair}
-          className="text-white/90 transition hover:text-white"
-        >
-          <LogOut size={20} />
-        </button>
+        <div className="flex items-center gap-4">
+          <button
+            type="button"
+            aria-label="Notificações"
+            onClick={aoClicarNotificacoes}
+            className="relative text-white/90 transition hover:scale-110 hover:text-white"
+          >
+            <Bell size={20} />
+            <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-white" />
+          </button>
+          <button
+            type="button"
+            aria-label="Sair"
+            onClick={aoSair}
+            className="text-white/90 transition hover:scale-110 hover:text-white"
+          >
+            <LogOut size={20} />
+          </button>
+        </div>
       </div>
     </header>
   )

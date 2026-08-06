@@ -41,14 +41,14 @@ export function ModalAprovarOSTerceiros({
   }
 
   return createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl">
-        <div className="flex items-start justify-between bg-gradient-to-r from-[#1f4e2c] to-[#4bae70] px-6 py-4">
+    <div className="animate-fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+      <div className="animate-pop-in w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-pop">
+        <div className="flex items-start justify-between bg-gradient-to-r from-marca-900 to-marca-500 px-6 py-4">
           <div>
-            <p className="text-xs font-bold tracking-widest text-white/80 uppercase">
+            <p className="font-mono text-xs font-bold tracking-widest text-white/80 uppercase">
               Painel do Gestor
             </p>
-            <p className="text-lg font-bold text-white">
+            <p className="font-display text-lg font-bold text-white">
               Aprovar OS Terceiros · #{solicitacao.id}
             </p>
             <p className="text-xs text-white/80">{solicitacao.maquinaNome}</p>
@@ -77,10 +77,10 @@ export function ModalAprovarOSTerceiros({
           </p>
 
           <div className="flex flex-col gap-1">
-            <span className="text-xs font-semibold tracking-wide text-[#4bae70] uppercase">
+            <span className="font-mono text-xs font-semibold tracking-wide text-marca-500 uppercase">
               Data/Hora
             </span>
-            <p className="rounded-lg bg-lime-100 px-3 py-2.5 text-sm text-[#1f4e2c]">
+            <p className="rounded-lg bg-lime-100 px-3 py-2.5 font-mono text-sm text-marca-800">
               {agora.toLocaleString('pt-BR')}
             </p>
           </div>

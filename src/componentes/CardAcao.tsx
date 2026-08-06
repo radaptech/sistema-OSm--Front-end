@@ -36,15 +36,15 @@ export function CardAcao({
     <button
       type="button"
       onClick={aoClicar}
-      className={`flex w-full items-center gap-4 rounded-2xl p-4 text-left transition hover:brightness-110 ${estilos.card}`}
+      className={`group flex w-full items-center gap-4 rounded-2xl p-4 text-left shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card-hover hover:brightness-110 active:translate-y-0 active:scale-[0.99] ${estilos.card}`}
     >
       <span
-        className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${estilos.icone}`}
+        className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl transition-transform duration-200 group-hover:scale-105 ${estilos.icone}`}
       >
         <Icone className="text-white" size={24} />
       </span>
       <span className="flex flex-col">
-        <span className="font-semibold text-white">{titulo}</span>
+        <span className="font-display font-semibold text-white">{titulo}</span>
         <span className="text-sm text-slate-200">{descricao}</span>
       </span>
     </button>

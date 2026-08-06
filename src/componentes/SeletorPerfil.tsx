@@ -37,10 +37,10 @@ export function SeletorPerfil({
             key={valor}
             type="button"
             onClick={() => aoSelecionar(valor)}
-            className={`flex min-w-0 items-center justify-center gap-1.5 rounded-xl px-3 py-2 text-sm transition ${
+            className={`flex min-w-0 items-center justify-center gap-1.5 rounded-xl px-3 py-2 text-sm transition-all duration-200 ${
               ativo
-                ? 'bg-gradient-to-r from-[#1f4e2c] to-[#4bae70] font-semibold text-white shadow'
-                : 'font-medium text-[#4bae70] hover:text-[#1f4e2c]'
+                ? 'bg-gradient-to-r from-marca-900 to-marca-500 font-semibold text-white shadow-card'
+                : 'font-medium text-marca-500 hover:bg-white/60 hover:text-marca-800'
             }`}
           >
             <Icone size={16} className="shrink-0" />

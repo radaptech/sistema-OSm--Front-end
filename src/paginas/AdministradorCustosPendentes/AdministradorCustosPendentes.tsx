@@ -66,7 +66,7 @@ export function AdministradorCustosPendentes() {
         Icone={CircleDollarSign}
       />
 
-      <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-4 px-4 py-6 sm:px-8">
+      <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-4 px-4 py-6 sm:px-8 lg:max-w-6xl">
         <p className="text-sm text-slate-300">
           OS concluídas pelo Técnico aguardando o lançamento do custo de manutenção
           (peças/nota fiscal).
@@ -99,29 +99,32 @@ export function AdministradorCustosPendentes() {
           </div>
         </div>
 
-        <div className="flex flex-1 flex-col gap-3">
+        <div className="flex flex-1 flex-col gap-3 lg:grid lg:grid-cols-2 lg:content-start lg:items-start lg:gap-4">
           {isLoading && (
-            <p className="py-10 text-center text-sm text-slate-300">Carregando...</p>
+            <p className="py-10 text-center text-sm text-slate-300 lg:col-span-2">
+              Carregando...
+            </p>
           )}
 
           {!isLoading && ordensPendentes.length === 0 && (
-            <p className="rounded-xl bg-white/10 py-10 text-center text-sm text-slate-200">
-              Nenhum custo pendente de lançamento.
-            </p>
+            <div className="flex flex-col items-center gap-2 rounded-xl bg-white/10 py-12 text-slate-400 lg:col-span-2">
+              <CircleDollarSign size={28} />
+              <p className="text-sm">Nenhum custo pendente de lançamento.</p>
+            </div>
           )}
 
           {ordensPendentes.map((ordem) => (
             <div
               key={ordem.id}
-              className="flex flex-col gap-3 rounded-xl bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between"
+              className="flex flex-col gap-3 rounded-xl bg-white p-4 shadow-card transition-shadow duration-200 hover:shadow-card-hover sm:flex-row sm:items-center sm:justify-between lg:[&:last-child:nth-child(odd)]:col-span-2"
             >
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-r from-[#1f4e2c] to-[#4bae70] text-sm font-bold text-white">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-r from-marca-900 to-marca-500 font-mono text-sm font-bold text-white">
                     #{ordem.id}
                   </span>
                   <span className="font-semibold text-slate-800">{ordem.maquinaNome}</span>
-                  <span className="text-sm text-slate-400">· {ordem.maquinaCodigo}</span>
+                  <span className="font-mono text-sm text-slate-400">· {ordem.maquinaCodigo}</span>
                   <BadgeTipoOS tipo={ordem.tipo} />
                 </div>
                 <p className="mt-1 text-xs text-slate-400">
@@ -140,7 +143,7 @@ export function AdministradorCustosPendentes() {
               <button
                 type="button"
                 onClick={() => setOrdemParaLancarCusto(ordem)}
-                className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#1f4e2c] to-[#4bae70] px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-white shadow-sm transition hover:brightness-110"
+                className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-marca-900 to-marca-500 px-4 py-2.5 font-display text-sm font-semibold whitespace-nowrap text-white shadow-card transition-all duration-200 hover:shadow-card-hover hover:brightness-110 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-marca-500"
               >
                 <CircleDollarSign size={14} />
                 Lançar Custo

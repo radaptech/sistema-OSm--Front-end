@@ -88,7 +88,7 @@ export function AdministradorTecnicos() {
     <div className="flex min-h-svh flex-col bg-slate-600">
       <CabecalhoSubpagina contexto="Painel do Administrador" titulo="Técnicos" Icone={Wrench} />
 
-      <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-4 px-4 py-6 sm:px-8">
+      <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-4 px-4 py-6 sm:px-8 lg:max-w-6xl">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <CampoBusca valor={busca} aoMudar={setBusca} placeholder="Buscar por nome ou e-mail..." />
 
@@ -110,40 +110,43 @@ export function AdministradorTecnicos() {
           <button
             type="button"
             onClick={() => navegar('/cadastrar-usuario')}
-            className="flex shrink-0 items-center gap-2 rounded-xl bg-gradient-to-r from-[#1f4e2c] to-[#4bae70] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:brightness-110"
+            className="flex shrink-0 items-center gap-2 rounded-xl bg-gradient-to-r from-marca-900 to-marca-500 px-4 py-2.5 font-display text-sm font-semibold text-white shadow-card transition-all duration-200 hover:shadow-card-hover hover:brightness-110 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-marca-500"
           >
             <Wrench size={16} />
             Novo Técnico
           </button>
         </div>
 
-        <div className="flex flex-1 flex-col gap-3">
+        <div className="flex flex-1 flex-col gap-3 lg:grid lg:grid-cols-2 lg:content-start lg:items-start lg:gap-4">
           {isLoading && (
-            <p className="py-10 text-center text-sm text-slate-300">Carregando...</p>
+            <p className="py-10 text-center text-sm text-slate-300 lg:col-span-2">
+              Carregando...
+            </p>
           )}
 
           {!isLoading && tecnicosFiltrados.length === 0 && (
-            <p className="rounded-xl bg-white/10 py-10 text-center text-sm text-slate-200">
-              Nenhum técnico encontrado.
-            </p>
+            <div className="flex flex-col items-center gap-2 rounded-xl bg-white/10 py-12 text-slate-400 lg:col-span-2">
+              <Wrench size={28} />
+              <p className="text-sm">Nenhum técnico encontrado para esses filtros.</p>
+            </div>
           )}
 
           {tecnicosPaginados.map((tecnico) => (
             <div
               key={tecnico.id}
-              className="flex flex-col gap-3 rounded-xl bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between"
+              className="flex flex-col gap-3 rounded-xl bg-white p-4 shadow-card transition-shadow duration-200 hover:shadow-card-hover sm:flex-row sm:items-center sm:justify-between"
             >
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="font-semibold text-slate-800">{tecnico.nome}</span>
-                  <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700">
+                  <span className="rounded-full bg-emerald-100 px-2.5 py-1 font-mono text-xs font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-600/15">
                     {tecnico.area}
                   </span>
-                  <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600">
+                  <span className="rounded-full bg-slate-100 px-2.5 py-1 font-mono text-xs font-semibold text-slate-600 ring-1 ring-inset ring-slate-500/10">
                     {formatarMoeda(tecnico.valorHora)}/h
                   </span>
                 </div>
-                <p className="mt-1 text-sm text-slate-500">{tecnico.email}</p>
+                <p className="mt-1 font-mono text-sm text-slate-500">{tecnico.email}</p>
                 <p className="mt-1 text-xs text-slate-400">
                   {tecnico.lojasIds
                     .map((lojaId) => lojas.find((loja) => loja.id === lojaId)?.nome ?? lojaId)
@@ -156,7 +159,7 @@ export function AdministradorTecnicos() {
                   type="button"
                   onClick={() => setTecnicoParaEditar(tecnico)}
                   aria-label="Editar técnico"
-                  className="flex items-center justify-center rounded-xl bg-slate-100 px-3.5 py-2.5 text-slate-600 shadow-sm transition hover:bg-slate-200"
+                  className="flex items-center justify-center rounded-xl bg-slate-100 px-3.5 py-2.5 text-slate-600 shadow-sm transition hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-marca-500"
                 >
                   <Pencil size={16} />
                 </button>
@@ -164,7 +167,7 @@ export function AdministradorTecnicos() {
                   type="button"
                   onClick={() => setTecnicoParaExcluir(tecnico)}
                   aria-label="Excluir técnico"
-                  className="flex items-center justify-center rounded-xl bg-red-50 px-3.5 py-2.5 text-red-500 shadow-sm transition hover:bg-red-100"
+                  className="flex items-center justify-center rounded-xl bg-red-50 px-3.5 py-2.5 text-red-500 shadow-sm transition hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-400"
                 >
                   <Trash2 size={16} />
                 </button>

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Inbox, SearchX } from 'lucide-react'
 import { CabecalhoPagina } from '../../componentes/CabecalhoPagina'
 import { useSolicitacoes } from '../../hooks/useSolicitacoes'
 import { Paginacao } from '../../componentes/Paginacao'
@@ -71,9 +72,14 @@ export function MinhasSolicitacoes() {
           )}
 
           {!isLoading && !isError && solicitacoes.length === 0 && (
-            <p className="rounded-xl bg-white/10 py-10 text-center text-sm text-slate-200">
-              Nenhuma solicitação encontrada.
-            </p>
+            <div className="flex flex-col items-center gap-2 rounded-xl bg-white/10 py-12 text-slate-400">
+              {busca || filtro !== 'Todos' ? (
+                <SearchX size={28} />
+              ) : (
+                <Inbox size={28} />
+              )}
+              <p className="text-sm">Nenhuma solicitação encontrada.</p>
+            </div>
           )}
 
           {solicitacoes.map((solicitacao) => (
@@ -91,7 +97,7 @@ export function MinhasSolicitacoes() {
       </main>
 
       <footer className="py-4 text-center">
-        <span className="text-[10px] font-semibold tracking-widest text-slate-400 uppercase">
+        <span className="font-mono text-[10px] font-semibold tracking-widest text-slate-400 uppercase">
           Solicitação OS © {new Date().getFullYear()}
         </span>
       </footer>

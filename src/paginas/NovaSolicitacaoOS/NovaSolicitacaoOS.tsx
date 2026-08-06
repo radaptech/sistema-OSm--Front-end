@@ -95,9 +95,10 @@ export function NovaSolicitacaoOS() {
       <CabecalhoPagina titulo="Nova Solicitação OS" />
 
       <main className="flex flex-1 justify-center px-4 py-8">
-        <div className="w-full max-w-3xl overflow-hidden rounded-2xl bg-white shadow-2xl">
-          <div className="bg-gradient-to-r from-[#1f4e2c] to-[#4bae70] py-3 text-center">
-            <p className="text-sm font-bold tracking-widest text-white uppercase">
+        <div className="w-full max-w-3xl overflow-hidden rounded-2xl bg-white shadow-card">
+          <div className="relative isolate overflow-hidden bg-gradient-to-r from-marca-900 to-marca-500 py-3 text-center shadow-card">
+            <div className="bg-grade-industrial bg-grade pointer-events-none absolute inset-0 opacity-20" />
+            <p className="relative font-display text-sm font-bold tracking-widest text-white uppercase">
               Nova Ordem de Serviço
             </p>
           </div>
@@ -160,10 +161,10 @@ export function NovaSolicitacaoOS() {
             />
 
             <div className="flex flex-col gap-1">
-              <span className="text-xs font-semibold tracking-wide text-[#4bae70] uppercase">
+              <span className="font-mono text-xs font-semibold tracking-wider text-marca-500 uppercase">
                 Data/Hora
               </span>
-              <p className="rounded-lg bg-lime-100 px-3 py-2.5 text-sm text-[#1f4e2c]">
+              <p className="rounded-lg bg-lime-100 px-3 py-2.5 font-mono text-sm text-marca-800">
                 {formatarDataHora(dataHora)}
               </p>
             </div>
@@ -195,21 +196,25 @@ export function NovaSolicitacaoOS() {
               rotulo="Vídeo do Defeito (opcional)"
             />
 
-            <div className="sm:col-span-2 flex flex-col gap-2">
-              <span className="text-xs font-semibold tracking-wide text-[#4bae70] uppercase">
+            <div className="flex flex-col gap-2 sm:col-span-2">
+              <span className="font-mono text-xs font-semibold tracking-wider text-marca-500 uppercase">
                 Marcadores de Impacto
               </span>
               <Controller
                 control={control}
                 name="impactos"
                 render={({ field }) => (
-                  <div className="flex flex-wrap gap-3">
+                  <div className="flex flex-wrap gap-2">
                     {marcadoresImpacto.map((marcador) => {
                       const marcado = field.value.includes(marcador)
                       return (
                         <label
                           key={marcador}
-                          className="flex items-center gap-2 rounded-lg bg-slate-50 px-3 py-2.5 text-sm text-slate-700"
+                          className={`flex cursor-pointer items-center gap-2 rounded-full px-3 py-1.5 font-mono text-xs font-semibold whitespace-nowrap transition-all duration-200 ${
+                            marcado
+                              ? 'bg-gradient-to-r from-marca-900 to-marca-500 text-white shadow-card'
+                              : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                          }`}
                         >
                           <input
                             type="checkbox"
@@ -221,7 +226,7 @@ export function NovaSolicitacaoOS() {
                                   : [...field.value, marcador],
                               )
                             }
-                            className="h-4 w-4 rounded border-slate-300 text-[#1f4e2c] focus:ring-[#4bae70]"
+                            className="sr-only"
                           />
                           {marcador}
                         </label>
@@ -242,7 +247,7 @@ export function NovaSolicitacaoOS() {
       </main>
 
       <footer className="py-4 text-center">
-        <span className="text-[10px] font-semibold tracking-widest text-slate-400 uppercase">
+        <span className="font-mono text-[10px] font-semibold tracking-widest text-slate-400 uppercase">
           Solicitação OS © {new Date().getFullYear()}
         </span>
       </footer>

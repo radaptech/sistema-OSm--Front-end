@@ -44,14 +44,14 @@ export function UploadFoto({
 
   return (
     <div className="flex flex-col gap-1">
-      <label className="text-xs font-semibold tracking-wide text-[#4bae70] uppercase">
+      <label className="font-mono text-xs font-semibold tracking-wider text-marca-500 uppercase">
         {rotulo}
       </label>
 
       <button
         type="button"
         onClick={() => inputRef.current?.click()}
-        className="flex h-40 w-full items-center justify-center overflow-hidden rounded-lg border-2 border-dashed border-emerald-300 bg-emerald-50/40 transition hover:bg-emerald-50 sm:h-48"
+        className="flex h-40 w-full items-center justify-center overflow-hidden rounded-lg border-2 border-dashed border-emerald-300 bg-emerald-50/40 transition-all duration-200 hover:border-emerald-400 hover:bg-emerald-50 sm:h-48"
       >
         {previewUrl ? (
           <img

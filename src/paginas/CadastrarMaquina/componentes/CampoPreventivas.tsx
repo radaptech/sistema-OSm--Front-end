@@ -18,15 +18,15 @@ export function CampoPreventivas({ control, errors, nomeMaquina }: CampoPreventi
   const { modalAtivo, abrirModal, fecharModal } = useEstadoModais()
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-3 border-t border-slate-100 pt-5">
       <div className="flex items-center justify-between">
-        <label className="text-xs font-semibold tracking-wide text-[#4bae70] uppercase">
+        <label className="font-mono text-xs font-semibold tracking-wider text-marca-500 uppercase">
           Manutenções Preventivas *
         </label>
         <button
           type="button"
           onClick={() => abrirModal('manutencaoPreventiva')}
-          className="flex items-center gap-1 text-xs font-semibold text-[#1f4e2c] hover:underline"
+          className="flex items-center gap-1 text-xs font-semibold text-marca-800 hover:underline"
         >
           <Plus size={14} />
           Adicionar
@@ -45,7 +45,7 @@ export function CampoPreventivas({ control, errors, nomeMaquina }: CampoPreventi
           className="flex items-start justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3"
         >
           <div className="flex items-start gap-3">
-            <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-r from-[#1f4e2c] to-[#4bae70] text-white">
+            <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-r from-marca-900 to-marca-500 text-white">
               <CalendarClock size={16} />
             </span>
             <div>

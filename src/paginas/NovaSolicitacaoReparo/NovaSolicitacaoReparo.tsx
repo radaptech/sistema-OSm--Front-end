@@ -65,9 +65,10 @@ export function NovaSolicitacaoReparo() {
       <CabecalhoPagina titulo="Nova Solicitação de Reparo" />
 
       <main className="flex flex-1 justify-center px-4 py-8">
-        <div className="w-full max-w-2xl overflow-hidden rounded-2xl bg-white shadow-2xl">
-          <div className="bg-gradient-to-r from-orange-500 to-orange-600 py-3 text-center">
-            <p className="text-sm font-bold tracking-widest text-white uppercase">
+        <div className="w-full max-w-2xl overflow-hidden rounded-2xl bg-white shadow-card">
+          <div className="relative isolate overflow-hidden bg-gradient-to-r from-orange-500 to-orange-600 py-3 text-center shadow-card">
+            <div className="bg-grade-industrial bg-grade pointer-events-none absolute inset-0 opacity-20" />
+            <p className="relative font-display text-sm font-bold tracking-widest text-white uppercase">
               Pequenos Reparos
             </p>
           </div>
@@ -108,10 +109,10 @@ export function NovaSolicitacaoReparo() {
                 {...register('setor')}
               />
               <div className="flex flex-col gap-1">
-                <span className="text-xs font-semibold tracking-wide text-[#4bae70] uppercase">
+                <span className="font-mono text-xs font-semibold tracking-wider text-marca-500 uppercase">
                   Data/Hora
                 </span>
-                <p className="rounded-lg bg-lime-100 px-3 py-2.5 text-sm text-[#1f4e2c]">
+                <p className="rounded-lg bg-lime-100 px-3 py-2.5 font-mono text-sm text-marca-800">
                   {formatarDataHora(dataHora)}
                 </p>
               </div>
@@ -139,7 +140,7 @@ export function NovaSolicitacaoReparo() {
       </main>
 
       <footer className="py-4 text-center">
-        <span className="text-[10px] font-semibold tracking-widest text-slate-400 uppercase">
+        <span className="font-mono text-[10px] font-semibold tracking-widest text-slate-400 uppercase">
           Solicitação OS © {new Date().getFullYear()}
         </span>
       </footer>

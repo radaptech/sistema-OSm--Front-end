@@ -16,13 +16,13 @@ export function BlocoSetorLoja<T>({
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center gap-2 border-b border-white/10 pb-2">
-        <Tag size={14} className="text-emerald-300" />
-        <h2 className="text-sm font-bold tracking-wide text-white uppercase">
+        <Tag size={14} className="text-marca-300" />
+        <h2 className="font-display text-sm font-bold tracking-wide text-white uppercase">
           {grupo.setor}
         </h2>
         <span className="text-slate-500">·</span>
         <Store size={14} className="text-slate-300" />
-        <h3 className="text-xs font-semibold tracking-wide text-slate-300 uppercase">
+        <h3 className="font-mono text-xs font-semibold tracking-wide text-slate-300 uppercase">
           {grupo.loja.nome}
         </h3>
       </div>

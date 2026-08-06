@@ -1,4 +1,4 @@
-import { Store, Tag } from 'lucide-react'
+import { Inbox, Store, Tag } from 'lucide-react'
 import type { ReactNode } from 'react'
 import type { GrupoAcessoGestorPorLoja } from '../../../utilitarios/acessoGestor'
 
@@ -19,7 +19,7 @@ export function BlocoLoja<T>({
     <div className="flex flex-col gap-3">
       <div className="flex items-center gap-2 border-b border-white/10 pb-2">
         <Store size={16} className="text-emerald-300" />
-        <h2 className="text-sm font-bold tracking-wide text-white uppercase">
+        <h2 className="font-display text-sm font-bold tracking-wide text-white uppercase">
           Loja: {grupo.loja.nome}
         </h2>
       </div>
@@ -36,9 +36,10 @@ export function BlocoLoja<T>({
           )}
 
           {subgrupo.itens.length === 0 ? (
-            <p className="rounded-xl bg-white/5 py-6 text-center text-xs text-slate-300">
-              {mensagemVazio}
-            </p>
+            <div className="flex flex-col items-center gap-1.5 rounded-xl bg-white/5 py-6 text-center text-slate-400">
+              <Inbox size={20} />
+              <p className="text-xs">{mensagemVazio}</p>
+            </div>
           ) : (
             <div className="flex flex-col gap-3">
               {subgrupo.itens.map((item, indice) => (

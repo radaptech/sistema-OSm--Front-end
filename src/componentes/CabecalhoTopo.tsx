@@ -18,32 +18,35 @@ export function CabecalhoTopo() {
   }
 
   return (
-    <header className="flex w-full items-center justify-between bg-gradient-to-r from-[#1f4e2c] to-[#4bae70] px-4 py-3 sm:px-8">
-      <div>
-        <p className="text-xs font-bold tracking-widest text-white uppercase">
-          Solicitação OS
-        </p>
-        <p className="text-sm text-white">Olá, {nomeUsuario} 👋</p>
-      </div>
+    <header className="relative isolate overflow-hidden bg-gradient-to-r from-marca-900 to-marca-500 px-4 py-3 shadow-card sm:px-8">
+      <div className="bg-grade-industrial bg-grade pointer-events-none absolute inset-0 opacity-20" />
+      <div className="relative flex items-center justify-between">
+        <div>
+          <p className="font-mono text-xs font-bold tracking-widest text-white uppercase">
+            Solicitação OS
+          </p>
+          <p className="text-sm text-white/90">Olá, {nomeUsuario} 👋</p>
+        </div>
 
-      <div className="flex items-center gap-4">
-        <button
-          type="button"
-          aria-label="Notificações"
-          onClick={aoClicarNotificacoes}
-          className="relative text-white/90 transition hover:text-white"
-        >
-          <Bell size={20} />
-          <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-white" />
-        </button>
-        <button
-          type="button"
-          aria-label="Sair"
-          onClick={aoSair}
-          className="text-white/90 transition hover:text-white"
-        >
-          <LogOut size={20} />
-        </button>
+        <div className="flex items-center gap-4">
+          <button
+            type="button"
+            aria-label="Notificações"
+            onClick={aoClicarNotificacoes}
+            className="relative text-white/90 transition hover:scale-110 hover:text-white"
+          >
+            <Bell size={20} />
+            <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-white" />
+          </button>
+          <button
+            type="button"
+            aria-label="Sair"
+            onClick={aoSair}
+            className="text-white/90 transition hover:scale-110 hover:text-white"
+          >
+            <LogOut size={20} />
+          </button>
+        </div>
       </div>
     </header>
   )

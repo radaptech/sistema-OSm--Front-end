@@ -115,7 +115,7 @@ export function CadastrarUsuario() {
             className="flex flex-col gap-5 p-6 sm:p-8"
           >
             <div className="flex flex-col gap-1.5">
-              <span className="text-xs font-semibold tracking-wide text-[#4bae70] uppercase">
+              <span className="font-mono text-xs font-semibold tracking-wider text-marca-500 uppercase">
                 Perfil *
               </span>
               <SeletorPerfil
@@ -168,6 +168,7 @@ export function CadastrarUsuario() {
             </div>
 
             <CamposAcesso
+              className="border-t border-slate-100 pt-5"
               role={role}
               lojasIds={lojasIds}
               setores={setores}

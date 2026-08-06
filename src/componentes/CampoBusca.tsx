@@ -18,7 +18,7 @@ export function CampoBusca({ valor, aoMudar, placeholder = 'Buscar...' }: CampoB
         value={valor}
         onChange={(evento) => aoMudar(evento.target.value)}
         placeholder={placeholder}
-        className="w-full rounded-lg bg-white py-2.5 pr-4 pl-10 text-sm text-slate-700 outline-none placeholder:text-slate-400 focus:ring-2 focus:ring-[#4bae70]"
+        className="w-full rounded-lg bg-white py-2.5 pr-4 pl-10 text-sm text-slate-700 shadow-card outline-none transition placeholder:text-slate-400 focus:ring-2 focus:ring-marca-500"
       />
     </div>
   )

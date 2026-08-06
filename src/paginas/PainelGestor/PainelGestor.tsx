@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Inbox } from 'lucide-react'
 import { toast } from 'react-toastify'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { CabecalhoTopo } from '../../componentes/CabecalhoTopo'
@@ -14,6 +15,7 @@ import type { OrdemServico, SolicitacaoOS, TipoOS } from '../../tipos/ordemServi
 import { ModalAbrirOrdemServico } from '../ModalAbrirOrdemServico/ModalAbrirOrdemServico'
 import type { DadosConfirmarAberturaOS } from '../ModalAbrirOrdemServico/esquemaAbrirOrdemServico'
 import { ModalDetalhesOS } from '../ModalDetalhesOS/ModalDetalhesOS'
+import { ModalDetalhesSolicitacao } from '../ModalDetalhesSolicitacao/ModalDetalhesSolicitacao'
 import { AbasPainelGestor, type AbaPainelGestor } from './componentes/AbasPainelGestor'
 import { AcoesRapidas } from './componentes/AcoesRapidas'
 import { BlocoLoja } from './componentes/BlocoLoja'
@@ -22,7 +24,6 @@ import { CardOSEmExecucao } from './componentes/CardOSEmExecucao'
 import { CardOSFinalizada } from './componentes/CardOSFinalizada'
 import { CardPreventiva } from './componentes/CardPreventiva'
 import { ModalAprovarOSTerceiros } from './componentes/ModalAprovarOSTerceiros'
-import { ModalDetalhesSolicitacao } from './componentes/ModalDetalhesSolicitacao'
 import type { DadosConfirmarAprovacaoTerceiros } from './esquemaAprovarOSTerceiros'
 
 interface SelecaoOS {
@@ -139,7 +140,9 @@ export function PainelGestor() {
 
       <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-5 px-4 py-6 sm:px-8">
         <div>
-          <h1 className="text-xl font-bold text-white sm:text-2xl">Painel do Gestor</h1>
+          <h1 className="font-display text-xl font-bold text-white sm:text-2xl">
+            Painel do Gestor
+          </h1>
           <p className="mt-1 text-sm text-slate-300">
             Acompanhe as solicitações, OS e manutenções preventivas dos seus setores.
           </p>
@@ -159,9 +162,10 @@ export function PainelGestor() {
         )}
 
         {escoposGestor.length === 0 && (
-          <p className="rounded-xl bg-white/10 py-10 text-center text-sm text-slate-200">
-            Nenhum setor/loja vinculado a este gestor.
-          </p>
+          <div className="flex flex-col items-center gap-2 rounded-2xl bg-white/10 py-12 text-slate-300">
+            <Inbox size={28} className="text-slate-400" />
+            <p className="text-sm">Nenhum setor/loja vinculado a este gestor.</p>
+          </div>
         )}
 
         {abaSelecionada === 'solicitacoes' && (
@@ -256,7 +260,7 @@ export function PainelGestor() {
       </main>
 
       <footer className="py-4 text-center">
-        <span className="text-[10px] font-semibold tracking-widest text-slate-400 uppercase">
+        <span className="font-mono text-[10px] font-semibold tracking-widest text-slate-400 uppercase">
           Solicitação OS © {new Date().getFullYear()}
         </span>
       </footer>
@@ -280,6 +284,7 @@ export function PainelGestor() {
       {solicitacaoParaVisualizar && (
         <ModalDetalhesSolicitacao
           solicitacao={solicitacaoParaVisualizar}
+          contexto="Painel do Gestor"
           aoFechar={() => setSolicitacaoParaVisualizar(null)}
         />
       )}

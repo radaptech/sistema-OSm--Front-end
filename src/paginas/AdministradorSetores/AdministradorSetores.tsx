@@ -64,7 +64,7 @@ export function AdministradorSetores() {
     <div className="flex min-h-svh flex-col bg-slate-600">
       <CabecalhoSubpagina contexto="Painel do Administrador" titulo="Setores" Icone={Tag} />
 
-      <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-4 px-4 py-6 sm:px-8">
+      <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-4 px-4 py-6 sm:px-8 lg:max-w-6xl">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <CampoBusca valor={busca} aoMudar={setBusca} placeholder="Buscar por nome..." />
 
@@ -86,31 +86,34 @@ export function AdministradorSetores() {
           <button
             type="button"
             onClick={() => navegar('/cadastrar-setor')}
-            className="flex shrink-0 items-center gap-2 rounded-xl bg-gradient-to-r from-[#1f4e2c] to-[#4bae70] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:brightness-110"
+            className="flex shrink-0 items-center gap-2 rounded-xl bg-gradient-to-r from-marca-900 to-marca-500 px-4 py-2.5 font-display text-sm font-semibold text-white shadow-card transition-all duration-200 hover:shadow-card-hover hover:brightness-110 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-marca-500"
           >
             <Plus size={16} />
             Novo Setor
           </button>
         </div>
 
-        <div className="flex flex-1 flex-col gap-3">
+        <div className="flex flex-1 flex-col gap-3 lg:grid lg:grid-cols-2 lg:content-start lg:items-start lg:gap-4">
           {isLoading && (
-            <p className="py-10 text-center text-sm text-slate-300">Carregando...</p>
+            <p className="py-10 text-center text-sm text-slate-300 lg:col-span-2">
+              Carregando...
+            </p>
           )}
 
           {!isLoading && setoresFiltrados.length === 0 && (
-            <p className="rounded-xl bg-white/10 py-10 text-center text-sm text-slate-200">
-              Nenhum setor encontrado.
-            </p>
+            <div className="flex flex-col items-center gap-2 rounded-xl bg-white/10 py-12 text-slate-400 lg:col-span-2">
+              <Tag size={28} />
+              <p className="text-sm">Nenhum setor encontrado para esses filtros.</p>
+            </div>
           )}
 
           {setoresPaginados.map((setor) => (
             <div
               key={setor.id}
-              className="flex flex-col gap-3 rounded-xl bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between"
+              className="flex flex-col gap-3 rounded-xl bg-white p-4 shadow-card transition-shadow duration-200 hover:shadow-card-hover sm:flex-row sm:items-center sm:justify-between"
             >
               <div className="flex min-w-0 items-center gap-3">
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-r from-[#1f4e2c] to-[#4bae70] text-white">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-r from-marca-900 to-marca-500 text-white">
                   <Tag size={16} />
                 </span>
                 <div className="min-w-0">
@@ -126,7 +129,7 @@ export function AdministradorSetores() {
                   type="button"
                   onClick={() => navegar(`/cadastrar-setor/${setor.id}`)}
                   aria-label="Editar setor"
-                  className="flex items-center justify-center rounded-xl bg-slate-100 px-3.5 py-2.5 text-slate-600 shadow-sm transition hover:bg-slate-200"
+                  className="flex items-center justify-center rounded-xl bg-slate-100 px-3.5 py-2.5 text-slate-600 shadow-sm transition hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-marca-500"
                 >
                   <Pencil size={16} />
                 </button>
@@ -134,7 +137,7 @@ export function AdministradorSetores() {
                   type="button"
                   onClick={() => setSetorParaExcluir(setor)}
                   aria-label="Excluir setor"
-                  className="flex items-center justify-center rounded-xl bg-red-50 px-3.5 py-2.5 text-red-500 shadow-sm transition hover:bg-red-100"
+                  className="flex items-center justify-center rounded-xl bg-red-50 px-3.5 py-2.5 text-red-500 shadow-sm transition hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-400"
                 >
                   <Trash2 size={16} />
                 </button>

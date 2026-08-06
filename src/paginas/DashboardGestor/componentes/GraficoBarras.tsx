@@ -15,8 +15,8 @@ export function GraficoBarras({ titulo, dados }: GraficoBarrasProps) {
   const valorMaximo = Math.max(...dados.map((item) => item.valor), 1)
 
   return (
-    <div className="rounded-xl bg-white p-4 shadow-sm">
-      <h3 className="text-sm font-semibold text-slate-700">{titulo}</h3>
+    <div className="rounded-2xl bg-white p-4 shadow-card">
+      <h3 className="font-display text-sm font-semibold text-slate-700">{titulo}</h3>
 
       <div className="mt-4 flex h-36 items-end gap-2">
         {dados.map((item) => {
@@ -28,7 +28,7 @@ export function GraficoBarras({ titulo, dados }: GraficoBarrasProps) {
               className="group relative flex flex-1 flex-col items-center"
             >
               <div
-                className="pointer-events-none absolute -top-7 left-1/2 -translate-x-1/2 rounded-md bg-slate-800 px-2 py-1 text-[10px] font-semibold whitespace-nowrap text-white opacity-0 transition group-hover:opacity-100"
+                className="pointer-events-none absolute -top-7 left-1/2 -translate-x-1/2 rounded-md bg-slate-800 px-2 py-1 font-mono text-[10px] font-semibold whitespace-nowrap text-white opacity-0 transition group-hover:opacity-100"
                 role="tooltip"
               >
                 {item.valorFormatado}
@@ -44,7 +44,7 @@ export function GraficoBarras({ titulo, dados }: GraficoBarrasProps) {
                 />
               </div>
 
-              <span className="mt-1.5 text-[10px] text-slate-400">
+              <span className="mt-1.5 font-mono text-[10px] text-slate-400">
                 {item.rotulo}
               </span>
             </div>

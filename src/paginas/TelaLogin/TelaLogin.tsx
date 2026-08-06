@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Eye, EyeOff } from 'lucide-react'
+import { Eye, EyeOff, Wrench } from 'lucide-react'
 import { toast } from 'react-toastify'
 import { useNavigate } from 'react-router-dom'
 import { Botao } from '../../componentes/Botao'
@@ -49,20 +49,27 @@ export function TelaLogin() {
   }
 
   return (
-    <div className="flex min-h-svh items-center justify-center bg-gradient-to-br from-[#1f4e2c] to-[#4bae70] p-4">
-      <div className="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl">
+    <div className="relative isolate flex min-h-svh items-center justify-center overflow-hidden bg-gradient-to-br from-marca-950 via-marca-800 to-marca-500 p-4">
+      <div className="bg-grade-industrial bg-grade pointer-events-none absolute inset-0 opacity-[0.12]" />
+      <div className="pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full bg-marca-300/20 blur-3xl" />
+      <div className="pointer-events-none absolute -right-20 -bottom-20 h-72 w-72 rounded-full bg-marca-500/30 blur-3xl" />
+
+      <div className="animate-pop-in relative w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-pop">
         <div className="p-6 sm:p-8">
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-[#1f4e2c]">
+            <span className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-marca-900 to-marca-500 shadow-card">
+              <Wrench className="text-white" size={22} />
+            </span>
+            <h1 className="font-display text-2xl font-bold text-marca-800">
               Solicitação OS
             </h1>
-            <p className="mt-1 text-xs font-bold tracking-widest text-[#4bae70] uppercase">
+            <p className="mt-1 font-mono text-xs font-bold tracking-widest text-marca-500 uppercase">
               Login de Acesso
             </p>
           </div>
 
           <div className="mt-6 flex flex-col gap-1.5">
-            <span className="text-xs font-semibold tracking-wide text-[#4bae70] uppercase">
+            <span className="font-mono text-xs font-semibold tracking-wider text-marca-500 uppercase">
               Perfil
             </span>
             <SeletorPerfil
@@ -97,7 +104,7 @@ export function TelaLogin() {
                   <button
                     type="button"
                     onClick={() => setMostrarSenha((valor) => !valor)}
-                    className="text-[#4bae70] hover:text-[#1f4e2c]"
+                    className="text-marca-500 transition hover:text-marca-800"
                     aria-label={mostrarSenha ? 'Ocultar senha' : 'Exibir senha'}
                   >
                     {mostrarSenha ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -108,7 +115,7 @@ export function TelaLogin() {
 
               <button
                 type="button"
-                className="self-end text-xs font-medium text-[#4bae70] hover:text-[#1f4e2c] hover:underline"
+                className="self-end text-xs font-medium text-marca-500 transition hover:text-marca-800 hover:underline"
               >
                 Esqueci minha senha
               </button>
@@ -121,7 +128,7 @@ export function TelaLogin() {
         </div>
 
         <div className="border-t border-slate-100 px-6 py-4 text-center sm:px-8">
-          <span className="text-[10px] font-semibold tracking-widest text-[#4bae70]/50 uppercase">
+          <span className="font-mono text-[10px] font-semibold tracking-widest text-marca-500/50 uppercase">
             Solicitação OS © {new Date().getFullYear()}
           </span>
         </div>
