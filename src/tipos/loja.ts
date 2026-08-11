@@ -1,14 +1,15 @@
 export interface Loja {
-  id: string
+  id: number
   nome: string
-  empresaId: string
+  empresaId: number
+  ativa?: boolean
 }
 
 export interface NovaLojaPayload {
   nome: string
-  empresaId: string
+  empresaId: number
 }
 
 export interface AtualizarLojaPayload extends NovaLojaPayload {
-  id: string
+  id: number
 }

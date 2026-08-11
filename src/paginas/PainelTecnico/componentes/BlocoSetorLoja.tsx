@@ -18,7 +18,7 @@ export function BlocoSetorLoja<T>({
       <div className="flex items-center gap-2 border-b border-white/10 pb-2">
         <Tag size={14} className="text-marca-300" />
         <h2 className="font-display text-sm font-bold tracking-wide text-white uppercase">
-          {grupo.setor}
+          {grupo.setorNome}
         </h2>
         <span className="text-slate-500">·</span>
         <Store size={14} className="text-slate-300" />

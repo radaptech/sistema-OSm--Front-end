@@ -23,7 +23,7 @@ export function AdministradorSetores() {
   const [setorParaExcluir, setSetorParaExcluir] = useState<SetorCadastrado | null>(null)
   const [pagina, setPagina] = useState(1)
 
-  const { data: setores = [], isLoading } = useSetores({ lojaId: filtroLoja || undefined })
+  const { data: setores = [], isLoading } = useSetores(filtroLoja ? Number(filtroLoja) : undefined)
   const { data: lojas = [] } = useLojas()
 
   const { mutateAsync: excluir, isPending: excluindo } = useMutation({

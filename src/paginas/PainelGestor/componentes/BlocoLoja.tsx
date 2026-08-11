@@ -25,12 +25,12 @@ export function BlocoLoja<T>({
       </div>
 
       {grupo.subgrupos.map((subgrupo) => (
-        <div key={subgrupo.setor ?? 'todos'} className="flex flex-col gap-2">
-          {subgrupo.setor && (
+        <div key={subgrupo.setorId ?? 'todos'} className="flex flex-col gap-2">
+          {subgrupo.setorNome && (
             <div className="flex items-center gap-1.5 pl-1">
               <Tag size={12} className="text-slate-300" />
               <h3 className="text-xs font-semibold tracking-wide text-slate-300 uppercase">
-                Setor: {subgrupo.setor}
+                Setor: {subgrupo.setorNome}
               </h3>
             </div>
           )}

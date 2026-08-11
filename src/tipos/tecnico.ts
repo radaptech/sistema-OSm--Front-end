@@ -9,13 +9,12 @@ export const areasTecnico = [
 export type AreaTecnico = (typeof areasTecnico)[number]
 
 export interface Tecnico {
-  id: string
+  id: number
   nome: string
   email: string
   telefone?: string
   area: AreaTecnico
-  lojasIds: string[]
-  valorHora: number
+  lojasIds: number[]
 }
 
 export interface NovoTecnicoPayload {
@@ -23,10 +22,9 @@ export interface NovoTecnicoPayload {
   email: string
   telefone?: string
   area: AreaTecnico
-  lojasIds: string[]
-  valorHora: number
+  lojasIds: number[]
 }
 
 export interface AtualizarTecnicoPayload extends NovoTecnicoPayload {
-  id: string
+  id: number
 }

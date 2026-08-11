@@ -6,12 +6,11 @@ import { Botao } from '../../../componentes/Botao'
 import { CampoTexto } from '../../../componentes/CampoTexto'
 import { CampoSelecao } from '../../../componentes/CampoSelecao'
 import { SeletorMultiplo } from '../../../componentes/SeletorMultiplo'
-import { LOJAS_MOCK } from '../../../servicos/dadosMockLojas'
+import { useLojas } from '../../../hooks/useLojas'
 import { areasTecnico } from '../../../tipos/tecnico'
 import type { Tecnico } from '../../../tipos/tecnico'
 import { esquemaEditarTecnico, type DadosEditarTecnico } from '../esquemaEditarTecnico'
 
-const OPCOES_LOJAS = LOJAS_MOCK.map((loja) => ({ valor: loja.id, rotulo: loja.nome }))
 
 interface ModalEditarTecnicoProps {
   tecnico: Tecnico
@@ -34,11 +33,12 @@ export function ModalEditarTecnico({ tecnico, aoFechar, aoSalvar }: ModalEditarT
       telefone: tecnico.telefone ?? '',
       area: tecnico.area,
       lojasIds: tecnico.lojasIds,
-      valorHora: tecnico.valorHora,
     },
   })
 
   const lojasIds = useWatch({ control, name: 'lojasIds' })
+  const { data: lojas = [] } = useLojas()
+  const opcoesLojas = lojas.map((loja) => ({ valor: loja.id, rotulo: loja.nome }))
 
   function aoSalvarFormulario(dados: DadosEditarTecnico) {
     aoSalvar(dados)
@@ -96,36 +96,24 @@ export function ModalEditarTecnico({ tecnico, aoFechar, aoSalvar }: ModalEditarT
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <CampoSelecao
-              rotulo="Área de Atuação *"
-              mensagemErro={errors.area?.message}
-              {...register('area')}
-            >
-              {areasTecnico.map((area) => (
-                <option key={area} value={area}>
-                  {area}
-                </option>
-              ))}
-            </CampoSelecao>
-
-            <CampoTexto
-              rotulo="Valor/Hora (R$) *"
-              variante="claro"
-              type="number"
-              min={0}
-              step="0.01"
-              mensagemErro={errors.valorHora?.message}
-              {...register('valorHora', { valueAsNumber: true })}
-            />
-          </div>
+          <CampoSelecao
+            rotulo="Área de Atuação *"
+            mensagemErro={errors.area?.message}
+            {...register('area')}
+          >
+            {areasTecnico.map((area) => (
+              <option key={area} value={area}>
+                {area}
+              </option>
+            ))}
+          </CampoSelecao>
 
           <div className="flex flex-col gap-1.5">
             <span className="font-mono text-xs font-semibold tracking-wider text-marca-500 uppercase">
               Loja(s) *
             </span>
             <SeletorMultiplo
-              opcoes={OPCOES_LOJAS}
+              opcoes={opcoesLojas}
               selecionados={lojasIds}
               aoAlterar={(lojas) => setValue('lojasIds', lojas, { shouldValidate: true })}
             />

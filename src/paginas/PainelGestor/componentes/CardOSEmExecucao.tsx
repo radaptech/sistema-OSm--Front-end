@@ -1,8 +1,9 @@
 import { BadgeStatusExecucao } from '../../../componentes/BadgeStatusExecucao'
 import { BadgeTipoOS } from '../../../componentes/BadgeTipoOS'
 import { BadgeUrgencia } from '../../../componentes/BadgeUrgencia'
-import { TECNICOS_MOCK } from '../../../servicos/dadosMockTecnicos'
 import { calcularHoras } from '../../../utilitarios/calcularHoras'
+import { agoraParaBackend } from '../../../utilitarios/dataBackend'
+import { obterNomeAlvo, obterCodigoAlvo } from '../../../utilitarios/alvoOS'
 import { formatarDataHora } from '../../../utilitarios/formatarData'
 import type { OrdemServico } from '../../../tipos/ordemServico'
 
@@ -11,16 +12,11 @@ interface CardOSEmExecucaoProps {
 }
 
 export function CardOSEmExecucao({ ordemServico }: CardOSEmExecucaoProps) {
-  const tecnico = TECNICOS_MOCK.find((item) => item.id === ordemServico.tecnicoId)
-
-  const horasTrabalhadasAteAgora =
-    Math.round(
-      ((ordemServico.horasTrabalhadasAcumuladas ?? 0) +
-        (ordemServico.sessaoAtualInicio
-          ? calcularHoras(ordemServico.sessaoAtualInicio, new Date().toISOString())
-          : 0)) *
-        100,
-    ) / 100
+  // Enquanto a OS não é encerrada, o servidor não devolve horasTrabalhadas — o card
+  // mostra o tempo corrido desde o início do atendimento apenas como referência visual.
+  const horasDesdeInicio = ordemServico.dataInicio
+    ? calcularHoras(ordemServico.dataInicio, agoraParaBackend())
+    : 0
 
   return (
     <div
@@ -35,9 +31,9 @@ export function CardOSEmExecucao({ ordemServico }: CardOSEmExecucaoProps) {
 
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="font-semibold text-slate-800">{ordemServico.maquinaNome}</span>
+            <span className="font-semibold text-slate-800">{obterNomeAlvo(ordemServico)}</span>
             <span className="font-mono text-sm text-slate-400">
-              · {ordemServico.maquinaCodigo}
+              · {obterCodigoAlvo(ordemServico)}
             </span>
             <BadgeStatusExecucao status={ordemServico.statusExecucao} />
             <BadgeTipoOS tipo={ordemServico.tipo} />
@@ -47,7 +43,9 @@ export function CardOSEmExecucao({ ordemServico }: CardOSEmExecucaoProps) {
           <p className="mt-1 text-xs text-slate-400">
             Técnico:{' '}
             <span className="font-medium text-slate-500">
-              {tecnico ? `${tecnico.nome} — ${tecnico.area}` : '—'}
+              {ordemServico.tecnicoNome
+                ? `${ordemServico.tecnicoNome} — ${ordemServico.tecnicoArea ?? ''}`
+                : '—'}
             </span>
           </p>
           <p className="mt-1 font-mono text-xs text-slate-400">
@@ -55,14 +53,19 @@ export function CardOSEmExecucao({ ordemServico }: CardOSEmExecucaoProps) {
             {ordemServico.dataInicio &&
               ` · Iniciada em ${formatarDataHora(ordemServico.dataInicio)}`}
             {' · '}
-            {horasTrabalhadasAteAgora}h trabalhadas até agora
+            {horasDesdeInicio}h desde o início
           </p>
         </div>
       </div>
 
-      {ordemServico.statusExecucao === 'Pausada' && ordemServico.motivoPausa && (
+      {ordemServico.statusExecucao === 'Pausada' && ordemServico.pausaAtual && (
         <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-700">
-          Motivo da pausa: {ordemServico.motivoPausa}
+          {ordemServico.pausaAtual.pausadaEm && (
+            <span className="block font-mono font-semibold">
+              Pausada em {formatarDataHora(ordemServico.pausaAtual.pausadaEm)}
+            </span>
+          )}
+          Motivo da pausa: {ordemServico.pausaAtual.motivo}
         </p>
       )}
     </div>

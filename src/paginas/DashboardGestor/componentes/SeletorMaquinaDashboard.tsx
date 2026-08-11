@@ -4,7 +4,7 @@ import type { Maquina } from '../../../tipos/maquina'
 
 interface SeletorMaquinaDashboardProps {
   grupos: GrupoAcessoGestorPorLoja<Maquina>[]
-  maquinaSelecionadaId: string | null
+  maquinaSelecionadaId: number | null
   aoSelecionar: (maquina: Maquina) => void
 }
 
@@ -26,14 +26,14 @@ export function SeletorMaquinaDashboard({
 
           {grupo.subgrupos.map((subgrupo) => (
             <div
-              key={subgrupo.setor ?? 'todos'}
+              key={subgrupo.setorId ?? 'todos'}
               className="flex flex-col gap-1.5 pl-1"
             >
-              {subgrupo.setor && (
+              {subgrupo.setorNome && (
                 <div className="flex items-center gap-1.5">
                   <Tag size={11} className="text-slate-300" />
                   <h3 className="text-[11px] font-semibold text-slate-300 uppercase">
-                    {subgrupo.setor}
+                    {subgrupo.setorNome}
                   </h3>
                 </div>
               )}

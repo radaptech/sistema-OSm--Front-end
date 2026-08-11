@@ -1,13 +1,7 @@
-import type { Setor } from './maquina'
-
 // Solicitação de pequeno reparo (lâmpada, vidro, piso, etc.) — diferente da OS de
-// Maquinário, não exige cadastro prévio de um item no banco de dados: o Solicitante
-// descreve o item na hora, sem precisar selecioná-lo de uma lista.
+// Maquinário, não exige cadastro prévio de um item no banco: o Solicitante descreve o
+// item na hora. Setor, loja, solicitante e data/hora saem da sessão, no servidor.
 export interface NovaSolicitacaoReparoPayload {
   item: string
   descricao: string
-  setor: Setor
-  lojaId: string
-  solicitante: string
-  dataHora: string
 }

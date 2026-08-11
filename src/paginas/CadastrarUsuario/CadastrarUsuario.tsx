@@ -21,12 +21,11 @@ const VALORES_PADRAO: DadosCadastrarUsuario = {
   telefone: '',
   email: '',
   senha: '',
-  role: 'solicitante',
+  perfil: 'solicitante',
   lojasIds: [],
-  setores: [],
+  setoresIds: [],
   acessoTotalSetores: false,
   area: undefined,
-  valorHora: undefined,
 }
 
 export function CadastrarUsuario() {
@@ -36,7 +35,7 @@ export function CadastrarUsuario() {
 
   const { data: usuarioExistente } = useQuery({
     queryKey: ['usuario', id],
-    queryFn: () => servicoUsuarios.obterPorId(id as string),
+    queryFn: () => servicoUsuarios.obterPorId(Number(id)),
     enabled: emEdicao,
   })
 
@@ -62,19 +61,18 @@ export function CadastrarUsuario() {
       nome: usuarioExistente.nome,
       telefone: usuarioExistente.telefone ?? '',
       email: usuarioExistente.email,
-      role: usuarioExistente.role,
+      perfil: usuarioExistente.perfil,
       lojasIds: usuarioExistente.lojasIds,
-      setores: usuarioExistente.setores,
+      setoresIds: usuarioExistente.setoresIds,
       acessoTotalSetores: usuarioExistente.acessoTotalSetores,
     })
   }, [usuarioExistente, reset])
 
-  const role = useWatch({ control, name: 'role' })
+  const perfil = useWatch({ control, name: 'perfil' })
   const lojasIds = useWatch({ control, name: 'lojasIds' })
-  const setores = useWatch({ control, name: 'setores' })
+  const setoresIds = useWatch({ control, name: 'setoresIds' })
   const acessoTotalSetores = useWatch({ control, name: 'acessoTotalSetores' })
   const area = useWatch({ control, name: 'area' })
-  const valorHora = useWatch({ control, name: 'valorHora' })
 
   const { mutateAsync: criar, isPending: criando } = useMutation({
     mutationFn: servicoUsuarios.criar,
@@ -86,7 +84,7 @@ export function CadastrarUsuario() {
 
   async function aoEnviar(dados: DadosCadastrarUsuario) {
     if (emEdicao && id) {
-      await atualizar({ id, ...dados })
+      await atualizar({ id: Number(id), ...dados })
       toast.success('Usuário atualizado com sucesso.')
     } else {
       await criar(dados)
@@ -119,14 +117,13 @@ export function CadastrarUsuario() {
                 Perfil *
               </span>
               <SeletorPerfil
-                perfilSelecionado={role}
+                perfilSelecionado={perfil}
                 aoSelecionar={(perfil) => {
-                  setValue('role', perfil)
+                  setValue('perfil', perfil)
                   setValue('lojasIds', [])
-                  setValue('setores', [])
+                  setValue('setoresIds', [])
                   setValue('acessoTotalSetores', false)
                   setValue('area', undefined)
-                  setValue('valorHora', undefined)
                 }}
               />
             </div>
@@ -169,22 +166,19 @@ export function CadastrarUsuario() {
 
             <CamposAcesso
               className="border-t border-slate-100 pt-5"
-              role={role}
+              perfil={perfil}
               lojasIds={lojasIds}
-              setores={setores}
+              setoresIds={setoresIds}
               acessoTotalSetores={acessoTotalSetores}
               area={area}
-              valorHora={valorHora}
               aoAlterarLojas={(lojas) => setValue('lojasIds', lojas, { shouldValidate: true })}
               aoAlterarSetores={(novosSetores) =>
-                setValue('setores', novosSetores as DadosCadastrarUsuario['setores'], {
-                  shouldValidate: true,
-                })
+                setValue('setoresIds', novosSetores, { shouldValidate: true })
               }
               aoAlternarAcessoTotal={(valor) => {
                 setValue('acessoTotalSetores', valor)
                 if (valor) {
-                  setValue('setores', [])
+                  setValue('setoresIds', [])
                 }
               }}
               aoAlterarArea={(valor) =>
@@ -192,13 +186,9 @@ export function CadastrarUsuario() {
                   shouldValidate: true,
                 })
               }
-              aoAlterarValorHora={(valor) =>
-                setValue('valorHora', valor, { shouldValidate: true })
-              }
               erroLojas={errors.lojasIds?.message}
-              erroSetores={errors.setores?.message}
+              erroSetores={errors.setoresIds?.message}
               erroArea={errors.area?.message}
-              erroValorHora={errors.valorHora?.message}
             />
 
             <div className="mt-2 flex flex-col-reverse gap-3 sm:flex-row">

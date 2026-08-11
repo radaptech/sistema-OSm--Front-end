@@ -22,7 +22,7 @@ export function CadastrarEmpresaTerceirizada() {
 
   const { data: empresaExistente } = useQuery({
     queryKey: ['empresa-terceirizada', id],
-    queryFn: () => servicoEmpresasTerceirizadas.obterPorId(id as string),
+    queryFn: () => servicoEmpresasTerceirizadas.obterPorId(Number(id)),
     enabled: emEdicao,
   })
 
@@ -60,7 +60,7 @@ export function CadastrarEmpresaTerceirizada() {
 
   async function aoEnviar(dados: DadosCadastrarEmpresaTerceirizada) {
     if (emEdicao && id) {
-      await atualizar({ id, ...dados })
+      await atualizar({ id: Number(id), ...dados })
       toast.success('Empresa terceirizada atualizada com sucesso.')
       navegar(-1)
       return

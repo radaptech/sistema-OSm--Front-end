@@ -12,6 +12,7 @@ import { UploadFoto } from '../../componentes/UploadFoto'
 import { useEstadoAutenticacao } from '../../estado/estadoAutenticacao'
 import { servicoReparos } from '../../servicos/servicoReparos'
 import { formatarDataHora } from '../../utilitarios/formatarData'
+import { agoraParaBackend } from '../../utilitarios/dataBackend'
 import {
   esquemaNovaSolicitacaoReparo,
   type DadosNovaSolicitacaoReparo,
@@ -23,9 +24,8 @@ export function NovaSolicitacaoReparo() {
   const navegar = useNavigate()
   const [foto, setFoto] = useState<File | null>(null)
   const nomeUsuario = useEstadoAutenticacao((estado) => estado.nomeUsuario)
-  const setorUsuario = useEstadoAutenticacao((estado) => estado.setor)
-  const lojaIdUsuario = useEstadoAutenticacao((estado) => estado.lojaId)
-  const [dataHora] = useState(() => new Date().toISOString())
+  const setorUsuario = useEstadoAutenticacao((estado) => estado.setorNome)
+  const [dataHora] = useState(() => agoraParaBackend())
 
   const {
     register,
@@ -38,10 +38,6 @@ export function NovaSolicitacaoReparo() {
     defaultValues: {
       item: '',
       descricao: '',
-      setor: setorUsuario ?? undefined,
-      lojaId: lojaIdUsuario ?? '',
-      solicitante: nomeUsuario ?? '',
-      dataHora,
     },
   })
 
@@ -97,7 +93,7 @@ export function NovaSolicitacaoReparo() {
                 rotulo="Solicitante"
                 variante="claro"
                 readOnly
-                {...register('solicitante')}
+                value={nomeUsuario ?? ''}
               />
             </div>
 
@@ -106,7 +102,7 @@ export function NovaSolicitacaoReparo() {
                 rotulo="Setor"
                 variante="claro"
                 readOnly
-                {...register('setor')}
+                value={setorUsuario ?? ''}
               />
               <div className="flex flex-col gap-1">
                 <span className="font-mono text-xs font-semibold tracking-wider text-marca-500 uppercase">

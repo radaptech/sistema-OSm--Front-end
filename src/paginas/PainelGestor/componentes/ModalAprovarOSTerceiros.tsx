@@ -9,13 +9,12 @@ import type { SolicitacaoOS } from '../../../tipos/ordemServico'
 import {
   esquemaAprovarOSTerceiros,
   type DadosAprovarOSTerceiros,
-  type DadosConfirmarAprovacaoTerceiros,
 } from '../esquemaAprovarOSTerceiros'
 
 interface ModalAprovarOSTerceirosProps {
   solicitacao: SolicitacaoOS
   aoFechar: () => void
-  aoSalvar: (dados: DadosConfirmarAprovacaoTerceiros) => void
+  aoSalvar: (dados: DadosAprovarOSTerceiros) => void
 }
 
 export function ModalAprovarOSTerceiros({
@@ -32,11 +31,11 @@ export function ModalAprovarOSTerceiros({
     formState: { errors },
   } = useForm<DadosAprovarOSTerceiros>({
     resolver: zodResolver(esquemaAprovarOSTerceiros),
-    defaultValues: { empresaTerceirizadaId: '' },
+    defaultValues: { empresaTerceirizadaId: 0 },
   })
 
   function aoSalvarFormulario(dados: DadosAprovarOSTerceiros) {
-    aoSalvar({ ...dados, dataHora: agora.toISOString() })
+    aoSalvar(dados)
     aoFechar()
   }
 
@@ -93,8 +92,8 @@ export function ModalAprovarOSTerceiros({
                 rotulo="Empresa Terceirizada *"
                 mensagemErro={errors.empresaTerceirizadaId?.message}
                 disabled={carregandoEmpresas || empresas.length === 0}
-                value={field.value}
-                onChange={field.onChange}
+                value={field.value || ''}
+                onChange={(evento) => field.onChange(Number(evento.target.value))}
               >
                 <option value="">
                   {carregandoEmpresas

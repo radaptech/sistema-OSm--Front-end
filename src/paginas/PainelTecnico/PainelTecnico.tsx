@@ -5,8 +5,8 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { CabecalhoTopo } from '../../componentes/CabecalhoTopo'
 import { useEstadoAutenticacao } from '../../estado/estadoAutenticacao'
 import { useOrdensServicoTecnico } from '../../hooks/useOrdensServicoTecnico'
-import { LOJAS_MOCK } from '../../servicos/dadosMockLojas'
-import { SOLICITACOES_MOCK } from '../../servicos/dadosMockSolicitacoes'
+import { useLojas } from '../../hooks/useLojas'
+import { servicoSolicitacoes } from '../../servicos/servicoSolicitacoes'
 import { servicoOrdensServico } from '../../servicos/servicoOrdensServico'
 import type { OrdemServico, SolicitacaoOS } from '../../tipos/ordemServico'
 import { agruparPorSetorLoja } from '../../utilitarios/agruparPorSetorLoja'
@@ -24,6 +24,7 @@ const CHAVE_ORDENS_SERVICO_TECNICO = 'ordens-servico-tecnico'
 
 export function PainelTecnico() {
   const tecnicoId = useEstadoAutenticacao((estado) => estado.tecnicoId)
+  const { data: lojas = [] } = useLojas()
   const queryClient = useQueryClient()
   const [abaSelecionada, setAbaSelecionada] = useState<AbaPainelTecnico>('em-aberto')
   const [ordemParaPausar, setOrdemParaPausar] = useState<OrdemServico | null>(null)
@@ -44,8 +45,8 @@ export function PainelTecnico() {
   })
 
   const { mutateAsync: pausar } = useMutation({
-    mutationFn: ({ id, motivoPausa }: { id: number; motivoPausa: string }) =>
-      servicoOrdensServico.pausar(id, motivoPausa),
+    mutationFn: ({ id, motivo }: { id: number; motivo: string }) =>
+      servicoOrdensServico.pausar(id, motivo),
     onSuccess: invalidarOrdensServico,
   })
 
@@ -69,7 +70,7 @@ export function PainelTecnico() {
       return
     }
 
-    await pausar({ id: ordemParaPausar.id, motivoPausa: dados.motivoPausa })
+    await pausar({ id: ordemParaPausar.id, motivo: dados.motivo })
     toast.success(`OS #${ordemParaPausar.id} pausada.`)
   }
 
@@ -78,16 +79,8 @@ export function PainelTecnico() {
     toast.success(`OS #${ordemServico.id} retomada.`)
   }
 
-  function aoVerSolicitacao(ordemServico: OrdemServico) {
-    const solicitacao = SOLICITACOES_MOCK.find(
-      (item) => item.id === ordemServico.solicitacaoId,
-    )
-
-    if (!solicitacao) {
-      toast.error('Solicitação original não encontrada.')
-      return
-    }
-
+  async function aoVerSolicitacao(ordemServico: OrdemServico) {
+    const solicitacao = await servicoSolicitacoes.obterPorId(ordemServico.solicitacaoId)
     setSolicitacaoParaVisualizar(solicitacao)
   }
 
@@ -114,7 +107,7 @@ export function PainelTecnico() {
     // 9/13). Uma OS que o Técnico já encerrou mas ainda sem custo lançado fica "invisível"
     // nas abas dele até esse lançamento.
     concluidas: ordensServico.filter(
-      (ordem) => ordem.statusExecucao === 'Concluída' && ordem.custoManutencao !== undefined,
+      (ordem) => ordem.finalizada,
     ),
   }
 
@@ -132,7 +125,7 @@ export function PainelTecnico() {
   }
 
   const ordensExibidas = ordensPorAba[abaSelecionada]
-  const gruposExibidos = agruparPorSetorLoja(ordensExibidas, LOJAS_MOCK)
+  const gruposExibidos = agruparPorSetorLoja(ordensExibidas, lojas)
   const { Icone: IconeVazio, mensagem: mensagemVazia } = ESTADO_VAZIO[abaSelecionada]
 
   function renderizarCard(ordemServico: OrdemServico) {

@@ -12,24 +12,27 @@ import { CampoTextoArea } from '../../componentes/CampoTextoArea'
 import { CabecalhoSubpagina } from '../../componentes/CabecalhoSubpagina'
 import { servicoMaquinas } from '../../servicos/servicoMaquinas'
 import { servicoPreventivas } from '../../servicos/servicoPreventivas'
-import { LOJAS_MOCK } from '../../servicos/dadosMockLojas'
-import { niveisCriticidade, setoresDisponiveis } from '../../tipos/maquina'
+import { useLojas } from '../../hooks/useLojas'
+import { useSetores } from '../../hooks/useSetores'
+import { niveisCriticidade, type NovaMaquinaPayload } from '../../tipos/maquina'
 import {
   esquemaCadastrarMaquina,
   type DadosCadastrarMaquina,
 } from './esquemaCadastrarMaquina'
 import { UploadFoto } from '../../componentes/UploadFoto'
 import { CampoPreventivas } from './componentes/CampoPreventivas'
+import { converterDataBackendParaFormulario } from '../../utilitarios/dataBackend'
 
-const VALORES_PADRAO = {
-  tag: '',
+const VALORES_PADRAO: DadosCadastrarMaquina = {
+  numeroPatrimonio: '',
+  serie: '',
   nome: '',
   descricao: '',
   marca: '',
   modelo: '',
-  criticidade: undefined,
-  setor: undefined,
-  lojaId: '',
+  criticidade: undefined as unknown as DadosCadastrarMaquina['criticidade'],
+  lojaId: 0,
+  setorId: 0,
   preventivas: [],
 }
 
@@ -38,18 +41,19 @@ export function CadastrarMaquina() {
   const { id } = useParams<{ id: string }>()
   const emEdicao = Boolean(id)
   const [foto, setFoto] = useState<File | null>(null)
+  const { data: lojas = [] } = useLojas()
+  const maquinaId = Number(id)
 
   const { data: maquinaExistente } = useQuery({
     queryKey: ['maquina', id],
-    queryFn: () => servicoMaquinas.obterPorId(id as string),
+    queryFn: () => servicoMaquinas.obterPorId(maquinaId),
     enabled: emEdicao,
   })
 
   const { data: preventivasExistentes = [] } = useQuery({
     queryKey: ['preventivas-da-maquina', id],
-    queryFn: () => servicoPreventivas.listar(),
+    queryFn: () => servicoPreventivas.listar({ maquinaId }),
     enabled: emEdicao,
-    select: (preventivas) => preventivas.filter((preventiva) => preventiva.maquinaId === id),
   })
 
   const {
@@ -57,6 +61,7 @@ export function CadastrarMaquina() {
     handleSubmit,
     control,
     reset,
+    setValue,
     formState: { errors },
   } = useForm<DadosCadastrarMaquina>({
     resolver: zodResolver(esquemaCadastrarMaquina),
@@ -70,34 +75,61 @@ export function CadastrarMaquina() {
 
     reset({
       ...VALORES_PADRAO,
-      tag: maquinaExistente.tag ?? '',
+      numeroPatrimonio: maquinaExistente.numeroPatrimonio ?? '',
+      serie: maquinaExistente.serie ?? '',
       nome: maquinaExistente.nome,
       descricao: maquinaExistente.descricao ?? '',
       marca: maquinaExistente.marca ?? '',
       modelo: maquinaExistente.modelo ?? '',
       criticidade: maquinaExistente.criticidade,
-      setor: maquinaExistente.setor,
       lojaId: maquinaExistente.lojaId,
+      setorId: maquinaExistente.setorId,
       preventivas: preventivasExistentes.map((preventiva) => ({
-        maquinaId: 'nova-maquina',
+        maquinaId: preventiva.maquinaId,
         descricao: preventiva.descricao,
         intervaloDias: preventiva.intervaloDias,
-        proximaData: preventiva.proximaData,
+        proximaData: converterDataBackendParaFormulario(preventiva.proximaData),
         ativa: preventiva.ativa,
       })),
     })
   }, [maquinaExistente, preventivasExistentes, reset])
 
   const nomeMaquina = useWatch({ control, name: 'nome' })
+  const lojaSelecionadaId = useWatch({ control, name: 'lojaId' })
+  const { data: setoresDaLoja = [] } = useSetores(lojaSelecionadaId || undefined)
+
+  // Trocar de loja invalida o setor escolhido (ele pertence à loja anterior). A limpeza
+  // fica no onChange do select, e não num watch da lojaId, para não apagar o setor que o
+  // reset() acabou de preencher ao carregar a máquina em edição.
+  const registroLoja = register('lojaId', { valueAsNumber: true })
+
+  // lojaId não entra no payload: o servidor deriva a loja a partir do setor. No
+  // formulário ele serve só para restringir a lista de setores à loja escolhida.
+  function montarPayload(dados: DadosCadastrarMaquina): NovaMaquinaPayload {
+    return {
+      numeroPatrimonio: dados.numeroPatrimonio,
+      serie: dados.serie,
+      nome: dados.nome,
+      descricao: dados.descricao,
+      marca: dados.marca,
+      modelo: dados.modelo,
+      criticidade: dados.criticidade,
+      setorId: dados.setorId,
+      preventivas: dados.preventivas,
+    }
+  }
 
   const { mutateAsync: criar, isPending: criando } = useMutation({
     mutationFn: (dados: DadosCadastrarMaquina) =>
-      servicoMaquinas.criar(dados, foto ?? undefined),
+      servicoMaquinas.criar(montarPayload(dados), foto ?? undefined),
   })
 
   const { mutateAsync: atualizar, isPending: atualizando } = useMutation({
     mutationFn: (dados: DadosCadastrarMaquina) =>
-      servicoMaquinas.atualizar({ id: id as string, ...dados }, foto ?? undefined),
+      servicoMaquinas.atualizar(
+        { id: maquinaId, ...montarPayload(dados) },
+        foto ?? undefined,
+      ),
   })
 
   async function aoEnviar(dados: DadosCadastrarMaquina) {
@@ -133,20 +165,28 @@ export function CadastrarMaquina() {
           >
             <UploadFoto foto={foto} aoSelecionarFoto={setFoto} />
 
+            <CampoTexto
+              rotulo="Nome *"
+              variante="claro"
+              placeholder="Ex: Pasteurizador 33"
+              mensagemErro={errors.nome?.message}
+              {...register('nome')}
+            />
+
             <div className="grid gap-5 sm:grid-cols-2">
               <CampoTexto
-                rotulo="Tag *"
+                rotulo="Número do Patrimônio *"
                 variante="claro"
-                placeholder="Ex: USI-PAST-LEITE"
-                mensagemErro={errors.tag?.message}
-                {...register('tag')}
+                placeholder="Ex: 000123"
+                mensagemErro={errors.numeroPatrimonio?.message}
+                {...register('numeroPatrimonio')}
               />
               <CampoTexto
-                rotulo="Nome *"
+                rotulo="Série *"
                 variante="claro"
-                placeholder="Ex: Pasteurizador 33"
-                mensagemErro={errors.nome?.message}
-                {...register('nome')}
+                placeholder="Ex: SN-4482910"
+                mensagemErro={errors.serie?.message}
+                {...register('serie')}
               />
             </div>
 
@@ -190,27 +230,35 @@ export function CadastrarMaquina() {
               </CampoSelecao>
 
               <CampoSelecao
-                rotulo="Setor *"
-                mensagemErro={errors.setor?.message}
-                {...register('setor')}
+                rotulo="Loja *"
+                mensagemErro={errors.lojaId?.message}
+                {...registroLoja}
+                onChange={(evento) => {
+                  registroLoja.onChange(evento)
+                  setValue('setorId', 0)
+                }}
               >
                 <option value="">Selecionar...</option>
-                {setoresDisponiveis.map((setor) => (
-                  <option key={setor} value={setor}>
-                    {setor}
+                {lojas.map((loja) => (
+                  <option key={loja.id} value={loja.id}>
+                    {loja.nome}
                   </option>
                 ))}
               </CampoSelecao>
 
+              {/* Setor é cadastrado por loja: a lista só existe depois de escolher a loja. */}
               <CampoSelecao
-                rotulo="Loja *"
-                mensagemErro={errors.lojaId?.message}
-                {...register('lojaId')}
+                rotulo="Setor *"
+                disabled={!lojaSelecionadaId}
+                mensagemErro={errors.setorId?.message}
+                {...register('setorId', { valueAsNumber: true })}
               >
-                <option value="">Selecionar...</option>
-                {LOJAS_MOCK.map((loja) => (
-                  <option key={loja.id} value={loja.id}>
-                    {loja.nome}
+                <option value="">
+                  {lojaSelecionadaId ? 'Selecionar...' : 'Selecione a loja primeiro'}
+                </option>
+                {setoresDaLoja.map((setor) => (
+                  <option key={setor.id} value={setor.id}>
+                    {setor.nome}
                   </option>
                 ))}
               </CampoSelecao>

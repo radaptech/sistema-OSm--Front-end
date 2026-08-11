@@ -32,7 +32,7 @@ export function RotasPrincipais() {
         <Route path="/login" element={<TelaLogin />} />
       </Route>
 
-      <Route element={<RotaProtegida perfis={['solicitante', 'tecnico']} />}>
+      <Route element={<RotaProtegida perfis={['solicitante']} />}>
         <Route path="/home-solicitante" element={<HomeSolicitante />} />
         <Route path="/nova-solicitacao-os" element={<NovaSolicitacaoOS />} />
         <Route path="/nova-solicitacao-reparo" element={<NovaSolicitacaoReparo />} />

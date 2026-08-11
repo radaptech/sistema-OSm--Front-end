@@ -10,13 +10,12 @@ import type { SolicitacaoOS } from '../../tipos/ordemServico'
 import {
   esquemaAbrirOrdemServico,
   type DadosAbrirOrdemServico,
-  type DadosConfirmarAberturaOS,
 } from './esquemaAbrirOrdemServico'
 
 interface ModalAbrirOrdemServicoProps {
   solicitacao: SolicitacaoOS
   aoFechar: () => void
-  aoSalvar: (dados: DadosConfirmarAberturaOS) => void
+  aoSalvar: (dados: DadosAbrirOrdemServico) => void
 }
 
 const ESTILOS_URGENCIA: Record<IdUrgencia, { ativo: string; inativo: string }> = {
@@ -39,7 +38,7 @@ export function ModalAbrirOrdemServico({
   aoFechar,
   aoSalvar,
 }: ModalAbrirOrdemServicoProps) {
-  const { data: tecnicos = [] } = useTecnicos({ lojaId: solicitacao.lojaId })
+  const { data: tecnicos = [] } = useTecnicos(solicitacao.lojaId)
   const agora = new Date()
 
   const {
@@ -50,12 +49,12 @@ export function ModalAbrirOrdemServico({
     resolver: zodResolver(esquemaAbrirOrdemServico),
     defaultValues: {
       urgencia: undefined,
-      tecnicoId: '',
+      tecnicoId: 0,
     },
   })
 
   function aoSalvarFormulario(dados: DadosAbrirOrdemServico) {
-    aoSalvar({ ...dados, dataHora: agora.toISOString() })
+    aoSalvar(dados)
     aoFechar()
   }
 
@@ -140,8 +139,8 @@ export function ModalAbrirOrdemServico({
               <CampoSelecao
                 rotulo="Técnico Responsável *"
                 mensagemErro={errors.tecnicoId?.message}
-                value={field.value}
-                onChange={field.onChange}
+                value={field.value || ''}
+                onChange={(evento) => field.onChange(Number(evento.target.value))}
               >
                 <option value="">Selecionar técnico...</option>
                 {tecnicos.map((tecnico) => (

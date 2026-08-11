@@ -13,6 +13,14 @@ export const esquemaEncerrarOrdemServico = z.object({
     .string()
     .min(10, 'Descreva a solução aplicada.')
     .max(500, 'A descrição deve ter no máximo 500 caracteres.'),
+  custoHoraTecnico: z
+    .number('Informe o custo hora do técnico.')
+    .nonnegative('O custo não pode ser negativo.')
+    .max(999999, 'Informe um valor de até R$ 999.999.'),
+  custoManutencao: z
+    .number('Informe o custo de manutenção.')
+    .nonnegative('O custo não pode ser negativo.')
+    .max(999999, 'Informe um valor de até R$ 999.999.'),
 })
 
 export type DadosEncerrarOrdemServico = z.infer<typeof esquemaEncerrarOrdemServico>

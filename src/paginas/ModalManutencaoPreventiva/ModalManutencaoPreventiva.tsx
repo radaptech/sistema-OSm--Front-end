@@ -16,7 +16,7 @@ import {
 interface ModalManutencaoPreventivaProps {
   aoFechar: () => void
   aoSalvar: (preventiva: PreventivaManutencao) => void
-  maquinaFixa: { id: string; nome: string }
+  maquinaFixa: { id: number; nome: string }
 }
 
 export function ModalManutencaoPreventiva({

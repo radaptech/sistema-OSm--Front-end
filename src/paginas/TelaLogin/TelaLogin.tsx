@@ -8,10 +8,7 @@ import { Botao } from '../../componentes/Botao'
 import { CampoTexto } from '../../componentes/CampoTexto'
 import { SeletorPerfil } from '../../componentes/SeletorPerfil'
 import { useEstadoAutenticacao } from '../../estado/estadoAutenticacao'
-import { derivarNomeUsuario } from '../../utilitarios/derivarNomeUsuario'
-import { obterEscoposGestorMock } from '../../servicos/dadosMockGestores'
-import { obterSetorSolicitanteMock } from '../../servicos/dadosMockSolicitantes'
-import { obterTecnicoLogadoMock } from '../../servicos/dadosMockTecnicos'
+import { servicoAutenticacao } from '../../servicos/servicoAutenticacao'
 import { ROTA_POR_PERFIL } from '../../rotas/rotaPorPerfil'
 import { esquemaLogin, type DadosLogin } from './esquemaLogin'
 
@@ -33,19 +30,14 @@ export function TelaLogin() {
 
   const perfilSelecionado = useWatch({ control, name: 'perfil' })
 
-  function aoEnviar(dados: DadosLogin) {
-    const opcoesSessao =
-      dados.perfil === 'gestor'
-        ? { escoposGestor: obterEscoposGestorMock(dados.email) }
-        : dados.perfil === 'solicitante'
-          ? obterSetorSolicitanteMock(dados.email)
-          : dados.perfil === 'tecnico'
-            ? { tecnicoId: obterTecnicoLogadoMock(dados.email) }
-            : undefined
+  // O escopo de acesso (loja/setor do solicitante, escopos do gestor, tecnicoId) vem no
+  // payload de login — o front não deriva nada disso.
+  async function aoEnviar(dados: DadosLogin) {
+    const sessao = await servicoAutenticacao.entrar(dados)
 
-    entrar(dados.perfil, derivarNomeUsuario(dados.email), opcoesSessao)
+    entrar(sessao)
     toast.success('Login realizado com sucesso.')
-    navegar(ROTA_POR_PERFIL[dados.perfil])
+    navegar(ROTA_POR_PERFIL[sessao.perfil])
   }
 
   return (

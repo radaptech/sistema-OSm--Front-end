@@ -1,21 +1,14 @@
 import { useQuery } from '@tanstack/react-query'
 import { servicoMaquinas } from '../servicos/servicoMaquinas'
-import type { Setor } from '../tipos/maquina'
 
-interface OpcoesUseMaquinas {
-  habilitado?: boolean
-  setor?: Setor
-  lojaId?: string
+interface ParametrosUseMaquinas {
+  setorId?: number
+  lojaId?: number
 }
 
-export function useMaquinas({
-  habilitado = true,
-  setor,
-  lojaId,
-}: OpcoesUseMaquinas = {}) {
+export function useMaquinas({ setorId, lojaId }: ParametrosUseMaquinas = {}) {
   return useQuery({
-    queryKey: ['maquinas', { setor, lojaId }],
-    queryFn: () => servicoMaquinas.listar({ setor, lojaId }),
-    enabled: habilitado,
+    queryKey: ['maquinas', { setorId, lojaId }],
+    queryFn: () => servicoMaquinas.listar({ setorId, lojaId }),
   })
 }

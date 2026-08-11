@@ -1,14 +1,15 @@
 export interface SetorCadastrado {
-  id: string
+  id: number
   nome: string
-  lojaId: string
+  lojaId: number
+  ativo?: boolean
 }
 
 export interface NovoSetorPayload {
   nome: string
-  lojaId: string
+  lojaId: number
 }
 
 export interface AtualizarSetorPayload extends NovoSetorPayload {
-  id: string
+  id: number
 }

@@ -1,5 +1,3 @@
-import type { Setor } from './maquina'
-
 export const tiposOS = ['maquinario', 'terceiros', 'reparo'] as const
 
 export type TipoOS = (typeof tiposOS)[number]
@@ -23,15 +21,14 @@ export const marcadoresImpacto = [
 
 export type MarcadorImpacto = (typeof marcadoresImpacto)[number]
 
+// Enviado como parte "dados" do multipart — a foto do defeito é obrigatória e vai como
+// arquivo. Setor, loja, solicitante e data/hora NÃO são enviados: o servidor deriva da
+// máquina e da sessão autenticada.
 export interface NovaSolicitacaoOSPayload {
-  maquinaId: string
+  maquinaId: number
   tipoDefeito: TipoDefeito
   descricao: string
-  setor: string
-  lojaId: string
-  solicitante: string
   impactos: MarcadorImpacto[]
-  dataHora: string
 }
 
 export const statusSolicitacao = [
@@ -46,26 +43,39 @@ export const origensSolicitacao = ['solicitante', 'preventiva'] as const
 
 export type OrigemSolicitacao = (typeof origensSolicitacao)[number]
 
+export interface AnexoSolicitacao {
+  id: number
+  tipo: 'foto' | 'video'
+  url: string
+}
+
 export interface SolicitacaoOS {
   id: number
   tipo: TipoOS
-  maquinaNome: string
-  maquinaCodigo: string
+  // Reparo não tem máquina cadastrada: maquinaId vem nulo e itemDescricao traz o texto
+  // livre digitado pelo Solicitante.
+  maquinaId: number | null
+  maquinaNome: string | null
+  maquinaCodigo: string | null
+  // Foto de cadastro da máquina, resolvida pelo servidor — evita uma segunda consulta só
+  // para mostrar a máquina no modal de detalhes.
+  maquinaFotoUrl?: string
+  itemDescricao: string | null
   tipoDefeito?: TipoDefeito
   status: StatusSolicitacao
   descricao: string
-  solicitante: string
+  // Nulo quando origem === 'preventiva': a solicitação foi aberta pelo job, sem pessoa.
+  solicitanteId: number | null
+  solicitanteNome: string | null
   criadoEm: string
-  setor: Setor
-  lojaId: string
+  setorId: number
+  setorNome: string
+  lojaId: number
+  lojaNome: string
   impactos: MarcadorImpacto[]
   origem: OrigemSolicitacao
-  preventivaId?: string
-  // Pequenos Reparos (sem máquina cadastrada): foto do item. Maquinário: foto do
-  // defeito constatado na hora da solicitação, evidência para o Gestor avaliar.
-  fotoUrl?: string
-  // Vídeo do defeito, opcional — só na OS de Maquinário (item 3).
-  videoUrl?: string
+  preventivaId?: number
+  anexos: AnexoSolicitacao[]
 }
 
 export const niveisUrgencia = ['Baixa', 'Média', 'Alta'] as const
@@ -75,17 +85,14 @@ export type IdUrgencia = (typeof niveisUrgencia)[number]
 export interface AberturaOrdemServicoPayload {
   solicitacaoId: number
   urgencia: IdUrgencia
-  dataHora: string
-  tecnicoId: string
+  tecnicoId: number
 }
 
-// Aprovação de OS Terceiros pelo Gestor: diferente da abertura de OS de Maquinário/Reparo
-// (acima), não há Técnico nem Urgência — o Gestor só escolhe a empresa terceirizada
-// responsável pelo reparo. Ver regra de negócio no CLAUDE.md (item 3c/6).
+// Aprovação de OS Terceiros pelo Gestor: sem Técnico nem Urgência — o Gestor só escolhe a
+// empresa terceirizada responsável pelo reparo.
 export interface AprovacaoOSTerceirosPayload {
   solicitacaoId: number
-  empresaTerceirizadaId: string
-  dataHora: string
+  empresaTerceirizadaId: number
 }
 
 export const statusExecucaoOS = ['Aberta', 'Em Andamento', 'Pausada', 'Concluída'] as const
@@ -95,57 +102,90 @@ export type StatusExecucaoOS = (typeof statusExecucaoOS)[number]
 // Status para o qual a OS deve voltar ao ser retomada de uma pausa.
 export type StatusRetomavel = Extract<StatusExecucaoOS, 'Aberta' | 'Em Andamento'>
 
+export interface PausaOrdemServico {
+  id: number
+  motivo: string
+  pausadaEm: string
+  retomadaEm: string | null
+  statusAnterior: StatusRetomavel
+}
+
+export interface CustoOrdemServico {
+  custoHoraTecnico: number | null
+  custoManutencao: number
+  custoTotal: number
+  // Preenchido apenas em OS Terceiros: o que a empresa efetivamente fez.
+  descricaoServico: string | null
+  lancadoPorNome: string
+  lancadoEm: string
+}
+
+export interface EncerramentoOrdemServico {
+  defeitoConstatado: string
+  causaRaiz: string
+  solucao: string
+  encerradoPorNome: string
+}
+
 export interface OrdemServico {
   id: number
   solicitacaoId: number
   tipo: TipoOS
-  maquinaNome: string
-  maquinaCodigo: string
+  maquinaId: number | null
+  maquinaNome: string | null
+  maquinaCodigo: string | null
+  itemDescricao: string | null
   descricao: string
-  setor: Setor
-  lojaId: string
-  solicitante: string
+  setorId: number
+  setorNome: string
+  lojaId: number
+  lojaNome: string
+  solicitanteNome: string | null
   // Maquinário/Reparo: Técnico interno + Urgência definidos pelo Gestor ao abrir a OS.
-  // Terceiros: sem Urgência, o Gestor escolhe a empresa terceirizada responsável.
+  // Terceiros: sem Urgência nem Técnico — a empresa terceirizada é a responsável.
   urgencia?: IdUrgencia
-  tecnicoId?: string
-  empresaTerceirizadaId?: string
+  tecnicoId?: number
+  tecnicoNome?: string
+  tecnicoArea?: string
+  empresaTerceirizadaId?: number
+  empresaTerceirizadaNome?: string
   statusExecucao: StatusExecucaoOS
+  // Uma OS só é "finalizada" quando o Técnico encerrou E o custo foi lançado. O servidor
+  // resolve essa regra e devolve pronta, em vez de cada tela recalcular.
+  finalizada: boolean
   dataAbertura: string
-  motivoPausa?: string
-  statusAntesDaPausa?: StatusRetomavel
   dataInicio?: string
   dataFim?: string
-  // Controle do relógio de horas do técnico, independente do tempo de máquina parada
-  // (dataAbertura → dataFim, esse sim corrido): horasTrabalhadasAcumuladas guarda o que
-  // já foi fechado em sessões anteriores, e sessaoAtualInicio marca o início da sessão
-  // ativa (undefined enquanto a OS está Pausada ou antes de "Iniciar Atendimento").
-  horasTrabalhadasAcumuladas?: number
-  sessaoAtualInicio?: string
+  // Horas já calculadas pelo servidor a partir de dataAbertura/dataInicio/dataFim e do
+  // histórico de pausas. Só existem em OS encerrada.
   horasTrabalhadas?: number
-  custoHoraTecnico?: number
-  custoManutencao?: number
-  defeitoConstatado?: string
-  causaRaiz?: string
-  solucao?: string
+  horasParada?: number
+  // Pausa em aberto no momento — presente somente enquanto statusExecucao === 'Pausada'.
+  pausaAtual?: PausaOrdemServico
+  pausas?: PausaOrdemServico[]
+  encerramento?: EncerramentoOrdemServico
+  custo?: CustoOrdemServico
 }
-
-// Payload interno usado por servicoOrdensServico.criar — construído por
-// servicoSolicitacoes.abrirOS/aprovarTerceiros a partir da SolicitacaoOS de origem.
-export type NovaOrdemServicoPayload = Omit<OrdemServico, 'id'>
 
 export interface EncerramentoOrdemServicoPayload {
   ordemServicoId: number
-  dataInicio: string
-  dataFim: string
-  horasTrabalhadas: number
-  custoHoraTecnico: number
   defeitoConstatado: string
   causaRaiz: string
   solucao: string
+  custoHoraTecnico: number
+  custoManutencao: number
 }
 
 export interface LancamentoCustoManutencaoPayload {
   ordemServicoId: number
   custoManutencao: number
+  custoHoraTecnico?: number
+  descricaoServico?: string
+}
+
+// Contadores da Home do Solicitante.
+export interface ResumoSolicitacoes {
+  abertas: number
+  emAndamento: number
+  concluidas: number
 }

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useForm, useWatch, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation } from '@tanstack/react-query'
@@ -13,6 +13,7 @@ import { useMaquinas } from '../../hooks/useMaquinas'
 import { useEstadoAutenticacao } from '../../estado/estadoAutenticacao'
 import { servicoSolicitacoes } from '../../servicos/servicoSolicitacoes'
 import { formatarDataHora } from '../../utilitarios/formatarData'
+import { agoraParaBackend } from '../../utilitarios/dataBackend'
 import { marcadoresImpacto, tiposDefeito } from '../../tipos/ordemServico'
 import {
   esquemaNovaSolicitacaoOS,
@@ -27,13 +28,14 @@ const LIMITE_CARACTERES_DESCRICAO = 1000
 export function NovaSolicitacaoOS() {
   const navegar = useNavigate()
   const nomeUsuario = useEstadoAutenticacao((estado) => estado.nomeUsuario)
-  const setorUsuario = useEstadoAutenticacao((estado) => estado.setor)
+  const setorIdUsuario = useEstadoAutenticacao((estado) => estado.setorId)
   const lojaIdUsuario = useEstadoAutenticacao((estado) => estado.lojaId)
   const { data: maquinas = [], isLoading: carregandoMaquinas } = useMaquinas({
-    setor: setorUsuario ?? undefined,
+    setorId: setorIdUsuario ?? undefined,
     lojaId: lojaIdUsuario ?? undefined,
   })
-  const [dataHora] = useState(() => new Date().toISOString())
+  // Exibido como confirmação; o instante gravado é o do servidor.
+  const [dataHora] = useState(() => agoraParaBackend())
   const [fotoDefeito, setFotoDefeito] = useState<File | null>(null)
   const [videoDefeito, setVideoDefeito] = useState<File | null>(null)
 
@@ -41,35 +43,21 @@ export function NovaSolicitacaoOS() {
     register,
     handleSubmit,
     control,
-    setValue,
     reset,
     formState: { errors },
   } = useForm<DadosNovaSolicitacaoOS>({
     resolver: zodResolver(esquemaNovaSolicitacaoOS),
     defaultValues: {
-      maquinaId: '',
-      tipoDefeito: undefined,
-      setor: '',
-      lojaId: '',
-      solicitante: nomeUsuario ?? '',
+      maquinaId: 0,
+      tipoDefeito: undefined as unknown as DadosNovaSolicitacaoOS['tipoDefeito'],
       descricao: '',
       impactos: [],
-      dataHora,
     },
   })
 
   const maquinaIdSelecionada = useWatch({ control, name: 'maquinaId' })
   const descricao = useWatch({ control, name: 'descricao' }) ?? ''
   const maquinaSelecionada = maquinas.find((m) => m.id === maquinaIdSelecionada)
-
-  useEffect(() => {
-    setValue('setor', maquinaSelecionada?.setor ?? '', {
-      shouldValidate: Boolean(maquinaSelecionada),
-    })
-    setValue('lojaId', maquinaSelecionada?.lojaId ?? '', {
-      shouldValidate: Boolean(maquinaSelecionada),
-    })
-  }, [maquinaSelecionada, setValue])
 
   const { mutateAsync, isPending } = useMutation({
     mutationFn: (dados: DadosNovaSolicitacaoOS) =>
@@ -113,7 +101,7 @@ export function NovaSolicitacaoOS() {
                 rotulo="Máquina"
                 mensagemErro={errors.maquinaId?.message}
                 disabled={carregandoMaquinas || maquinas.length === 0}
-                {...register('maquinaId')}
+                {...register('maquinaId', { valueAsNumber: true })}
               >
                 <option value="">
                   {carregandoMaquinas
@@ -136,7 +124,7 @@ export function NovaSolicitacaoOS() {
               rotulo="Solicitante"
               variante="claro"
               readOnly
-              {...register('solicitante')}
+              value={nomeUsuario ?? ''}
             />
 
             <CampoSelecao
@@ -157,7 +145,7 @@ export function NovaSolicitacaoOS() {
               variante="claro"
               readOnly
               placeholder="Selecione uma máquina..."
-              {...register('setor')}
+              value={maquinaSelecionada?.setorNome ?? ''}
             />
 
             <div className="flex flex-col gap-1">

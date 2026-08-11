@@ -27,7 +27,7 @@ export function ModalPausarOrdemServico({
     formState: { errors },
   } = useForm<DadosPausarOrdemServico>({
     resolver: zodResolver(esquemaPausarOrdemServico),
-    defaultValues: { motivoPausa: '' },
+    defaultValues: { motivo: '' },
   })
 
   function aoSalvarFormulario(dados: DadosPausarOrdemServico) {
@@ -76,8 +76,8 @@ export function ModalPausarOrdemServico({
             rows={4}
             maxLength={300}
             placeholder="Ex: Aguardando peça de reposição do fornecedor."
-            mensagemErro={errors.motivoPausa?.message}
-            {...register('motivoPausa')}
+            mensagemErro={errors.motivo?.message}
+            {...register('motivo')}
           />
 
           <div className="flex gap-3">

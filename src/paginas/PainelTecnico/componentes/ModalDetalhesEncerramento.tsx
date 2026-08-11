@@ -99,13 +99,13 @@ export function ModalDetalhesEncerramento({
                 Custo Manutenção
               </span>
               <p className="font-mono text-slate-700">
-                {ordemServico.custoHoraTecnico !== undefined
-                  ? formatarMoeda(ordemServico.custoHoraTecnico)
+                {ordemServico.custo?.custoHoraTecnico != null
+                  ? formatarMoeda(ordemServico.custo!.custoHoraTecnico!)
                   : '—'}
               </p>
               <p className="font-mono text-slate-700">
-                {ordemServico.custoManutencao !== undefined ? (
-                  formatarMoeda(ordemServico.custoManutencao)
+                {ordemServico.custo != null ? (
+                  formatarMoeda(ordemServico.custo!.custoManutencao)
                 ) : (
                   <span className="text-amber-600">Pendente de lançamento</span>
                 )}
@@ -118,7 +118,7 @@ export function ModalDetalhesEncerramento({
               Defeito Constatado
             </p>
             <p className="mt-1 text-sm text-slate-600">
-              {ordemServico.defeitoConstatado ?? '—'}
+              {ordemServico.encerramento?.defeitoConstatado ?? '—'}
             </p>
           </div>
 
@@ -126,14 +126,14 @@ export function ModalDetalhesEncerramento({
             <p className="font-mono text-xs font-semibold tracking-wide text-slate-400 uppercase">
               Causa Raiz
             </p>
-            <p className="mt-1 text-sm text-slate-600">{ordemServico.causaRaiz ?? '—'}</p>
+            <p className="mt-1 text-sm text-slate-600">{ordemServico.encerramento?.causaRaiz ?? '—'}</p>
           </div>
 
           <div>
             <p className="font-mono text-xs font-semibold tracking-wide text-slate-400 uppercase">
               Solução Aplicada
             </p>
-            <p className="mt-1 text-sm text-slate-600">{ordemServico.solucao ?? '—'}</p>
+            <p className="mt-1 text-sm text-slate-600">{ordemServico.encerramento?.solucao ?? '—'}</p>
           </div>
 
           <Botao type="button" variante="secundario" onClick={aoFechar}>

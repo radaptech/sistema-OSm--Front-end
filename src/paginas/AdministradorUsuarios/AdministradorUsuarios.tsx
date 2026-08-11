@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Pencil, Plus, Trash2, UserPlus, Users } from 'lucide-react'
 import { toast } from 'react-toastify'
@@ -9,63 +9,49 @@ import { CampoSelecao } from '../../componentes/CampoSelecao'
 import { ModalConfirmarExclusao } from '../../componentes/ModalConfirmarExclusao'
 import { Paginacao } from '../../componentes/Paginacao'
 import { useLojas } from '../../hooks/useLojas'
+import { useSetores } from '../../hooks/useSetores'
 import { useUsuarios } from '../../hooks/useUsuarios'
 import { servicoUsuarios } from '../../servicos/servicoUsuarios'
 import type { Usuario } from '../../tipos/usuario'
 
-const ROTULO_PERFIL: Record<Usuario['role'], string> = {
+const ROTULO_PERFIL: Record<Usuario['perfil'], string> = {
   solicitante: 'Solicitante',
   gestor: 'Gestor',
   administrador: 'Administrador',
 }
 
-const TAMANHO_PAGINA = 10
-
 export function AdministradorUsuarios() {
   const navegar = useNavigate()
   const queryClient = useQueryClient()
   const [busca, setBusca] = useState('')
-  const [filtroRole, setFiltroRole] = useState<Usuario['role'] | ''>('')
+  const [filtroPerfil, setFiltroPerfil] = useState<Usuario['perfil'] | ''>('')
   const [filtroLoja, setFiltroLoja] = useState('')
   const [usuarioParaExcluir, setUsuarioParaExcluir] = useState<Usuario | null>(null)
   const [pagina, setPagina] = useState(1)
 
-  const { data: usuarios = [], isLoading } = useUsuarios()
+  const { data: resposta, isLoading } = useUsuarios({
+    busca: busca.trim() || undefined,
+    perfil: filtroPerfil || undefined,
+    lojaId: filtroLoja ? Number(filtroLoja) : undefined,
+    pagina,
+  })
   const { data: lojas = [] } = useLojas()
+  const { data: setores = [] } = useSetores()
+
+  const usuarios = resposta?.dados ?? []
+  const totalPaginas = resposta?.totalPaginas ?? 1
 
   const { mutateAsync: excluir, isPending: excluindo } = useMutation({
     mutationFn: servicoUsuarios.deletar,
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['usuarios'] }),
   })
 
-  const usuariosFiltrados = useMemo(() => {
-    const termo = busca.trim().toLowerCase()
-
-    return usuarios.filter((usuario) => {
-      const combinaBusca =
-        !termo ||
-        usuario.nome.toLowerCase().includes(termo) ||
-        usuario.email.toLowerCase().includes(termo)
-      const combinaRole = !filtroRole || usuario.role === filtroRole
-      const combinaLoja = !filtroLoja || usuario.lojasIds.includes(filtroLoja)
-
-      return combinaBusca && combinaRole && combinaLoja
-    })
-  }, [usuarios, busca, filtroRole, filtroLoja])
-
-  const chaveFiltros = `${busca}|${filtroRole}|${filtroLoja}`
+  const chaveFiltros = `${busca}|${filtroPerfil}|${filtroLoja}`
   const [chaveFiltrosAnterior, setChaveFiltrosAnterior] = useState(chaveFiltros)
   if (chaveFiltros !== chaveFiltrosAnterior) {
     setChaveFiltrosAnterior(chaveFiltros)
     setPagina(1)
   }
-
-  const totalPaginas = Math.max(1, Math.ceil(usuariosFiltrados.length / TAMANHO_PAGINA))
-  const paginaAtual = Math.min(pagina, totalPaginas)
-  const usuariosPaginados = usuariosFiltrados.slice(
-    (paginaAtual - 1) * TAMANHO_PAGINA,
-    paginaAtual * TAMANHO_PAGINA,
-  )
 
   async function aoConfirmarExclusao() {
     if (!usuarioParaExcluir) {
@@ -96,8 +82,10 @@ export function AdministradorUsuarios() {
           <div className="grid grid-cols-2 gap-2 sm:w-96 sm:shrink-0">
             <CampoSelecao
               rotulo="Perfil"
-              value={filtroRole}
-              onChange={(evento) => setFiltroRole(evento.target.value as Usuario['role'] | '')}
+              value={filtroPerfil}
+              onChange={(evento) =>
+                setFiltroPerfil(evento.target.value as Usuario['perfil'] | '')
+              }
             >
               <option value="">Todos os perfis</option>
               <option value="solicitante">Solicitante</option>
@@ -138,16 +126,22 @@ export function AdministradorUsuarios() {
             </p>
           )}
 
-          {!isLoading && usuariosFiltrados.length === 0 && (
+          {!isLoading && usuarios.length === 0 && (
             <div className="flex flex-col items-center gap-2 rounded-xl bg-white/10 py-12 text-slate-400 lg:col-span-2">
               <Users size={28} />
               <p className="text-sm">Nenhum usuário encontrado para esses filtros.</p>
             </div>
           )}
 
-          {usuariosPaginados.map((usuario) => {
+          {usuarios.map((usuario) => {
             const nomesLojas = usuario.lojasIds
-              .map((lojaId) => lojas.find((loja) => loja.id === lojaId)?.nome ?? lojaId)
+              .map((lojaId) => lojas.find((loja) => loja.id === lojaId)?.nome ?? `Loja ${lojaId}`)
+              .join(', ')
+            const nomesSetores = usuario.setoresIds
+              .map(
+                (setorId) =>
+                  setores.find((setor) => setor.id === setorId)?.nome ?? `Setor ${setorId}`,
+              )
               .join(', ')
 
             return (
@@ -159,7 +153,7 @@ export function AdministradorUsuarios() {
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="font-semibold text-slate-800">{usuario.nome}</span>
                     <span className="rounded-full bg-emerald-100 px-2.5 py-1 font-mono text-xs font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-600/15">
-                      {ROTULO_PERFIL[usuario.role]}
+                      {ROTULO_PERFIL[usuario.perfil]}
                     </span>
                     {usuario.acessoTotalSetores && (
                       <span className="rounded-full bg-amber-100 px-2.5 py-1 font-mono text-xs font-semibold text-amber-700 ring-1 ring-inset ring-amber-600/15">
@@ -170,7 +164,7 @@ export function AdministradorUsuarios() {
                   <p className="mt-1 font-mono text-sm text-slate-500">{usuario.email}</p>
                   <p className="mt-1 text-xs text-slate-400">
                     {nomesLojas || 'Sem loja vinculada'}
-                    {usuario.setores.length > 0 && ` · ${usuario.setores.join(', ')}`}
+                    {usuario.setoresIds.length > 0 && ` · ${nomesSetores}`}
                   </p>
                 </div>
 
@@ -198,7 +192,7 @@ export function AdministradorUsuarios() {
         </div>
 
         {totalPaginas > 1 && (
-          <Paginacao pagina={paginaAtual} totalPaginas={totalPaginas} aoMudarPagina={setPagina} />
+          <Paginacao pagina={pagina} totalPaginas={totalPaginas} aoMudarPagina={setPagina} />
         )}
       </main>
 

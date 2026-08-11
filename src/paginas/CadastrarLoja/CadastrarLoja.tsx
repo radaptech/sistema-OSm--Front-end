@@ -24,7 +24,7 @@ export function CadastrarLoja() {
 
   const { data: lojaExistente } = useQuery({
     queryKey: ['loja', id],
-    queryFn: () => servicoLojas.obterPorId(id as string),
+    queryFn: () => servicoLojas.obterPorId(Number(id)),
     enabled: emEdicao,
   })
 
@@ -36,7 +36,7 @@ export function CadastrarLoja() {
     formState: { errors },
   } = useForm<DadosCadastrarLoja>({
     resolver: zodResolver(esquemaCadastrarLoja),
-    defaultValues: { nome: '', empresaId: '' },
+    defaultValues: { nome: '', empresaId: 0 },
   })
 
   useEffect(() => {
@@ -59,7 +59,7 @@ export function CadastrarLoja() {
 
   async function aoEnviar(dados: DadosCadastrarLoja) {
     if (emEdicao && id) {
-      await atualizar({ id, ...dados })
+      await atualizar({ id: Number(id), ...dados })
       toast.success('Loja atualizada com sucesso.')
       navegar(-1)
       return
@@ -100,7 +100,7 @@ export function CadastrarLoja() {
               <CampoSelecao
                 rotulo="Empresa *"
                 mensagemErro={errors.empresaId?.message}
-                {...register('empresaId')}
+                {...register('empresaId', { valueAsNumber: true })}
               >
                 <option value="">Selecionar...</option>
                 {empresas.map((empresa) => (

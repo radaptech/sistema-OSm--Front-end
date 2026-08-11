@@ -22,7 +22,7 @@ export function CardSolicitacaoGestor({
   return (
     <div
       className={`flex flex-col gap-3 rounded-xl bg-white p-4 shadow-card sm:flex-row sm:items-center sm:gap-4 ${
-        ehPreventiva ? 'border-l-4 border-amber-400 bg-amber-50/60' : ''
+        ehPreventiva ? 'bg-amber-50/70 ring-1 ring-inset ring-amber-400/40' : ''
       }`}
     >
       <div className="flex flex-1 items-start gap-4">
@@ -52,7 +52,7 @@ export function CardSolicitacaoGestor({
           <p className="mt-1 font-mono text-xs text-slate-400">
             {formatarDataHora(solicitacao.criadoEm)} · Por{' '}
             <span className="font-medium text-slate-500">
-              {solicitacao.solicitante}
+              {solicitacao.solicitanteNome}
             </span>
           </p>
         </div>

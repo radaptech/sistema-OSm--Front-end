@@ -1,8 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
-import {
-  servicoUsuarios,
-  type ParametrosListagemUsuarios,
-} from '../servicos/servicoUsuarios'
+import { servicoUsuarios } from '../servicos/servicoUsuarios'
+import type { ParametrosListagemUsuarios } from '../servicos/servicoUsuarios'
 
 export function useUsuarios(parametros: ParametrosListagemUsuarios = {}) {
   return useQuery({

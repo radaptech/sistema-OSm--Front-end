@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { ClipboardCheck, Eye, Printer } from 'lucide-react'
 import { CabecalhoSubpagina } from '../../componentes/CabecalhoSubpagina'
 import { BadgeTipoOS } from '../../componentes/BadgeTipoOS'
@@ -27,24 +27,16 @@ export function AdministradorOSFinalizadas() {
   const [selecao, setSelecao] = useState<SelecaoOS | null>(null)
   const [pagina, setPagina] = useState(1)
 
-  const { data: ordensServico = [], isLoading } = useOrdensServicoTodas()
+  // "Finalizada" = Técnico encerrou E o custo foi lançado. O servidor resolve essa regra.
+  const { data: ordensServico = [], isLoading } = useOrdensServicoTodas({
+    finalizada: true,
+    busca: busca.trim() || undefined,
+    lojaId: filtroLoja ? Number(filtroLoja) : undefined,
+    tipo: filtroTipo || undefined,
+  })
   const { data: lojas = [] } = useLojas()
 
-  const ordensFinalizadas = useMemo(() => {
-    const termo = busca.trim().toLowerCase()
-
-    return ordensServico.filter((ordem) => {
-      const completa = ordem.statusExecucao === 'Concluída' && ordem.custoManutencao !== undefined
-      const combinaBusca =
-        !termo ||
-        ordem.maquinaNome.toLowerCase().includes(termo) ||
-        ordem.maquinaCodigo.toLowerCase().includes(termo)
-      const combinaLoja = !filtroLoja || ordem.lojaId === filtroLoja
-      const combinaTipo = !filtroTipo || ordem.tipo === filtroTipo
-
-      return completa && combinaBusca && combinaLoja && combinaTipo
-    })
-  }, [ordensServico, busca, filtroLoja, filtroTipo])
+  const ordensFinalizadas = ordensServico
 
   const chaveFiltros = `${busca}|${filtroLoja}|${filtroTipo}`
   const [chaveFiltrosAnterior, setChaveFiltrosAnterior] = useState(chaveFiltros)
@@ -116,7 +108,7 @@ export function AdministradorOSFinalizadas() {
           )}
 
           {ordensPaginadas.map((ordem) => {
-            const custoTotal = (ordem.custoHoraTecnico ?? 0) + (ordem.custoManutencao ?? 0)
+            const custoTotal = (ordem.custo?.custoHoraTecnico ?? 0) + (ordem.custo?.custoManutencao ?? 0)
 
             return (
               <div
@@ -138,7 +130,7 @@ export function AdministradorOSFinalizadas() {
                   </div>
                   <p className="mt-1 truncate text-xs text-slate-400">
                     {lojas.find((loja) => loja.id === ordem.lojaId)?.nome ?? ordem.lojaId} ·{' '}
-                    {ordem.setor} · Encerrada em{' '}
+                    {ordem.setorNome} · Encerrada em{' '}
                     {ordem.dataFim ? formatarDataHora(ordem.dataFim) : '—'}
                   </p>
                   <p className="mt-1 font-mono text-xs font-semibold text-emerald-700">

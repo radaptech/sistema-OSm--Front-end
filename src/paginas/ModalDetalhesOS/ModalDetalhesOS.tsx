@@ -5,10 +5,7 @@ import { Botao } from '../../componentes/Botao'
 import { BadgeStatusExecucao } from '../../componentes/BadgeStatusExecucao'
 import { BadgeTipoOS } from '../../componentes/BadgeTipoOS'
 import { BadgeUrgencia } from '../../componentes/BadgeUrgencia'
-import { LOJAS_MOCK } from '../../servicos/dadosMockLojas'
-import { TECNICOS_MOCK } from '../../servicos/dadosMockTecnicos'
-import { EMPRESAS_TERCEIRIZADAS_MOCK } from '../../servicos/dadosMockEmpresasTerceirizadas'
-import { calcularHoras } from '../../utilitarios/calcularHoras'
+import { obterNomeAlvo, obterCodigoAlvo } from '../../utilitarios/alvoOS'
 import { formatarDataHora } from '../../utilitarios/formatarData'
 import { formatarMoeda } from '../../utilitarios/formatarMoeda'
 import type { OrdemServico } from '../../tipos/ordemServico'
@@ -26,15 +23,10 @@ export function ModalDetalhesOS({
   autoImprimir = false,
   contexto = 'Painel do Administrador',
 }: ModalDetalhesOSProps) {
-  const loja = LOJAS_MOCK.find((item) => item.id === ordemServico.lojaId)
-  const tecnico = TECNICOS_MOCK.find((item) => item.id === ordemServico.tecnicoId)
-  const empresaTerceirizada = EMPRESAS_TERCEIRIZADAS_MOCK.find(
-    (item) => item.id === ordemServico.empresaTerceirizadaId,
-  )
-  const custoTotal = (ordemServico.custoHoraTecnico ?? 0) + (ordemServico.custoManutencao ?? 0)
-  const horasParada = ordemServico.dataFim
-    ? calcularHoras(ordemServico.dataAbertura, ordemServico.dataFim)
-    : undefined
+  // Nome da loja, do técnico e da empresa vêm resolvidos na própria OS; horas e custo
+  // total vêm calculados do servidor.
+  const custo = ordemServico.custo
+  const horasParada = ordemServico.horasParada
 
   useEffect(() => {
     if (!autoImprimir) {
@@ -80,9 +72,9 @@ export function ModalDetalhesOS({
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="font-display font-semibold text-slate-800">
-                {ordemServico.maquinaNome}
+                {obterNomeAlvo(ordemServico)}
               </p>
-              <p className="font-mono text-sm text-slate-400">{ordemServico.maquinaCodigo}</p>
+              <p className="font-mono text-sm text-slate-400">{obterCodigoAlvo(ordemServico)}</p>
             </div>
             <div className="flex flex-col items-end gap-1.5">
               <BadgeStatusExecucao status={ordemServico.statusExecucao} />
@@ -96,19 +88,19 @@ export function ModalDetalhesOS({
               <p className="font-mono text-xs font-semibold tracking-wide text-slate-400 uppercase">
                 Loja
               </p>
-              <p className="text-slate-700">{loja?.nome ?? '—'}</p>
+              <p className="text-slate-700">{ordemServico.lojaNome}</p>
             </div>
             <div>
               <p className="font-mono text-xs font-semibold tracking-wide text-slate-400 uppercase">
                 Setor
               </p>
-              <p className="text-slate-700">{ordemServico.setor}</p>
+              <p className="text-slate-700">{ordemServico.setorNome}</p>
             </div>
             <div>
               <p className="font-mono text-xs font-semibold tracking-wide text-slate-400 uppercase">
                 Solicitante
               </p>
-              <p className="text-slate-700">{ordemServico.solicitante}</p>
+              <p className="text-slate-700">{ordemServico.solicitanteNome ?? '—'}</p>
             </div>
             <div>
               <p className="font-mono text-xs font-semibold tracking-wide text-slate-400 uppercase">
@@ -116,9 +108,9 @@ export function ModalDetalhesOS({
               </p>
               <p className="text-slate-700">
                 {ordemServico.tipo === 'terceiros'
-                  ? (empresaTerceirizada?.nome ?? '—')
-                  : tecnico
-                    ? `${tecnico.nome} — ${tecnico.area}`
+                  ? (ordemServico.empresaTerceirizadaNome ?? '—')
+                  : ordemServico.tecnicoNome
+                    ? `${ordemServico.tecnicoNome} — ${ordemServico.tecnicoArea ?? ''}`
                     : '—'}
               </p>
             </div>
@@ -163,24 +155,20 @@ export function ModalDetalhesOS({
               <div>
                 <p className="text-xs text-slate-400">Custo Hora Técnico</p>
                 <p className="font-mono font-semibold text-slate-700">
-                  {ordemServico.custoHoraTecnico !== undefined
-                    ? formatarMoeda(ordemServico.custoHoraTecnico)
-                    : '—'}
+                  {custo?.custoHoraTecnico != null ? formatarMoeda(custo.custoHoraTecnico) : '—'}
                 </p>
               </div>
               <div>
                 <p className="text-xs text-slate-400">Custo Manutenção</p>
                 <p className="font-mono font-semibold text-slate-700">
-                  {ordemServico.custoManutencao !== undefined
-                    ? formatarMoeda(ordemServico.custoManutencao)
-                    : '—'}
+                  {custo ? formatarMoeda(custo.custoManutencao) : '—'}
                 </p>
               </div>
             </div>
             <div className="mt-3 border-t border-slate-200 pt-3">
               <p className="text-xs text-slate-400">Custo Total</p>
               <p className="font-mono text-lg font-bold text-marca-800">
-                {formatarMoeda(custoTotal)}
+                {custo ? formatarMoeda(custo.custoTotal) : '—'}
               </p>
             </div>
           </div>
@@ -189,21 +177,21 @@ export function ModalDetalhesOS({
             <p className="font-mono text-xs font-semibold tracking-wide text-slate-400 uppercase">
               Defeito Constatado
             </p>
-            <p className="mt-1 text-sm text-slate-600">{ordemServico.defeitoConstatado ?? '—'}</p>
+            <p className="mt-1 text-sm text-slate-600">{ordemServico.encerramento?.defeitoConstatado ?? '—'}</p>
           </div>
 
           <div>
             <p className="font-mono text-xs font-semibold tracking-wide text-slate-400 uppercase">
               Causa Raiz
             </p>
-            <p className="mt-1 text-sm text-slate-600">{ordemServico.causaRaiz ?? '—'}</p>
+            <p className="mt-1 text-sm text-slate-600">{ordemServico.encerramento?.causaRaiz ?? '—'}</p>
           </div>
 
           <div>
             <p className="font-mono text-xs font-semibold tracking-wide text-slate-400 uppercase">
               Solução Aplicada
             </p>
-            <p className="mt-1 text-sm text-slate-600">{ordemServico.solucao ?? '—'}</p>
+            <p className="mt-1 text-sm text-slate-600">{ordemServico.encerramento?.solucao ?? custo?.descricaoServico ?? '—'}</p>
           </div>
 
           <div className="mt-1 flex gap-3 print:hidden">

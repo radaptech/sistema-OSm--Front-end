@@ -16,7 +16,7 @@ export function CardOSFinalizada({
   aoImprimir,
 }: CardOSFinalizadaProps) {
   const custoTotal =
-    (ordemServico.custoHoraTecnico ?? 0) + (ordemServico.custoManutencao ?? 0)
+    (ordemServico.custo?.custoHoraTecnico ?? 0) + (ordemServico.custo?.custoManutencao ?? 0)
 
   return (
     <div className="flex flex-col gap-3 rounded-xl bg-white p-4 shadow-card sm:flex-row sm:items-center sm:justify-between">

@@ -4,8 +4,7 @@ import { Botao } from '../../componentes/Botao'
 import { BadgeOrigemPreventiva } from '../../componentes/BadgeOrigemPreventiva'
 import { BadgeStatus } from '../../componentes/BadgeStatus'
 import { BadgeTipoOS } from '../../componentes/BadgeTipoOS'
-import { LOJAS_MOCK } from '../../servicos/dadosMockLojas'
-import { MAQUINAS_MOCK } from '../../servicos/dadosMockMaquinas'
+import { obterNomeAlvo, obterCodigoAlvo } from '../../utilitarios/alvoOS'
 import { formatarDataHora } from '../../utilitarios/formatarData'
 import type { SolicitacaoOS } from '../../tipos/ordemServico'
 
@@ -20,11 +19,10 @@ export function ModalDetalhesSolicitacao({
   contexto,
   aoFechar,
 }: ModalDetalhesSolicitacaoProps) {
-  const loja = LOJAS_MOCK.find((item) => item.id === solicitacao.lojaId)
-  const maquinaCadastrada = MAQUINAS_MOCK.find(
-    (item) => item.id === solicitacao.maquinaCodigo,
-  )
   const ehPreventiva = solicitacao.origem === 'preventiva'
+  // Anexos vêm do servidor: a foto do defeito é obrigatória, o vídeo é opcional.
+  const fotoDefeito = solicitacao.anexos.find((anexo) => anexo.tipo === 'foto')
+  const videoDefeito = solicitacao.anexos.find((anexo) => anexo.tipo === 'video')
 
   return createPortal(
     <div className="animate-fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
@@ -52,10 +50,10 @@ export function ModalDetalhesSolicitacao({
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="font-semibold text-slate-800">
-                {solicitacao.maquinaNome}
+                {obterNomeAlvo(solicitacao)}
               </p>
               <p className="font-mono text-sm text-slate-400">
-                {solicitacao.maquinaCodigo}
+                {obterCodigoAlvo(solicitacao)}
               </p>
             </div>
             <div className="flex flex-col items-end gap-1.5">
@@ -67,39 +65,39 @@ export function ModalDetalhesSolicitacao({
             </div>
           </div>
 
-          {maquinaCadastrada?.fotoUrl && (
+          {solicitacao.maquinaFotoUrl && (
             <div>
               <p className="mb-1 font-mono text-xs font-semibold tracking-wide text-slate-400 uppercase">
                 Foto da Máquina (cadastro)
               </p>
               <img
-                src={maquinaCadastrada.fotoUrl}
-                alt={solicitacao.maquinaNome}
+                src={solicitacao.maquinaFotoUrl}
+                alt={obterNomeAlvo(solicitacao)}
                 className="h-40 w-full rounded-lg object-contain bg-slate-50"
               />
             </div>
           )}
 
-          {solicitacao.fotoUrl && (
+          {fotoDefeito && (
             <div>
               <p className="mb-1 font-mono text-xs font-semibold tracking-wide text-slate-400 uppercase">
                 {solicitacao.tipo === 'reparo' ? 'Foto do Item' : 'Foto do Defeito'}
               </p>
               <img
-                src={solicitacao.fotoUrl}
+                src={fotoDefeito.url}
                 alt={solicitacao.tipo === 'reparo' ? 'Foto do item' : 'Foto do defeito'}
                 className="h-40 w-full rounded-lg object-contain bg-slate-50"
               />
             </div>
           )}
 
-          {solicitacao.videoUrl && (
+          {videoDefeito && (
             <div>
               <p className="mb-1 font-mono text-xs font-semibold tracking-wide text-slate-400 uppercase">
                 Vídeo do Defeito
               </p>
               <video
-                src={solicitacao.videoUrl}
+                src={videoDefeito.url}
                 controls
                 className="h-40 w-full rounded-lg bg-black object-contain"
               />
@@ -120,8 +118,8 @@ export function ModalDetalhesSolicitacao({
             <span className="font-mono text-xs font-semibold tracking-wide text-slate-400 uppercase">
               Setor
             </span>
-            <p className="text-slate-700">{loja?.nome ?? '—'}</p>
-            <p className="text-slate-700">{solicitacao.setor}</p>
+            <p className="text-slate-700">{solicitacao.lojaNome}</p>
+            <p className="text-slate-700">{solicitacao.setorNome}</p>
 
             <span className="mt-2 font-mono text-xs font-semibold tracking-wide text-slate-400 uppercase">
               Solicitante
@@ -129,7 +127,7 @@ export function ModalDetalhesSolicitacao({
             <span className="mt-2 font-mono text-xs font-semibold tracking-wide text-slate-400 uppercase">
               Data/Hora
             </span>
-            <p className="text-slate-700">{solicitacao.solicitante}</p>
+            <p className="text-slate-700">{solicitacao.solicitanteNome ?? 'Sistema (Preventiva)'}</p>
             <p className="font-mono text-slate-700">
               {formatarDataHora(solicitacao.criadoEm)}
             </p>

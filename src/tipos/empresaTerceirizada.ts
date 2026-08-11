@@ -1,5 +1,5 @@
 export interface EmpresaTerceirizada {
-  id: string
+  id: number
   nome: string
   especialidade?: string
   telefone?: string
@@ -11,6 +11,7 @@ export interface NovaEmpresaTerceirizadaPayload {
   telefone?: string
 }
 
-export interface AtualizarEmpresaTerceirizadaPayload extends NovaEmpresaTerceirizadaPayload {
-  id: string
+export interface AtualizarEmpresaTerceirizadaPayload
+  extends NovaEmpresaTerceirizadaPayload {
+  id: number
 }

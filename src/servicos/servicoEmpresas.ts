@@ -1,6 +1,6 @@
-import { atrasoSimulado } from './atrasoSimulado'
-import { EMPRESAS_MOCK } from './dadosMockEmpresas'
+import { api } from './api'
+import type { Empresa } from '../tipos/empresa'
 
 export const servicoEmpresas = {
-  listar: () => atrasoSimulado(EMPRESAS_MOCK),
+  listar: () => api.get<Empresa[]>('/empresas'),
 }

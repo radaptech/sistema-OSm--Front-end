@@ -2,10 +2,12 @@ import { CalendarClock, Plus, Trash2 } from 'lucide-react'
 import { useFieldArray, type Control, type FieldErrors } from 'react-hook-form'
 import { useEstadoModais } from '../../../estado/estadoModais'
 import { ModalManutencaoPreventiva } from '../../ModalManutencaoPreventiva/ModalManutencaoPreventiva'
-import { formatarData } from '../../../utilitarios/formatarData'
+import { converterDataFormularioParaBackend } from '../../../utilitarios/dataBackend'
 import type { DadosCadastrarMaquina } from '../esquemaCadastrarMaquina'
 
-const ID_MAQUINA_EM_CADASTRO = 'nova-maquina'
+// A máquina ainda não existe no banco quando as preventivas são montadas: o vínculo é
+// feito no servidor, que cria as duas coisas na mesma transação.
+const ID_MAQUINA_EM_CADASTRO = 0
 
 interface CampoPreventivasProps {
   control: Control<DadosCadastrarMaquina>
@@ -51,7 +53,7 @@ export function CampoPreventivas({ control, errors, nomeMaquina }: CampoPreventi
             <div>
               <p className="text-sm font-semibold text-slate-700">{field.descricao}</p>
               <p className="text-xs text-slate-400">
-                A cada {field.intervaloDias} dia(s) · Próxima: {formatarData(field.proximaData)}
+                A cada {field.intervaloDias} dia(s) · Próxima: {converterDataFormularioParaBackend(field.proximaData)}
               </p>
               <span
                 className={`mt-1 inline-block rounded-full px-2 py-0.5 text-[10px] font-semibold ${

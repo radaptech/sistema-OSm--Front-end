@@ -1,6 +1,5 @@
 import { z } from 'zod'
 import { perfisLogin } from '../../tipos/autenticacao'
-import { setoresDisponiveis } from '../../tipos/maquina'
 import { areasTecnico } from '../../tipos/tecnico'
 
 export const esquemaCadastrarUsuario = z
@@ -9,15 +8,14 @@ export const esquemaCadastrarUsuario = z
     telefone: z.string().max(20).optional(),
     email: z.email('Informe um e-mail válido.'),
     senha: z.string().min(6, 'A senha deve ter no mínimo 6 caracteres.'),
-    role: z.enum(perfisLogin, 'Selecione o perfil.'),
-    lojasIds: z.array(z.string()),
-    setores: z.array(z.enum(setoresDisponiveis)),
+    perfil: z.enum(perfisLogin, 'Selecione o perfil.'),
+    lojasIds: z.array(z.number().int().positive()),
+    setoresIds: z.array(z.number().int().positive()),
     acessoTotalSetores: z.boolean(),
     area: z.enum(areasTecnico).optional(),
-    valorHora: z.number().positive('Informe um valor/hora válido.').optional(),
   })
   .superRefine((dados, ctx) => {
-    if (dados.role === 'administrador') {
+    if (dados.perfil === 'administrador') {
       return
     }
 
@@ -29,7 +27,7 @@ export const esquemaCadastrarUsuario = z
       })
     }
 
-    if (dados.role === 'solicitante') {
+    if (dados.perfil === 'solicitante') {
       if (dados.lojasIds.length > 1) {
         ctx.addIssue({
           code: 'custom',
@@ -38,39 +36,33 @@ export const esquemaCadastrarUsuario = z
         })
       }
 
-      if (dados.setores.length !== 1) {
+      if (dados.setoresIds.length !== 1) {
         ctx.addIssue({
           code: 'custom',
           message: 'Selecione o setor do solicitante.',
-          path: ['setores'],
+          path: ['setoresIds'],
         })
       }
     }
 
-    if (dados.role === 'gestor' && !dados.acessoTotalSetores && dados.setores.length === 0) {
+    if (
+      dados.perfil === 'gestor' &&
+      !dados.acessoTotalSetores &&
+      dados.setoresIds.length === 0
+    ) {
       ctx.addIssue({
         code: 'custom',
         message: 'Selecione ao menos um setor ou marque acesso total.',
-        path: ['setores'],
+        path: ['setoresIds'],
       })
     }
 
-    if (dados.role === 'tecnico') {
-      if (!dados.area) {
-        ctx.addIssue({
-          code: 'custom',
-          message: 'Selecione a área de atuação.',
-          path: ['area'],
-        })
-      }
-
-      if (!dados.valorHora) {
-        ctx.addIssue({
-          code: 'custom',
-          message: 'Informe o valor/hora do técnico.',
-          path: ['valorHora'],
-        })
-      }
+    if (dados.perfil === 'tecnico' && !dados.area) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'Selecione a área de atuação.',
+        path: ['area'],
+      })
     }
   })
 

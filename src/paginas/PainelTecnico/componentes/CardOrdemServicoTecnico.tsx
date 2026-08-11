@@ -1,7 +1,6 @@
 import { CheckCircle2, Eye, FileSearch, PauseCircle, PlayCircle } from 'lucide-react'
 import { BadgeStatusExecucao } from '../../../componentes/BadgeStatusExecucao'
 import { BadgeUrgencia } from '../../../componentes/BadgeUrgencia'
-import { LOJAS_MOCK } from '../../../servicos/dadosMockLojas'
 import { formatarDataHora } from '../../../utilitarios/formatarData'
 import type { OrdemServico } from '../../../tipos/ordemServico'
 
@@ -35,7 +34,6 @@ export function CardOrdemServicoTecnico({
       <FileSearch size={16} />
     </button>
   )
-  const loja = LOJAS_MOCK.find((item) => item.id === ordemServico.lojaId)
 
   return (
     <div className="flex flex-col gap-3 rounded-xl bg-white p-4 shadow-card transition-shadow duration-200 hover:shadow-card-hover">
@@ -57,13 +55,13 @@ export function CardOrdemServicoTecnico({
           </div>
           <p className="mt-1 text-sm text-slate-500">{ordemServico.descricao}</p>
           <p className="mt-1 text-xs text-slate-400">
-            {loja?.nome ?? '—'} · {ordemServico.setor}
+            {ordemServico.lojaNome} · {ordemServico.setorNome}
           </p>
           <p className="mt-1 text-xs text-slate-400">
             Aberta em{' '}
             <span className="font-mono">{formatarDataHora(ordemServico.dataAbertura)}</span> ·
             Solicitado por{' '}
-            <span className="font-medium text-slate-500">{ordemServico.solicitante}</span>
+            <span className="font-medium text-slate-500">{ordemServico.solicitanteNome}</span>
           </p>
         </div>
 
@@ -79,9 +77,9 @@ export function CardOrdemServicoTecnico({
         )}
       </div>
 
-      {ordemServico.statusExecucao === 'Pausada' && ordemServico.motivoPausa && (
+      {ordemServico.statusExecucao === 'Pausada' && ordemServico.pausaAtual?.motivo && (
         <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-700">
-          <span className="font-semibold">Motivo da pausa:</span> {ordemServico.motivoPausa}
+          <span className="font-semibold">Motivo da pausa:</span> {ordemServico.pausaAtual?.motivo}
         </p>
       )}
 

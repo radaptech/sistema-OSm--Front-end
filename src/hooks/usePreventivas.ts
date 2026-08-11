@@ -1,9 +1,9 @@
 import { useQuery } from '@tanstack/react-query'
 import { servicoPreventivas } from '../servicos/servicoPreventivas'
 
-export function usePreventivas() {
+export function usePreventivas(maquinaId?: number) {
   return useQuery({
-    queryKey: ['preventivas'],
-    queryFn: servicoPreventivas.listar,
+    queryKey: ['preventivas', { maquinaId }],
+    queryFn: () => servicoPreventivas.listar({ maquinaId }),
   })
 }

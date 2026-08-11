@@ -31,7 +31,7 @@ export function CardSolicitacao({ solicitacao }: CardSolicitacaoProps) {
       <div className="flex items-center justify-between text-xs text-slate-400 sm:block sm:shrink-0 sm:text-right">
         <p className="font-mono">{formatarDataHora(solicitacao.criadoEm)}</p>
         <p>
-          Por: <span className="font-medium text-slate-500">{solicitacao.solicitante}</span>
+          Por: <span className="font-medium text-slate-500">{solicitacao.solicitanteNome}</span>
         </p>
       </div>
     </div>

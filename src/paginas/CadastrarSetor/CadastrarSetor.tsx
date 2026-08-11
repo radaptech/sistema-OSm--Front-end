@@ -23,7 +23,7 @@ export function CadastrarSetor() {
 
   const { data: setorExistente } = useQuery({
     queryKey: ['setor', id],
-    queryFn: () => servicoSetores.obterPorId(id as string),
+    queryFn: () => servicoSetores.obterPorId(Number(id)),
     enabled: emEdicao,
   })
 
@@ -35,7 +35,7 @@ export function CadastrarSetor() {
     formState: { errors },
   } = useForm<DadosCadastrarSetor>({
     resolver: zodResolver(esquemaCadastrarSetor),
-    defaultValues: { nome: '', lojaId: '' },
+    defaultValues: { nome: '', lojaId: 0 },
   })
 
   useEffect(() => {
@@ -45,7 +45,7 @@ export function CadastrarSetor() {
   }, [setorExistente, reset])
 
   const lojaId = useWatch({ control, name: 'lojaId' })
-  const { data: setoresDaLoja = [] } = useSetores({ lojaId: lojaId || undefined })
+  const { data: setoresDaLoja = [] } = useSetores(lojaId || undefined)
 
   const { mutateAsync: criar, isPending: criando } = useMutation({
     mutationFn: servicoSetores.criar,
@@ -59,7 +59,7 @@ export function CadastrarSetor() {
 
   async function aoEnviar(dados: DadosCadastrarSetor) {
     if (emEdicao && id) {
-      await atualizar({ id, ...dados })
+      await atualizar({ id: Number(id), ...dados })
       toast.success('Setor atualizado com sucesso.')
       navegar(-1)
       return
@@ -104,7 +104,7 @@ export function CadastrarSetor() {
               <CampoSelecao
                 rotulo="Loja *"
                 mensagemErro={errors.lojaId?.message}
-                {...register('lojaId')}
+                {...register('lojaId', { valueAsNumber: true })}
               >
                 <option value="">Selecionar...</option>
                 {lojas.map((loja) => (

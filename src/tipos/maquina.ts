@@ -2,33 +2,26 @@ export const niveisCriticidade = ['Baixa', 'Média', 'Alta'] as const
 
 export type NivelCriticidade = (typeof niveisCriticidade)[number]
 
-export const setoresDisponiveis = [
-  'Padaria',
-  'Açougue',
-  'Hortifruti',
-  'Peixaria',
-  'Frios e Laticínios',
-  'Estoque',
-  'Frente de Loja',
-] as const
-
-export type Setor = (typeof setoresDisponiveis)[number]
-
 export interface Maquina {
-  id: string
+  id: number
   nome: string
-  tag?: string
+  numeroPatrimonio?: string
+  serie?: string
   descricao?: string
   marca?: string
   modelo?: string
   criticidade?: NivelCriticidade
-  setor: Setor
-  lojaId: string
+  // Setor é um cadastro por loja (ver /src/tipos/setor.ts): a máquina referencia o id, e
+  // loja/nome vêm resolvidos pelo servidor para não exigir uma segunda consulta na tela.
+  setorId: number
+  setorNome: string
+  lojaId: number
+  lojaNome?: string
   fotoUrl?: string
 }
 
 export interface PreventivaManutencao {
-  maquinaId: string
+  maquinaId: number
   descricao: string
   intervaloDias: number
   proximaData: string
@@ -36,24 +29,30 @@ export interface PreventivaManutencao {
 }
 
 export interface PreventivaListada extends PreventivaManutencao {
-  id: string
+  id: number
   maquinaNome: string
-  setor: Setor
-  lojaId: string
+  setorId: number
+  setorNome: string
+  lojaId: number
+  lojaNome?: string
+  // Calculado no servidor: a preventiva venceu e já gerou solicitação automática.
+  vencida?: boolean
 }
 
+// A loja não é enviada: ela é derivada do setor no servidor, evitando um par
+// (loja, setor) que possa se contradizer.
 export interface NovaMaquinaPayload {
-  tag: string
+  numeroPatrimonio: string
+  serie: string
   nome: string
   descricao?: string
   marca?: string
   modelo?: string
   criticidade: NivelCriticidade
-  setor: Setor
-  lojaId: string
+  setorId: number
   preventivas: PreventivaManutencao[]
 }
 
 export interface AtualizarMaquinaPayload extends NovaMaquinaPayload {
-  id: string
+  id: number
 }

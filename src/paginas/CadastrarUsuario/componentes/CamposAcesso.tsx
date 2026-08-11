@@ -1,53 +1,59 @@
 import { Alternador } from '../../../componentes/Alternador'
 import { CampoSelecao } from '../../../componentes/CampoSelecao'
-import { CampoTexto } from '../../../componentes/CampoTexto'
 import { SeletorMultiplo } from '../../../componentes/SeletorMultiplo'
-import { LOJAS_MOCK } from '../../../servicos/dadosMockLojas'
-import { setoresDisponiveis } from '../../../tipos/maquina'
+import { useLojas } from '../../../hooks/useLojas'
+import { useSetores } from '../../../hooks/useSetores'
 import { areasTecnico, type AreaTecnico } from '../../../tipos/tecnico'
 import type { PerfilLogin } from '../../../tipos/autenticacao'
 
-const OPCOES_LOJAS = LOJAS_MOCK.map((loja) => ({ valor: loja.id, rotulo: loja.nome }))
-const OPCOES_SETORES = setoresDisponiveis.map((setor) => ({ valor: setor, rotulo: setor }))
-
 interface CamposAcessoProps {
-  role: PerfilLogin
-  lojasIds: string[]
-  setores: string[]
+  perfil: PerfilLogin
+  lojasIds: number[]
+  setoresIds: number[]
   acessoTotalSetores: boolean
   area?: AreaTecnico
-  valorHora?: number
-  aoAlterarLojas: (lojas: string[]) => void
-  aoAlterarSetores: (setores: string[]) => void
+  aoAlterarLojas: (lojas: number[]) => void
+  aoAlterarSetores: (setoresIds: number[]) => void
   aoAlternarAcessoTotal: (valor: boolean) => void
   aoAlterarArea: (area: string) => void
-  aoAlterarValorHora: (valorHora: number) => void
   erroLojas?: string
   erroSetores?: string
   erroArea?: string
-  erroValorHora?: string
   className?: string
 }
 
 export function CamposAcesso({
-  role,
+  perfil,
   lojasIds,
-  setores,
+  setoresIds,
   acessoTotalSetores,
   area,
-  valorHora,
   aoAlterarLojas,
   aoAlterarSetores,
   aoAlternarAcessoTotal,
   aoAlterarArea,
-  aoAlterarValorHora,
   erroLojas,
   erroSetores,
   erroArea,
-  erroValorHora,
   className = '',
 }: CamposAcessoProps) {
-  if (role === 'administrador') {
+  const { data: lojas = [] } = useLojas()
+  const { data: setores = [] } = useSetores()
+  const opcoesLojas = lojas.map((loja) => ({ valor: loja.id, rotulo: loja.nome }))
+
+  // Setor pertence a uma loja: só faz sentido oferecer os setores das lojas marcadas.
+  // Com mais de uma loja selecionada, o nome da loja entra no rótulo porque setores
+  // homônimos em lojas diferentes são registros distintos.
+  const setoresDasLojas = setores.filter((setor) => lojasIds.includes(setor.lojaId))
+  const opcoesSetores = setoresDasLojas.map((setor) => ({
+    valor: setor.id,
+    rotulo:
+      lojasIds.length > 1
+        ? `${setor.nome} · ${lojas.find((loja) => loja.id === setor.lojaId)?.nome ?? ''}`
+        : setor.nome,
+  }))
+
+  if (perfil === 'administrador') {
     return (
       <p className={`rounded-lg bg-lime-50 px-4 py-3 text-sm text-marca-800 ${className}`}>
         Administrador tem acesso total ao tenant, sem restrição de loja ou setor.
@@ -59,24 +65,35 @@ export function CamposAcesso({
     <div className={`flex flex-col gap-5 ${className}`}>
       <div className="flex flex-col gap-1.5">
         <span className="font-mono text-xs font-semibold tracking-wider text-marca-500 uppercase">
-          Loja(s) * {role !== 'solicitante' && '(seleção múltipla)'}
+          Loja(s) * {perfil !== 'solicitante' && '(seleção múltipla)'}
         </span>
         <SeletorMultiplo
-          opcoes={OPCOES_LOJAS}
+          opcoes={opcoesLojas}
           selecionados={lojasIds}
-          selecaoUnica={role === 'solicitante'}
-          aoAlterar={aoAlterarLojas}
+          selecaoUnica={perfil === 'solicitante'}
+          aoAlterar={(novasLojas) => {
+            aoAlterarLojas(novasLojas)
+            // Desmarcar uma loja deixaria selecionados setores que não pertencem mais a
+            // nenhuma loja do usuário.
+            aoAlterarSetores(
+              setoresIds.filter((setorId) =>
+                setores.some(
+                  (setor) => setor.id === setorId && novasLojas.includes(setor.lojaId),
+                ),
+              ),
+            )
+          }}
         />
         {erroLojas && <span className="text-xs text-red-500">{erroLojas}</span>}
       </div>
 
-      {role !== 'tecnico' && (
+      {perfil !== 'tecnico' && (
         <div className="flex flex-col gap-3">
           <span className="font-mono text-xs font-semibold tracking-wider text-marca-500 uppercase">
-            Setor(es) * {role === 'gestor' && '(seleção múltipla)'}
+            Setor(es) * {perfil === 'gestor' && '(seleção múltipla)'}
           </span>
 
-          {role === 'gestor' && (
+          {perfil === 'gestor' && (
             <Alternador
               marcado={acessoTotalSetores}
               aoAlternar={aoAlternarAcessoTotal}
@@ -85,48 +102,40 @@ export function CamposAcesso({
             />
           )}
 
-          {!(role === 'gestor' && acessoTotalSetores) && (
+          {!(perfil === 'gestor' && acessoTotalSetores) && (
             <>
-              <SeletorMultiplo
-                opcoes={OPCOES_SETORES}
-                selecionados={setores}
-                selecaoUnica={role === 'solicitante'}
-                aoAlterar={aoAlterarSetores}
-              />
+              {lojasIds.length === 0 ? (
+                <p className="text-xs text-slate-500">
+                  Selecione ao menos uma loja para escolher os setores.
+                </p>
+              ) : (
+                <SeletorMultiplo
+                  opcoes={opcoesSetores}
+                  selecionados={setoresIds}
+                  selecaoUnica={perfil === 'solicitante'}
+                  aoAlterar={aoAlterarSetores}
+                />
+              )}
               {erroSetores && <span className="text-xs text-red-500">{erroSetores}</span>}
             </>
           )}
         </div>
       )}
 
-      {role === 'tecnico' && (
-        <div className="grid gap-5 sm:grid-cols-2">
-          <CampoSelecao
-            rotulo="Área de Atuação *"
-            value={area ?? ''}
-            onChange={(evento) => aoAlterarArea(evento.target.value)}
-            mensagemErro={erroArea}
-          >
-            <option value="">Selecionar...</option>
-            {areasTecnico.map((areaDisponivel) => (
-              <option key={areaDisponivel} value={areaDisponivel}>
-                {areaDisponivel}
-              </option>
-            ))}
-          </CampoSelecao>
-
-          <CampoTexto
-            rotulo="Valor/Hora (R$) *"
-            variante="claro"
-            type="number"
-            min={0}
-            step="0.01"
-            placeholder="Ex: 45.00"
-            value={valorHora ?? ''}
-            onChange={(evento) => aoAlterarValorHora(evento.target.valueAsNumber)}
-            mensagemErro={erroValorHora}
-          />
-        </div>
+      {perfil === 'tecnico' && (
+        <CampoSelecao
+          rotulo="Área de Atuação *"
+          value={area ?? ''}
+          onChange={(evento) => aoAlterarArea(evento.target.value)}
+          mensagemErro={erroArea}
+        >
+          <option value="">Selecionar...</option>
+          {areasTecnico.map((areaDisponivel) => (
+            <option key={areaDisponivel} value={areaDisponivel}>
+              {areaDisponivel}
+            </option>
+          ))}
+        </CampoSelecao>
       )}
     </div>
   )

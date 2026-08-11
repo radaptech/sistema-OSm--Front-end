@@ -10,8 +10,7 @@ import { ModalConfirmarExclusao } from '../../componentes/ModalConfirmarExclusao
 import { Paginacao } from '../../componentes/Paginacao'
 import { useLojas } from '../../hooks/useLojas'
 import { useTecnicos } from '../../hooks/useTecnicos'
-import { servicoTecnicos } from '../../servicos/servicoTecnicos'
-import { formatarMoeda } from '../../utilitarios/formatarMoeda'
+import { servicoUsuarios } from '../../servicos/servicoUsuarios'
 import type { Tecnico } from '../../tipos/tecnico'
 import { ModalEditarTecnico } from './componentes/ModalEditarTecnico'
 import type { DadosEditarTecnico } from './esquemaEditarTecnico'
@@ -27,16 +26,18 @@ export function AdministradorTecnicos() {
   const [tecnicoParaExcluir, setTecnicoParaExcluir] = useState<Tecnico | null>(null)
   const [pagina, setPagina] = useState(1)
 
-  const { data: tecnicos = [], isLoading } = useTecnicos({ lojaId: filtroLoja || undefined })
+  const { data: tecnicos = [], isLoading } = useTecnicos(filtroLoja ? Number(filtroLoja) : undefined)
   const { data: lojas = [] } = useLojas()
 
+  // Técnico é um usuário com perfil 'tecnico' — a escrita passa por /usuarios, que é a
+  // superfície única de cadastro. /tecnicos serve apenas para leitura.
   const { mutateAsync: atualizar } = useMutation({
-    mutationFn: servicoTecnicos.atualizar,
+    mutationFn: servicoUsuarios.atualizar,
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['tecnicos'] }),
   })
 
   const { mutateAsync: excluir, isPending: excluindo } = useMutation({
-    mutationFn: servicoTecnicos.deletar,
+    mutationFn: servicoUsuarios.deletar,
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['tecnicos'] }),
   })
 
@@ -69,7 +70,13 @@ export function AdministradorTecnicos() {
       return
     }
 
-    await atualizar({ id: tecnicoParaEditar.id, ...dados })
+    await atualizar({
+      id: tecnicoParaEditar.id,
+      ...dados,
+      perfil: 'tecnico',
+      setoresIds: [],
+      acessoTotalSetores: true,
+    })
     toast.success('Técnico atualizado com sucesso.')
     setTecnicoParaEditar(null)
   }
@@ -141,9 +148,6 @@ export function AdministradorTecnicos() {
                   <span className="font-semibold text-slate-800">{tecnico.nome}</span>
                   <span className="rounded-full bg-emerald-100 px-2.5 py-1 font-mono text-xs font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-600/15">
                     {tecnico.area}
-                  </span>
-                  <span className="rounded-full bg-slate-100 px-2.5 py-1 font-mono text-xs font-semibold text-slate-600 ring-1 ring-inset ring-slate-500/10">
-                    {formatarMoeda(tecnico.valorHora)}/h
                   </span>
                 </div>
                 <p className="mt-1 font-mono text-sm text-slate-500">{tecnico.email}</p>

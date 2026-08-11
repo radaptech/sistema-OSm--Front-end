@@ -1,22 +1,24 @@
-interface OpcaoSelecaoMultipla {
-  valor: string
+// Genérico no tipo do valor: serve tanto para setores (string) quanto para lojas, cujos
+// ids são numéricos.
+interface OpcaoSelecaoMultipla<T> {
+  valor: T
   rotulo: string
 }
 
-interface SeletorMultiploProps {
-  opcoes: OpcaoSelecaoMultipla[]
-  selecionados: string[]
-  aoAlterar: (selecionados: string[]) => void
+interface SeletorMultiploProps<T> {
+  opcoes: OpcaoSelecaoMultipla<T>[]
+  selecionados: T[]
+  aoAlterar: (selecionados: T[]) => void
   selecaoUnica?: boolean
 }
 
-export function SeletorMultiplo({
+export function SeletorMultiplo<T extends string | number>({
   opcoes,
   selecionados,
   aoAlterar,
   selecaoUnica = false,
-}: SeletorMultiploProps) {
-  function aoClicarOpcao(valor: string) {
+}: SeletorMultiploProps<T>) {
+  function aoClicarOpcao(valor: T) {
     if (selecaoUnica) {
       aoAlterar([valor])
       return

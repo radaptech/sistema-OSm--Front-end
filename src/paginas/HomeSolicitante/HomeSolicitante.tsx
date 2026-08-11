@@ -3,15 +3,17 @@ import { useNavigate } from 'react-router-dom'
 import { CabecalhoTopo } from '../../componentes/CabecalhoTopo'
 import { CardAcao } from '../../componentes/CardAcao'
 import { CardEstatistica } from './componentes/CardEstatistica'
-
-const ESTATISTICAS_MOCK = [
-  { valor: 0, rotulo: 'Abertas' },
-  { valor: 0, rotulo: 'Em andamento' },
-  { valor: 0, rotulo: 'Concluídas' },
-]
+import { useResumoSolicitacoes } from '../../hooks/useResumoSolicitacoes'
 
 export function HomeSolicitante() {
   const navegar = useNavigate()
+  const { data: resumo } = useResumoSolicitacoes()
+
+  const estatisticas = [
+    { valor: resumo?.abertas ?? 0, rotulo: 'Abertas' },
+    { valor: resumo?.emAndamento ?? 0, rotulo: 'Em andamento' },
+    { valor: resumo?.concluidas ?? 0, rotulo: 'Concluídas' },
+  ]
 
   return (
     <div className="flex min-h-svh flex-col bg-slate-600">
@@ -58,7 +60,7 @@ export function HomeSolicitante() {
         </div>
 
         <div className="grid w-full max-w-md grid-cols-3 gap-2 sm:gap-3">
-          {ESTATISTICAS_MOCK.map((estatistica) => (
+          {estatisticas.map((estatistica) => (
             <CardEstatistica key={estatistica.rotulo} {...estatistica} />
           ))}
         </div>

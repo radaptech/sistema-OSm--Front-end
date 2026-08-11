@@ -8,12 +8,15 @@ import { useEstadoAutenticacao } from '../../estado/estadoAutenticacao'
 import { useTodasSolicitacoes } from '../../hooks/useTodasSolicitacoes'
 import { useOrdensServicoTodas } from '../../hooks/useOrdensServicoTodas'
 import { usePreventivas } from '../../hooks/usePreventivas'
-import { LOJAS_MOCK } from '../../servicos/dadosMockLojas'
+import { useLojas } from '../../hooks/useLojas'
+import { useSetores } from '../../hooks/useSetores'
 import { servicoSolicitacoes } from '../../servicos/servicoSolicitacoes'
 import { agruparPorEscopoGestor } from '../../utilitarios/acessoGestor'
+import { dataEstaNoIntervalo } from '../../utilitarios/dataEstaNoIntervalo'
+import { obterNomeAlvo } from '../../utilitarios/alvoOS'
 import type { OrdemServico, SolicitacaoOS, TipoOS } from '../../tipos/ordemServico'
 import { ModalAbrirOrdemServico } from '../ModalAbrirOrdemServico/ModalAbrirOrdemServico'
-import type { DadosConfirmarAberturaOS } from '../ModalAbrirOrdemServico/esquemaAbrirOrdemServico'
+import type { DadosAbrirOrdemServico } from '../ModalAbrirOrdemServico/esquemaAbrirOrdemServico'
 import { ModalDetalhesOS } from '../ModalDetalhesOS/ModalDetalhesOS'
 import { ModalDetalhesSolicitacao } from '../ModalDetalhesSolicitacao/ModalDetalhesSolicitacao'
 import { AbasPainelGestor, type AbaPainelGestor } from './componentes/AbasPainelGestor'
@@ -24,7 +27,9 @@ import { CardOSEmExecucao } from './componentes/CardOSEmExecucao'
 import { CardOSFinalizada } from './componentes/CardOSFinalizada'
 import { CardPreventiva } from './componentes/CardPreventiva'
 import { ModalAprovarOSTerceiros } from './componentes/ModalAprovarOSTerceiros'
-import type { DadosConfirmarAprovacaoTerceiros } from './esquemaAprovarOSTerceiros'
+import { ModalFiltrosOS } from './componentes/ModalFiltrosOS'
+import type { DadosAprovarOSTerceiros } from './esquemaAprovarOSTerceiros'
+import { FILTROS_AVANCADOS_OS_VAZIOS, type FiltrosAvancadosOS } from './filtrosOS'
 
 interface SelecaoOS {
   ordem: OrdemServico
@@ -34,8 +39,15 @@ interface SelecaoOS {
 export function PainelGestor() {
   const queryClient = useQueryClient()
   const escoposGestor = useEstadoAutenticacao((estado) => estado.escoposGestor) ?? []
+  const { data: lojas = [] } = useLojas()
+  // Resolve o nome do setor no cabeçalho de cada subgrupo, inclusive quando ele está vazio.
+  const { data: setores = [] } = useSetores()
   const [abaSelecionada, setAbaSelecionada] = useState<AbaPainelGestor>('solicitacoes')
   const [filtroTipo, setFiltroTipo] = useState<TipoOS | ''>('')
+  const [filtrosAvancados, setFiltrosAvancados] = useState<FiltrosAvancadosOS>(
+    FILTROS_AVANCADOS_OS_VAZIOS,
+  )
+  const [modalFiltrosAberto, setModalFiltrosAberto] = useState(false)
   const [solicitacaoParaAbrirOS, setSolicitacaoParaAbrirOS] = useState<SolicitacaoOS | null>(
     null,
   )
@@ -77,7 +89,7 @@ export function PainelGestor() {
     onSuccess: invalidarSolicitacoesEOrdens,
   })
 
-  async function aoConfirmarAberturaOS(dados: DadosConfirmarAberturaOS) {
+  async function aoConfirmarAberturaOS(dados: DadosAbrirOrdemServico) {
     if (!solicitacaoParaAbrirOS) {
       return
     }
@@ -86,7 +98,7 @@ export function PainelGestor() {
     toast.success(`OS aberta para a solicitação #${solicitacaoParaAbrirOS.id}.`)
   }
 
-  async function aoConfirmarAprovacaoTerceiros(dados: DadosConfirmarAprovacaoTerceiros) {
+  async function aoConfirmarAprovacaoTerceiros(dados: DadosAprovarOSTerceiros) {
     if (!solicitacaoParaAprovarTerceiros) {
       return
     }
@@ -95,9 +107,48 @@ export function PainelGestor() {
     toast.success(`OS Terceiros aprovada para a solicitação #${solicitacaoParaAprovarTerceiros.id}.`)
   }
 
+  const valorMinimoFiltro =
+    filtrosAvancados.valorMinimo === '' ? undefined : Number(filtrosAvancados.valorMinimo)
+  const valorMaximoFiltro =
+    filtrosAvancados.valorMaximo === '' ? undefined : Number(filtrosAvancados.valorMaximo)
+  const temFiltroDeValor = valorMinimoFiltro !== undefined || valorMaximoFiltro !== undefined
+
+  // Aplica Loja/Máquina/Período/Valor (filtro avançado do Gestor) por cima do filtro de
+  // Tipo de OS já existente. Loja é selecionada numa lista fechada (combinação exata por
+  // id); Máquina funciona nos dois modos — texto livre comparado por substring, sem
+  // diferenciar maiúsculas/minúsculas, e também pode ser escolhida a partir das sugestões
+  // do datalist. O filtro de valor usa o custo TOTAL já lançado (Custo Hora Técnico +
+  // Custo de Manutenção) — itens sem custo definido (solicitações e OS ainda em
+  // andamento) só "combinam" quando nenhum filtro de valor está ativo.
+  function combinaFiltrosAvancados(
+    maquinaNome: string,
+    lojaId: number,
+    dataReferencia: string,
+    valorTotal?: number,
+  ): boolean {
+    const combinaMaquina =
+      !filtrosAvancados.maquina ||
+      maquinaNome.toLowerCase().includes(filtrosAvancados.maquina.trim().toLowerCase())
+    const combinaLoja = !filtrosAvancados.loja || lojaId === Number(filtrosAvancados.loja)
+    const combinaData = dataEstaNoIntervalo(
+      dataReferencia,
+      filtrosAvancados.dataInicio,
+      filtrosAvancados.dataFim,
+    )
+    const combinaValor =
+      !temFiltroDeValor ||
+      (valorTotal !== undefined &&
+        (valorMinimoFiltro === undefined || valorTotal >= valorMinimoFiltro) &&
+        (valorMaximoFiltro === undefined || valorTotal <= valorMaximoFiltro))
+
+    return combinaMaquina && combinaLoja && combinaData && combinaValor
+  }
+
   const solicitacoesPendentes = solicitacoes.filter(
     (solicitacao) =>
-      solicitacao.status === 'Pendente' && (!filtroTipo || solicitacao.tipo === filtroTipo),
+      solicitacao.status === 'Pendente' &&
+      (!filtroTipo || solicitacao.tipo === filtroTipo) &&
+      combinaFiltrosAvancados(obterNomeAlvo(solicitacao), solicitacao.lojaId, solicitacao.criadoEm),
   )
   // Só é "OS Finalizada" para o Gestor quando ela passou por todas as etapas com
   // sucesso: Técnico encerrou (Concluída) e o Administrador já lançou o custo de
@@ -105,8 +156,14 @@ export function PainelGestor() {
   const ordensFinalizadas = ordensServico.filter(
     (ordem) =>
       ordem.statusExecucao === 'Concluída' &&
-      ordem.custoManutencao !== undefined &&
-      (!filtroTipo || ordem.tipo === filtroTipo),
+      ordem.finalizada &&
+      (!filtroTipo || ordem.tipo === filtroTipo) &&
+      combinaFiltrosAvancados(
+        obterNomeAlvo(ordem),
+        ordem.lojaId,
+        ordem.dataAbertura,
+        (ordem.custo?.custoHoraTecnico ?? 0) + (ordem.custo?.custoManutencao ?? 0),
+      ),
   )
   // Acompanhamento em tempo real do que o Técnico está fazendo (Aberta/Em Andamento/
   // Pausada) — o botão de pausa continua com o Técnico (ele é quem está na frente do
@@ -114,25 +171,46 @@ export function PainelGestor() {
   // sem virar gargalo no fluxo. Ver regra de negócio no CLAUDE.md (item 9). OS Terceiros
   // nunca aparece aqui — ela já nasce Concluída (ver aprovarTerceiros).
   const ordensEmExecucao = ordensServico.filter(
-    (ordem) => ordem.statusExecucao !== 'Concluída' && (!filtroTipo || ordem.tipo === filtroTipo),
+    (ordem) =>
+      ordem.statusExecucao !== 'Concluída' &&
+      (!filtroTipo || ordem.tipo === filtroTipo) &&
+      combinaFiltrosAvancados(obterNomeAlvo(ordem), ordem.lojaId, ordem.dataAbertura),
   )
+
+  const maquinasDisponiveis = [
+    ...new Set(
+      [...solicitacoes, ...ordensServico]
+        .map((item) => item.maquinaNome)
+        .filter((maquinaNome): maquinaNome is string => Boolean(maquinaNome)),
+    ),
+  ].sort((a, b) => a.localeCompare(b, 'pt-BR'))
+
+  const quantidadeFiltrosAtivos = Object.values(filtrosAvancados).filter(Boolean).length
 
   const gruposSolicitacoesPendentes = agruparPorEscopoGestor(
     solicitacoesPendentes,
     escoposGestor,
-    LOJAS_MOCK,
+    lojas,
+    setores,
   )
   const gruposOSEmExecucao = agruparPorEscopoGestor(
     ordensEmExecucao,
     escoposGestor,
-    LOJAS_MOCK,
+    lojas,
+    setores,
   )
   const gruposOSFinalizadas = agruparPorEscopoGestor(
     ordensFinalizadas,
     escoposGestor,
-    LOJAS_MOCK,
+    lojas,
+    setores,
   )
-  const gruposPreventivas = agruparPorEscopoGestor(preventivas, escoposGestor, LOJAS_MOCK)
+  const gruposPreventivas = agruparPorEscopoGestor(
+    preventivas,
+    escoposGestor,
+    lojas,
+    setores,
+  )
 
   return (
     <div className="flex min-h-svh flex-col bg-slate-600">
@@ -148,7 +226,10 @@ export function PainelGestor() {
           </p>
         </div>
 
-        <AcoesRapidas />
+        <AcoesRapidas
+          aoAbrirFiltros={() => setModalFiltrosAberto(true)}
+          quantidadeFiltrosAtivos={quantidadeFiltrosAtivos}
+        />
 
         <AbasPainelGestor
           abaSelecionada={abaSelecionada}
@@ -295,6 +376,19 @@ export function PainelGestor() {
           autoImprimir={selecaoOS.imprimir}
           contexto="Painel do Gestor"
           aoFechar={() => setSelecaoOS(null)}
+        />
+      )}
+
+      {modalFiltrosAberto && (
+        <ModalFiltrosOS
+          lojas={lojas}
+          maquinas={maquinasDisponiveis}
+          filtros={filtrosAvancados}
+          aoFechar={() => setModalFiltrosAberto(false)}
+          aoAplicar={(novosFiltros) => {
+            setFiltrosAvancados(novosFiltros)
+            setModalFiltrosAberto(false)
+          }}
         />
       )}
     </div>

@@ -12,7 +12,8 @@ import { CabecalhoSubpagina } from '../../componentes/CabecalhoSubpagina'
 import { useEstadoAutenticacao } from '../../estado/estadoAutenticacao'
 import { useMaquinas } from '../../hooks/useMaquinas'
 import { useIndicadoresMaquina } from '../../hooks/useIndicadoresMaquina'
-import { LOJAS_MOCK } from '../../servicos/dadosMockLojas'
+import { useLojas } from '../../hooks/useLojas'
+import { useSetores } from '../../hooks/useSetores'
 import { agruparPorEscopoGestor } from '../../utilitarios/acessoGestor'
 import { formatarMoeda } from '../../utilitarios/formatarMoeda'
 import type { Maquina } from '../../tipos/maquina'
@@ -25,12 +26,12 @@ import { SeletorMaquinaDashboard } from './componentes/SeletorMaquinaDashboard'
 export function DashboardGestor() {
   const escoposGestor =
     useEstadoAutenticacao((estado) => estado.escoposGestor) ?? []
-  const [maquinaSelecionadaId, setMaquinaSelecionadaId] = useState<
-    string | null
-  >(null)
+  const { data: lojas = [] } = useLojas()
+  const { data: setores = [] } = useSetores()
+  const [maquinaSelecionadaId, setMaquinaSelecionadaId] = useState<number | null>(null)
 
   const { data: maquinas = [], isLoading: carregandoMaquinas } = useMaquinas()
-  const grupos = agruparPorEscopoGestor(maquinas, escoposGestor, LOJAS_MOCK)
+  const grupos = agruparPorEscopoGestor(maquinas, escoposGestor, lojas, setores)
 
   const maquinasDisponiveis = grupos
     .flatMap((grupo) => grupo.subgrupos)
@@ -109,7 +110,7 @@ export function DashboardGestor() {
                 {maquinaSelecionada.nome}
               </h2>
               <span className="shrink-0 font-mono text-xs text-slate-400">
-                · {maquinaSelecionada.setor}
+                · {maquinaSelecionada.setorNome}
               </span>
             </div>
 

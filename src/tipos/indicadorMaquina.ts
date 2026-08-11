@@ -11,7 +11,7 @@ export interface IndicadorMensal {
 }
 
 export interface IndicadoresMaquina {
-  maquinaId: string
+  maquinaId: number
   horasParadaTotal: number
   mttrHoras: number
   mtbfHoras: number

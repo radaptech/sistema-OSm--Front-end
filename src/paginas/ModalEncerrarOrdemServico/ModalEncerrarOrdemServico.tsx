@@ -3,11 +3,11 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { CheckCircle2, XCircle } from 'lucide-react'
 import { Botao } from '../../componentes/Botao'
+import { CampoTexto } from '../../componentes/CampoTexto'
 import { CampoTextoArea } from '../../componentes/CampoTextoArea'
-import { TECNICOS_MOCK } from '../../servicos/dadosMockTecnicos'
 import { calcularHoras } from '../../utilitarios/calcularHoras'
+import { agoraParaBackend } from '../../utilitarios/dataBackend'
 import { formatarDataHora } from '../../utilitarios/formatarData'
-import { formatarMoeda } from '../../utilitarios/formatarMoeda'
 import type { OrdemServico } from '../../tipos/ordemServico'
 import {
   esquemaEncerrarOrdemServico,
@@ -18,7 +18,6 @@ interface DadosConfirmarEncerramento extends DadosEncerrarOrdemServico {
   dataInicio: string
   dataFim: string
   horasTrabalhadas: number
-  custoHoraTecnico: number
 }
 
 interface ModalEncerrarOrdemServicoProps {
@@ -33,22 +32,12 @@ export function ModalEncerrarOrdemServico({
   aoSalvar,
 }: ModalEncerrarOrdemServicoProps) {
   const dataInicio = ordemServico.dataInicio ?? ordemServico.dataAbertura
-  const agora = new Date()
-  const agoraIso = agora.toISOString()
+  const agora = agoraParaBackend()
 
-  // Horas Trabalhadas soma o que já foi fechado em sessões anteriores (pausas) com a
-  // sessão ativa atual — diferente de Horas Parada, que corre sem interrupção desde a
-  // abertura da OS até o encerramento, independente de pausas do técnico.
-  const horasSessaoAtual = calcularHoras(
-    ordemServico.sessaoAtualInicio ?? dataInicio,
-    agoraIso,
-  )
-  const horasTrabalhadas =
-    Math.round(((ordemServico.horasTrabalhadasAcumuladas ?? 0) + horasSessaoAtual) * 100) / 100
-  const horasParada = calcularHoras(ordemServico.dataAbertura, agoraIso)
-  const tecnico = TECNICOS_MOCK.find((item) => item.id === ordemServico.tecnicoId)
-  const valorHoraTecnico = tecnico?.valorHora ?? 0
-  const custoHoraTecnico = Math.round(horasTrabalhadas * valorHoraTecnico * 100) / 100
+  // Prévia local, só para o Técnico conferir antes de encerrar. Os valores definitivos
+  // são calculados pelo servidor a partir do histórico de pausas e voltam na resposta.
+  const horasTrabalhadas = calcularHoras(dataInicio, agora)
+  const horasParada = calcularHoras(ordemServico.dataAbertura, agora)
 
   const {
     register,
@@ -60,6 +49,8 @@ export function ModalEncerrarOrdemServico({
       defeitoConstatado: '',
       causaRaiz: '',
       solucao: '',
+      custoHoraTecnico: undefined,
+      custoManutencao: undefined,
     },
   })
 
@@ -67,9 +58,8 @@ export function ModalEncerrarOrdemServico({
     aoSalvar({
       ...dados,
       dataInicio,
-      dataFim: agoraIso,
+      dataFim: agora,
       horasTrabalhadas,
-      custoHoraTecnico,
     })
     aoFechar()
   }
@@ -116,23 +106,16 @@ export function ModalEncerrarOrdemServico({
               {formatarDataHora(dataInicio)}
             </p>
             <p className="rounded-lg bg-lime-100 px-3 py-2.5 font-mono text-sm text-marca-800">
-              {formatarDataHora(agoraIso)}
+              {formatarDataHora(agora)}
             </p>
           </div>
 
-          {/* Rótulos e valores em linhas de grid próprias (em vez de um flex-col por
-              coluna) para que, mesmo quando um rótulo quebra em duas linhas e outro não
-              (ex: "Custo Hora Técnico" vs "Horas Parada"), os três valores abaixo fiquem
-              alinhados na mesma altura. */}
-          <div className="grid grid-cols-3 gap-x-4 gap-y-1">
+          <div className="grid grid-cols-2 gap-x-4 gap-y-1">
             <span className="font-mono text-xs font-semibold tracking-wide text-marca-500 uppercase">
               Horas Trabalhadas
             </span>
             <span className="font-mono text-xs font-semibold tracking-wide text-marca-500 uppercase">
               Horas Parada
-            </span>
-            <span className="font-mono text-xs font-semibold tracking-wide text-marca-500 uppercase">
-              Custo Hora Técnico
             </span>
             <p className="rounded-lg bg-lime-100 px-3 py-2.5 font-mono text-sm text-marca-800">
               {horasTrabalhadas}h
@@ -140,17 +123,36 @@ export function ModalEncerrarOrdemServico({
             <p className="rounded-lg bg-lime-100 px-3 py-2.5 font-mono text-sm text-marca-800">
               {horasParada}h
             </p>
-            <p className="rounded-lg bg-lime-100 px-3 py-2.5 font-mono text-sm text-marca-800">
-              {formatarMoeda(custoHoraTecnico)}
-            </p>
           </div>
 
           <p className="text-xs text-slate-400">
             Horas Trabalhadas desconta o tempo em que a OS ficou pausada (ex: esperando
-            peça) — Horas Parada conta corrido desde a abertura, sem descontar pausas. O
-            custo de manutenção (peças/nota fiscal) é lançado posteriormente pelo
-            Administrador.
+            peça) — Horas Parada conta corrido desde a abertura, sem descontar pausas.
           </p>
+
+          <div className="grid grid-cols-2 gap-4">
+            <CampoTexto
+              rotulo="Custo Hora Técnico (R$) *"
+              variante="claro"
+              type="number"
+              min={0}
+              step="0.01"
+              placeholder="Ex: 80.00"
+              mensagemErro={errors.custoHoraTecnico?.message}
+              {...register('custoHoraTecnico', { valueAsNumber: true })}
+            />
+
+            <CampoTexto
+              rotulo="Custo de Manutenção (R$) *"
+              variante="claro"
+              type="number"
+              min={0}
+              step="0.01"
+              placeholder="Ex: 120.00"
+              mensagemErro={errors.custoManutencao?.message}
+              {...register('custoManutencao', { valueAsNumber: true })}
+            />
+          </div>
 
           <CampoTextoArea
             rotulo="Defeito Constatado *"

@@ -10,8 +10,9 @@ import { ModalConfirmarExclusao } from '../../componentes/ModalConfirmarExclusao
 import { Paginacao } from '../../componentes/Paginacao'
 import { useLojas } from '../../hooks/useLojas'
 import { useMaquinas } from '../../hooks/useMaquinas'
+import { useSetores } from '../../hooks/useSetores'
 import { servicoMaquinas } from '../../servicos/servicoMaquinas'
-import { setoresDisponiveis, type Maquina, type Setor } from '../../tipos/maquina'
+import type { Maquina } from '../../tipos/maquina'
 
 const TAMANHO_PAGINA = 10
 
@@ -20,15 +21,17 @@ export function AdministradorMaquinas() {
   const queryClient = useQueryClient()
   const [busca, setBusca] = useState('')
   const [filtroLoja, setFiltroLoja] = useState('')
-  const [filtroSetor, setFiltroSetor] = useState<Setor | ''>('')
+  const [filtroSetor, setFiltroSetor] = useState('')
   const [maquinaParaExcluir, setMaquinaParaExcluir] = useState<Maquina | null>(null)
   const [pagina, setPagina] = useState(1)
 
   const { data: maquinas = [], isLoading } = useMaquinas({
-    lojaId: filtroLoja || undefined,
-    setor: filtroSetor || undefined,
+    lojaId: filtroLoja ? Number(filtroLoja) : undefined,
+    setorId: filtroSetor ? Number(filtroSetor) : undefined,
   })
   const { data: lojas = [] } = useLojas()
+  // Setor é cadastrado por loja: filtrar por loja restringe também a lista de setores.
+  const { data: setores = [] } = useSetores(filtroLoja ? Number(filtroLoja) : undefined)
 
   const { mutateAsync: excluir, isPending: excluindo } = useMutation({
     mutationFn: servicoMaquinas.deletar,
@@ -41,7 +44,7 @@ export function AdministradorMaquinas() {
       (maquina) =>
         !termo ||
         maquina.nome.toLowerCase().includes(termo) ||
-        maquina.id.toLowerCase().includes(termo),
+        (maquina.numeroPatrimonio ?? '').toLowerCase().includes(termo),
     )
   }, [maquinas, busca])
 
@@ -94,12 +97,12 @@ export function AdministradorMaquinas() {
             <CampoSelecao
               rotulo="Setor"
               value={filtroSetor}
-              onChange={(evento) => setFiltroSetor(evento.target.value as Setor | '')}
+              onChange={(evento) => setFiltroSetor(evento.target.value)}
             >
               <option value="">Todos os setores</option>
-              {setoresDisponiveis.map((setor) => (
-                <option key={setor} value={setor}>
-                  {setor}
+              {setores.map((setor) => (
+                <option key={setor.id} value={setor.id}>
+                  {setor.nome}
                 </option>
               ))}
             </CampoSelecao>
@@ -155,7 +158,7 @@ export function AdministradorMaquinas() {
                   </p>
                   <p className="truncate text-xs text-slate-400">
                     {lojas.find((loja) => loja.id === maquina.lojaId)?.nome ?? maquina.lojaId} ·{' '}
-                    {maquina.setor}
+                    {maquina.setorNome}
                   </p>
                 </div>
               </div>

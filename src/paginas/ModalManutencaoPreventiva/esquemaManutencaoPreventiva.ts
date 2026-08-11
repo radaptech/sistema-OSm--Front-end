@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 export const esquemaManutencaoPreventiva = z.object({
-  maquinaId: z.string().min(1, 'Selecione a máquina.'),
+  maquinaId: z.number().int().nonnegative(),
   descricao: z
     .string()
     .min(3, 'Descreva o procedimento de manutenção.')
@@ -11,6 +11,7 @@ export const esquemaManutencaoPreventiva = z.object({
     .int('Informe um número inteiro de dias.')
     .min(1, 'O intervalo deve ser de pelo menos 1 dia.')
     .max(3650, 'Informe um intervalo de até 3650 dias.'),
+  // Vem do <input type="date"> em YYYY-MM-DD; o serviço converte para dd/mm/yyyy no envio.
   proximaData: z.string().min(1, 'Informe a próxima data.'),
   ativa: z.boolean(),
 })
