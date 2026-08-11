@@ -16,14 +16,17 @@ export function ModalDetalhesEncerramento({
   ordemServico,
   aoFechar,
 }: ModalDetalhesEncerramentoProps) {
-  const horasParada = ordemServico.dataFim
-    ? calcularHoras(ordemServico.dataAbertura, ordemServico.dataFim)
-    : undefined
+  // Só a OS marcada como "Afeta Produção" acumula tempo de máquina parada; nas demais a
+  // máquina seguiu operando durante o atendimento.
+  const horasParada =
+    ordemServico.afetaProducao && ordemServico.dataFim
+      ? calcularHoras(ordemServico.dataAbertura, ordemServico.dataFim)
+      : undefined
 
   return createPortal(
     <div className="animate-fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-      <div className="animate-pop-in w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-pop">
-        <div className="flex items-start justify-between bg-gradient-to-r from-marca-900 to-marca-500 px-6 py-4">
+      <div className="animate-pop-in shadow-pop w-full max-w-md overflow-hidden rounded-2xl bg-white">
+        <div className="from-marca-900 to-marca-500 flex items-start justify-between bg-gradient-to-r px-6 py-4">
           <div>
             <p className="font-mono text-xs font-bold tracking-widest text-white/80 uppercase">
               Painel do Técnico
@@ -48,7 +51,9 @@ export function ModalDetalhesEncerramento({
               <p className="font-display font-semibold text-slate-800">
                 {ordemServico.maquinaNome}
               </p>
-              <p className="font-mono text-sm text-slate-400">{ordemServico.maquinaCodigo}</p>
+              <p className="font-mono text-sm text-slate-400">
+                {ordemServico.maquinaCodigo}
+              </p>
             </div>
             <BadgeStatusExecucao status={ordemServico.statusExecucao} />
           </div>
@@ -67,10 +72,14 @@ export function ModalDetalhesEncerramento({
                 Término
               </span>
               <p className="font-mono text-slate-700">
-                {ordemServico.dataInicio ? formatarDataHora(ordemServico.dataInicio) : '—'}
+                {ordemServico.dataInicio
+                  ? formatarDataHora(ordemServico.dataInicio)
+                  : '—'}
               </p>
               <p className="font-mono text-slate-700">
-                {ordemServico.dataFim ? formatarDataHora(ordemServico.dataFim) : '—'}
+                {ordemServico.dataFim
+                  ? formatarDataHora(ordemServico.dataFim)
+                  : '—'}
               </p>
             </div>
 
@@ -87,7 +96,9 @@ export function ModalDetalhesEncerramento({
                   : '—'}
               </p>
               <p className="font-mono text-slate-700">
-                {horasParada !== undefined ? `${horasParada}h` : '—'}
+                {horasParada !== undefined
+                  ? `${horasParada}h`
+                  : 'Não se aplica'}
               </p>
             </div>
 
@@ -115,6 +126,15 @@ export function ModalDetalhesEncerramento({
 
           <div>
             <p className="font-mono text-xs font-semibold tracking-wide text-slate-400 uppercase">
+              Tipo de OS
+            </p>
+            <p className="mt-1 text-sm text-slate-600">
+              {ordemServico.tipoDefeito ?? '—'}
+            </p>
+          </div>
+
+          <div>
+            <p className="font-mono text-xs font-semibold tracking-wide text-slate-400 uppercase">
               Defeito Constatado
             </p>
             <p className="mt-1 text-sm text-slate-600">
@@ -126,14 +146,18 @@ export function ModalDetalhesEncerramento({
             <p className="font-mono text-xs font-semibold tracking-wide text-slate-400 uppercase">
               Causa Raiz
             </p>
-            <p className="mt-1 text-sm text-slate-600">{ordemServico.encerramento?.causaRaiz ?? '—'}</p>
+            <p className="mt-1 text-sm text-slate-600">
+              {ordemServico.encerramento?.causaRaiz ?? '—'}
+            </p>
           </div>
 
           <div>
             <p className="font-mono text-xs font-semibold tracking-wide text-slate-400 uppercase">
               Solução Aplicada
             </p>
-            <p className="mt-1 text-sm text-slate-600">{ordemServico.encerramento?.solucao ?? '—'}</p>
+            <p className="mt-1 text-sm text-slate-600">
+              {ordemServico.encerramento?.solucao ?? '—'}
+            </p>
           </div>
 
           <Botao type="button" variante="secundario" onClick={aoFechar}>

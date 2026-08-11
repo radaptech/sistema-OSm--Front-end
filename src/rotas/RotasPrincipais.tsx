@@ -1,9 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { TelaLogin } from '../paginas/TelaLogin/TelaLogin'
 import { HomeSolicitante } from '../paginas/HomeSolicitante/HomeSolicitante'
-import { NovaSolicitacaoOS } from '../paginas/NovaSolicitacaoOS/NovaSolicitacaoOS'
-import { NovaSolicitacaoReparo } from '../paginas/NovaSolicitacaoReparo/NovaSolicitacaoReparo'
-import { NovaSolicitacaoOSTerceiros } from '../paginas/NovaSolicitacaoOSTerceiros/NovaSolicitacaoOSTerceiros'
+import { NovaSolicitacao } from '../paginas/NovaSolicitacao/NovaSolicitacao'
 import { MinhasSolicitacoes } from '../paginas/MinhasSolicitacoes/MinhasSolicitacoes'
 import { PainelGestor } from '../paginas/PainelGestor/PainelGestor'
 import { DashboardGestor } from '../paginas/DashboardGestor/DashboardGestor'
@@ -34,10 +32,25 @@ export function RotasPrincipais() {
 
       <Route element={<RotaProtegida perfis={['solicitante']} />}>
         <Route path="/home-solicitante" element={<HomeSolicitante />} />
-        <Route path="/nova-solicitacao-os" element={<NovaSolicitacaoOS />} />
-        <Route path="/nova-solicitacao-reparo" element={<NovaSolicitacaoReparo />} />
-        <Route path="/nova-solicitacao-os-terceiros" element={<NovaSolicitacaoOSTerceiros />} />
+        <Route path="/nova-solicitacao" element={<NovaSolicitacao />} />
         <Route path="/minhas-solicitacoes" element={<MinhasSolicitacoes />} />
+
+        {/* As três telas viraram uma só. As rotas antigas continuam válidas como atalho,
+            redirecionando com o tipo já selecionado, para não quebrar link salvo. */}
+        <Route
+          path="/nova-solicitacao-os"
+          element={<Navigate to="/nova-solicitacao?tipo=maquinario" replace />}
+        />
+        <Route
+          path="/nova-solicitacao-reparo"
+          element={<Navigate to="/nova-solicitacao?tipo=reparo" replace />}
+        />
+        {/* Terceiros deixou de ser um tipo que o Solicitante abre: virou decisão do
+            Técnico durante a execução. A rota antiga cai na tela padrão. */}
+        <Route
+          path="/nova-solicitacao-os-terceiros"
+          element={<Navigate to="/nova-solicitacao" replace />}
+        />
       </Route>
 
       <Route element={<RotaProtegida perfis={['tecnico']} />}>
@@ -52,7 +65,10 @@ export function RotasPrincipais() {
       <Route element={<RotaProtegida perfis={['administrador']} />}>
         <Route path="/painel-administrador" element={<PainelAdministrador />} />
 
-        <Route path="/administrador/usuarios" element={<AdministradorUsuarios />} />
+        <Route
+          path="/administrador/usuarios"
+          element={<AdministradorUsuarios />}
+        />
         <Route path="/cadastrar-usuario" element={<CadastrarUsuario />} />
         <Route path="/cadastrar-usuario/:id" element={<CadastrarUsuario />} />
 
@@ -60,18 +76,33 @@ export function RotasPrincipais() {
         <Route path="/cadastrar-loja" element={<CadastrarLoja />} />
         <Route path="/cadastrar-loja/:id" element={<CadastrarLoja />} />
 
-        <Route path="/administrador/setores" element={<AdministradorSetores />} />
+        <Route
+          path="/administrador/setores"
+          element={<AdministradorSetores />}
+        />
         <Route path="/cadastrar-setor" element={<CadastrarSetor />} />
         <Route path="/cadastrar-setor/:id" element={<CadastrarSetor />} />
 
-        <Route path="/administrador/tecnicos" element={<AdministradorTecnicos />} />
+        <Route
+          path="/administrador/tecnicos"
+          element={<AdministradorTecnicos />}
+        />
 
-        <Route path="/administrador/maquinas" element={<AdministradorMaquinas />} />
+        <Route
+          path="/administrador/maquinas"
+          element={<AdministradorMaquinas />}
+        />
         <Route path="/cadastrar-maquina" element={<CadastrarMaquina />} />
         <Route path="/cadastrar-maquina/:id" element={<CadastrarMaquina />} />
 
-        <Route path="/administrador/custos-pendentes" element={<AdministradorCustosPendentes />} />
-        <Route path="/administrador/os-finalizadas" element={<AdministradorOSFinalizadas />} />
+        <Route
+          path="/administrador/custos-pendentes"
+          element={<AdministradorCustosPendentes />}
+        />
+        <Route
+          path="/administrador/os-finalizadas"
+          element={<AdministradorOSFinalizadas />}
+        />
 
         <Route
           path="/administrador/empresas-terceirizadas"

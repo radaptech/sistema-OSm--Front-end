@@ -1,6 +1,10 @@
 import { z } from 'zod'
+import { tiposDefeito } from '../../tipos/ordemServico'
 
 export const esquemaEncerrarOrdemServico = z.object({
+  // Classificação da OS: quem executou o serviço é quem sabe dizer se foi Predial ou
+  // Corretiva — o Solicitante não escolhe isso ao abrir o pedido.
+  tipoDefeito: z.enum(tiposDefeito, 'Selecione o tipo de OS.'),
   defeitoConstatado: z
     .string()
     .min(10, 'Descreva o defeito constatado.')
@@ -23,4 +27,6 @@ export const esquemaEncerrarOrdemServico = z.object({
     .max(999999, 'Informe um valor de até R$ 999.999.'),
 })
 
-export type DadosEncerrarOrdemServico = z.infer<typeof esquemaEncerrarOrdemServico>
+export type DadosEncerrarOrdemServico = z.infer<
+  typeof esquemaEncerrarOrdemServico
+>

@@ -14,22 +14,36 @@ import { servicoSolicitacoes } from '../../servicos/servicoSolicitacoes'
 import { agruparPorEscopoGestor } from '../../utilitarios/acessoGestor'
 import { dataEstaNoIntervalo } from '../../utilitarios/dataEstaNoIntervalo'
 import { obterNomeAlvo } from '../../utilitarios/alvoOS'
-import type { OrdemServico, SolicitacaoOS, TipoOS } from '../../tipos/ordemServico'
+import type {
+  OrdemServico,
+  SolicitacaoOS,
+  TipoOS,
+} from '../../tipos/ordemServico'
 import { ModalAbrirOrdemServico } from '../ModalAbrirOrdemServico/ModalAbrirOrdemServico'
 import type { DadosAbrirOrdemServico } from '../ModalAbrirOrdemServico/esquemaAbrirOrdemServico'
 import { ModalDetalhesOS } from '../ModalDetalhesOS/ModalDetalhesOS'
 import { ModalDetalhesSolicitacao } from '../ModalDetalhesSolicitacao/ModalDetalhesSolicitacao'
-import { AbasPainelGestor, type AbaPainelGestor } from './componentes/AbasPainelGestor'
+import {
+  AbasPainelGestor,
+  type AbaPainelGestor,
+} from './componentes/AbasPainelGestor'
 import { AcoesRapidas } from './componentes/AcoesRapidas'
 import { BlocoLoja } from './componentes/BlocoLoja'
 import { CardSolicitacaoGestor } from './componentes/CardSolicitacaoGestor'
+import {
+  FiltroStatusSolicitacao,
+  type StatusFilaGestor,
+} from './componentes/FiltroStatusSolicitacao'
 import { CardOSEmExecucao } from './componentes/CardOSEmExecucao'
 import { CardOSFinalizada } from './componentes/CardOSFinalizada'
 import { CardPreventiva } from './componentes/CardPreventiva'
-import { ModalAprovarOSTerceiros } from './componentes/ModalAprovarOSTerceiros'
+import { ModalRejeitarSolicitacao } from './componentes/ModalRejeitarSolicitacao'
+import type { DadosRejeitarSolicitacao } from './esquemaRejeitarSolicitacao'
 import { ModalFiltrosOS } from './componentes/ModalFiltrosOS'
-import type { DadosAprovarOSTerceiros } from './esquemaAprovarOSTerceiros'
-import { FILTROS_AVANCADOS_OS_VAZIOS, type FiltrosAvancadosOS } from './filtrosOS'
+import {
+  FILTROS_AVANCADOS_OS_VAZIOS,
+  type FiltrosAvancadosOS,
+} from './filtrosOS'
 
 interface SelecaoOS {
   ordem: OrdemServico
@@ -38,20 +52,22 @@ interface SelecaoOS {
 
 export function PainelGestor() {
   const queryClient = useQueryClient()
-  const escoposGestor = useEstadoAutenticacao((estado) => estado.escoposGestor) ?? []
+  const escoposGestor =
+    useEstadoAutenticacao((estado) => estado.escoposGestor) ?? []
   const { data: lojas = [] } = useLojas()
   // Resolve o nome do setor no cabeçalho de cada subgrupo, inclusive quando ele está vazio.
   const { data: setores = [] } = useSetores()
-  const [abaSelecionada, setAbaSelecionada] = useState<AbaPainelGestor>('solicitacoes')
+  const [abaSelecionada, setAbaSelecionada] =
+    useState<AbaPainelGestor>('solicitacoes')
   const [filtroTipo, setFiltroTipo] = useState<TipoOS | ''>('')
+  const [filtroStatus, setFiltroStatus] = useState<StatusFilaGestor>('Pendente')
   const [filtrosAvancados, setFiltrosAvancados] = useState<FiltrosAvancadosOS>(
     FILTROS_AVANCADOS_OS_VAZIOS,
   )
   const [modalFiltrosAberto, setModalFiltrosAberto] = useState(false)
-  const [solicitacaoParaAbrirOS, setSolicitacaoParaAbrirOS] = useState<SolicitacaoOS | null>(
-    null,
-  )
-  const [solicitacaoParaAprovarTerceiros, setSolicitacaoParaAprovarTerceiros] =
+  const [solicitacaoParaAbrirOS, setSolicitacaoParaAbrirOS] =
+    useState<SolicitacaoOS | null>(null)
+  const [solicitacaoParaRejeitar, setSolicitacaoParaRejeitar] =
     useState<SolicitacaoOS | null>(null)
   const [solicitacaoParaVisualizar, setSolicitacaoParaVisualizar] =
     useState<SolicitacaoOS | null>(null)
@@ -61,16 +77,8 @@ export function PainelGestor() {
     useTodasSolicitacoes()
   const { data: ordensServico = [], isLoading: carregandoOrdensServico } =
     useOrdensServicoTodas()
-  const { data: preventivas = [], isLoading: carregandoPreventivas } = usePreventivas()
-
-  function aoAprovarOuAbrirOS(solicitacao: SolicitacaoOS) {
-    if (solicitacao.tipo === 'terceiros') {
-      setSolicitacaoParaAprovarTerceiros(solicitacao)
-      return
-    }
-
-    setSolicitacaoParaAbrirOS(solicitacao)
-  }
+  const { data: preventivas = [], isLoading: carregandoPreventivas } =
+    usePreventivas()
 
   async function invalidarSolicitacoesEOrdens() {
     await Promise.all([
@@ -84,8 +92,10 @@ export function PainelGestor() {
     onSuccess: invalidarSolicitacoesEOrdens,
   })
 
-  const { mutateAsync: aprovarTerceiros } = useMutation({
-    mutationFn: servicoSolicitacoes.aprovarTerceiros,
+  // Rejeitar não cria OrdemServico, mas invalida as duas listas do mesmo jeito: a
+  // solicitação sai da fila de pendentes do Gestor.
+  const { mutateAsync: rejeitar } = useMutation({
+    mutationFn: servicoSolicitacoes.rejeitar,
     onSuccess: invalidarSolicitacoesEOrdens,
   })
 
@@ -98,20 +108,25 @@ export function PainelGestor() {
     toast.success(`OS aberta para a solicitação #${solicitacaoParaAbrirOS.id}.`)
   }
 
-  async function aoConfirmarAprovacaoTerceiros(dados: DadosAprovarOSTerceiros) {
-    if (!solicitacaoParaAprovarTerceiros) {
+  async function aoConfirmarRejeicao(dados: DadosRejeitarSolicitacao) {
+    if (!solicitacaoParaRejeitar) {
       return
     }
 
-    await aprovarTerceiros({ solicitacaoId: solicitacaoParaAprovarTerceiros.id, ...dados })
-    toast.success(`OS Terceiros aprovada para a solicitação #${solicitacaoParaAprovarTerceiros.id}.`)
+    await rejeitar({ solicitacaoId: solicitacaoParaRejeitar.id, ...dados })
+    toast.success(`Solicitação #${solicitacaoParaRejeitar.id} rejeitada.`)
   }
 
   const valorMinimoFiltro =
-    filtrosAvancados.valorMinimo === '' ? undefined : Number(filtrosAvancados.valorMinimo)
+    filtrosAvancados.valorMinimo === ''
+      ? undefined
+      : Number(filtrosAvancados.valorMinimo)
   const valorMaximoFiltro =
-    filtrosAvancados.valorMaximo === '' ? undefined : Number(filtrosAvancados.valorMaximo)
-  const temFiltroDeValor = valorMinimoFiltro !== undefined || valorMaximoFiltro !== undefined
+    filtrosAvancados.valorMaximo === ''
+      ? undefined
+      : Number(filtrosAvancados.valorMaximo)
+  const temFiltroDeValor =
+    valorMinimoFiltro !== undefined || valorMaximoFiltro !== undefined
 
   // Aplica Loja/Máquina/Período/Valor (filtro avançado do Gestor) por cima do filtro de
   // Tipo de OS já existente. Loja é selecionada numa lista fechada (combinação exata por
@@ -128,8 +143,11 @@ export function PainelGestor() {
   ): boolean {
     const combinaMaquina =
       !filtrosAvancados.maquina ||
-      maquinaNome.toLowerCase().includes(filtrosAvancados.maquina.trim().toLowerCase())
-    const combinaLoja = !filtrosAvancados.loja || lojaId === Number(filtrosAvancados.loja)
+      maquinaNome
+        .toLowerCase()
+        .includes(filtrosAvancados.maquina.trim().toLowerCase())
+    const combinaLoja =
+      !filtrosAvancados.loja || lojaId === Number(filtrosAvancados.loja)
     const combinaData = dataEstaNoIntervalo(
       dataReferencia,
       filtrosAvancados.dataInicio,
@@ -144,12 +162,27 @@ export function PainelGestor() {
     return combinaMaquina && combinaLoja && combinaData && combinaValor
   }
 
-  const solicitacoesPendentes = solicitacoes.filter(
+  // Fila do Gestor: Pendentes (esperando decisão) ou Rejeitadas (histórico do que ele
+  // recusou, para consultar depois). 'Convertida' não aparece aqui — vira OS e o
+  // acompanhamento passa para as abas de OS.
+  const solicitacoesDaFila = solicitacoes.filter(
     (solicitacao) =>
-      solicitacao.status === 'Pendente' &&
+      solicitacao.status === filtroStatus &&
       (!filtroTipo || solicitacao.tipo === filtroTipo) &&
-      combinaFiltrosAvancados(obterNomeAlvo(solicitacao), solicitacao.lojaId, solicitacao.criadoEm),
+      combinaFiltrosAvancados(
+        obterNomeAlvo(solicitacao),
+        solicitacao.lojaId,
+        solicitacao.criadoEm,
+      ),
   )
+
+  // Contagem por status é do total no escopo, sem os filtros de tipo/avançados: o número
+  // ao lado da aba precisa dizer quanto existe, não quanto sobrou do filtro atual.
+  const contagensFila: Record<StatusFilaGestor, number> = {
+    Pendente: solicitacoes.filter((item) => item.status === 'Pendente').length,
+    Rejeitada: solicitacoes.filter((item) => item.status === 'Rejeitada')
+      .length,
+  }
   // Só é "OS Finalizada" para o Gestor quando ela passou por todas as etapas com
   // sucesso: Técnico encerrou (Concluída) e o Administrador já lançou o custo de
   // manutenção — ver regra de negócio no CLAUDE.md (item 11/12/13).
@@ -162,19 +195,25 @@ export function PainelGestor() {
         obterNomeAlvo(ordem),
         ordem.lojaId,
         ordem.dataAbertura,
-        (ordem.custo?.custoHoraTecnico ?? 0) + (ordem.custo?.custoManutencao ?? 0),
+        (ordem.custo?.custoHoraTecnico ?? 0) +
+          (ordem.custo?.custoManutencao ?? 0),
       ),
   )
   // Acompanhamento em tempo real do que o Técnico está fazendo (Aberta/Em Andamento/
   // Pausada) — o botão de pausa continua com o Técnico (ele é quem está na frente do
   // problema), mas o Gestor enxerga aqui o motivo de cada pausa para dar visibilidade
-  // sem virar gargalo no fluxo. Ver regra de negócio no CLAUDE.md (item 9). OS Terceiros
-  // nunca aparece aqui — ela já nasce Concluída (ver aprovarTerceiros).
+  // sem virar gargalo no fluxo. Ver regra de negócio no CLAUDE.md (item 9). Uma OS
+  // encaminhada a terceiros continua aparecendo aqui: ela segue com o Técnico até ele
+  // encerrar, só muda de tipo.
   const ordensEmExecucao = ordensServico.filter(
     (ordem) =>
       ordem.statusExecucao !== 'Concluída' &&
       (!filtroTipo || ordem.tipo === filtroTipo) &&
-      combinaFiltrosAvancados(obterNomeAlvo(ordem), ordem.lojaId, ordem.dataAbertura),
+      combinaFiltrosAvancados(
+        obterNomeAlvo(ordem),
+        ordem.lojaId,
+        ordem.dataAbertura,
+      ),
   )
 
   const maquinasDisponiveis = [
@@ -185,10 +224,11 @@ export function PainelGestor() {
     ),
   ].sort((a, b) => a.localeCompare(b, 'pt-BR'))
 
-  const quantidadeFiltrosAtivos = Object.values(filtrosAvancados).filter(Boolean).length
+  const quantidadeFiltrosAtivos =
+    Object.values(filtrosAvancados).filter(Boolean).length
 
-  const gruposSolicitacoesPendentes = agruparPorEscopoGestor(
-    solicitacoesPendentes,
+  const gruposSolicitacoesDaFila = agruparPorEscopoGestor(
+    solicitacoesDaFila,
     escoposGestor,
     lojas,
     setores,
@@ -222,7 +262,8 @@ export function PainelGestor() {
             Painel do Gestor
           </h1>
           <p className="mt-1 text-sm text-slate-300">
-            Acompanhe as solicitações, OS e manutenções preventivas dos seus setores.
+            Acompanhe as solicitações, OS e manutenções preventivas dos seus
+            setores.
           </p>
         </div>
 
@@ -242,30 +283,56 @@ export function PainelGestor() {
           </div>
         )}
 
+        {abaSelecionada === 'solicitacoes' && (
+          <FiltroStatusSolicitacao
+            valor={filtroStatus}
+            aoMudar={setFiltroStatus}
+            contagens={contagensFila}
+          />
+        )}
+
         {escoposGestor.length === 0 && (
           <div className="flex flex-col items-center gap-2 rounded-2xl bg-white/10 py-12 text-slate-300">
             <Inbox size={28} className="text-slate-400" />
-            <p className="text-sm">Nenhum setor/loja vinculado a este gestor.</p>
+            <p className="text-sm">
+              Nenhum setor/loja vinculado a este gestor.
+            </p>
           </div>
         )}
 
         {abaSelecionada === 'solicitacoes' && (
           <div className="flex flex-col gap-6">
             {carregandoSolicitacoes && (
-              <p className="py-10 text-center text-sm text-slate-300">Carregando...</p>
+              <p className="py-10 text-center text-sm text-slate-300">
+                Carregando...
+              </p>
             )}
 
             {!carregandoSolicitacoes &&
-              gruposSolicitacoesPendentes.map((grupo) => (
+              gruposSolicitacoesDaFila.map((grupo) => (
                 <BlocoLoja
                   key={grupo.loja.id}
                   grupo={grupo}
-                  mensagemVazio="Nenhuma solicitação pendente."
+                  mensagemVazio={
+                    filtroStatus === 'Pendente'
+                      ? 'Nenhuma solicitação pendente.'
+                      : 'Nenhuma solicitação rejeitada.'
+                  }
                   obterChave={(solicitacao) => solicitacao.id}
                   renderItem={(solicitacao) => (
                     <CardSolicitacaoGestor
                       solicitacao={solicitacao}
-                      aoAbrirOS={aoAprovarOuAbrirOS}
+                      // Rejeitada é histórico: sobra só o botão de visualizar.
+                      aoAbrirOS={
+                        filtroStatus === 'Pendente'
+                          ? setSolicitacaoParaAbrirOS
+                          : undefined
+                      }
+                      aoRejeitar={
+                        filtroStatus === 'Pendente'
+                          ? setSolicitacaoParaRejeitar
+                          : undefined
+                      }
                       aoVisualizar={setSolicitacaoParaVisualizar}
                     />
                   )}
@@ -277,7 +344,9 @@ export function PainelGestor() {
         {abaSelecionada === 'os-em-andamento' && (
           <div className="flex flex-col gap-6">
             {carregandoOrdensServico && (
-              <p className="py-10 text-center text-sm text-slate-300">Carregando...</p>
+              <p className="py-10 text-center text-sm text-slate-300">
+                Carregando...
+              </p>
             )}
 
             {!carregandoOrdensServico &&
@@ -298,7 +367,9 @@ export function PainelGestor() {
         {abaSelecionada === 'os-finalizadas' && (
           <div className="flex flex-col gap-6">
             {carregandoOrdensServico && (
-              <p className="py-10 text-center text-sm text-slate-300">Carregando...</p>
+              <p className="py-10 text-center text-sm text-slate-300">
+                Carregando...
+              </p>
             )}
 
             {!carregandoOrdensServico &&
@@ -311,8 +382,12 @@ export function PainelGestor() {
                   renderItem={(ordemServico) => (
                     <CardOSFinalizada
                       ordemServico={ordemServico}
-                      aoVisualizar={(ordem) => setSelecaoOS({ ordem, imprimir: false })}
-                      aoImprimir={(ordem) => setSelecaoOS({ ordem, imprimir: true })}
+                      aoVisualizar={(ordem) =>
+                        setSelecaoOS({ ordem, imprimir: false })
+                      }
+                      aoImprimir={(ordem) =>
+                        setSelecaoOS({ ordem, imprimir: true })
+                      }
                     />
                   )}
                 />
@@ -323,7 +398,9 @@ export function PainelGestor() {
         {abaSelecionada === 'manutencao-preventiva' && (
           <div className="flex flex-col gap-6">
             {carregandoPreventivas && (
-              <p className="py-10 text-center text-sm text-slate-300">Carregando...</p>
+              <p className="py-10 text-center text-sm text-slate-300">
+                Carregando...
+              </p>
             )}
 
             {!carregandoPreventivas &&
@@ -333,7 +410,9 @@ export function PainelGestor() {
                   grupo={grupo}
                   mensagemVazio="Nenhuma preventiva cadastrada."
                   obterChave={(preventiva) => preventiva.id}
-                  renderItem={(preventiva) => <CardPreventiva preventiva={preventiva} />}
+                  renderItem={(preventiva) => (
+                    <CardPreventiva preventiva={preventiva} />
+                  )}
                 />
               ))}
           </div>
@@ -354,11 +433,11 @@ export function PainelGestor() {
         />
       )}
 
-      {solicitacaoParaAprovarTerceiros && (
-        <ModalAprovarOSTerceiros
-          solicitacao={solicitacaoParaAprovarTerceiros}
-          aoFechar={() => setSolicitacaoParaAprovarTerceiros(null)}
-          aoSalvar={aoConfirmarAprovacaoTerceiros}
+      {solicitacaoParaRejeitar && (
+        <ModalRejeitarSolicitacao
+          solicitacao={solicitacaoParaRejeitar}
+          aoFechar={() => setSolicitacaoParaRejeitar(null)}
+          aoSalvar={aoConfirmarRejeicao}
         />
       )}
 

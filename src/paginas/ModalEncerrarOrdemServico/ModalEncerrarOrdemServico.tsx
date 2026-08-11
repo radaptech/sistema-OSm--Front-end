@@ -3,12 +3,13 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { CheckCircle2, XCircle } from 'lucide-react'
 import { Botao } from '../../componentes/Botao'
+import { CampoSelecao } from '../../componentes/CampoSelecao'
 import { CampoTexto } from '../../componentes/CampoTexto'
 import { CampoTextoArea } from '../../componentes/CampoTextoArea'
 import { calcularHoras } from '../../utilitarios/calcularHoras'
 import { agoraParaBackend } from '../../utilitarios/dataBackend'
 import { formatarDataHora } from '../../utilitarios/formatarData'
-import type { OrdemServico } from '../../tipos/ordemServico'
+import { tiposDefeito, type OrdemServico } from '../../tipos/ordemServico'
 import {
   esquemaEncerrarOrdemServico,
   type DadosEncerrarOrdemServico,
@@ -37,7 +38,11 @@ export function ModalEncerrarOrdemServico({
   // Prévia local, só para o Técnico conferir antes de encerrar. Os valores definitivos
   // são calculados pelo servidor a partir do histórico de pausas e voltam na resposta.
   const horasTrabalhadas = calcularHoras(dataInicio, agora)
-  const horasParada = calcularHoras(ordemServico.dataAbertura, agora)
+  // Só acumula parada a OS marcada como "Afeta Produção": nas demais a máquina seguiu
+  // operando, então não existe tempo de parada a exibir nem a calcular.
+  const horasParada = ordemServico.afetaProducao
+    ? calcularHoras(ordemServico.dataAbertura, agora)
+    : undefined
 
   const {
     register,
@@ -46,6 +51,7 @@ export function ModalEncerrarOrdemServico({
   } = useForm<DadosEncerrarOrdemServico>({
     resolver: zodResolver(esquemaEncerrarOrdemServico),
     defaultValues: {
+      tipoDefeito: undefined,
       defeitoConstatado: '',
       causaRaiz: '',
       solucao: '',
@@ -66,8 +72,8 @@ export function ModalEncerrarOrdemServico({
 
   return createPortal(
     <div className="animate-fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-      <div className="animate-pop-in w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-pop">
-        <div className="flex items-start justify-between bg-gradient-to-r from-marca-900 to-marca-500 px-6 py-4">
+      <div className="animate-pop-in shadow-pop w-full max-w-md overflow-hidden rounded-2xl bg-white">
+        <div className="from-marca-900 to-marca-500 flex items-start justify-between bg-gradient-to-r px-6 py-4">
           <div>
             <p className="font-mono text-xs font-bold tracking-widest text-white/80 uppercase">
               Painel do Técnico
@@ -96,38 +102,39 @@ export function ModalEncerrarOrdemServico({
           className="flex max-h-[75vh] flex-col gap-5 overflow-y-auto p-6"
         >
           <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-            <span className="font-mono text-xs font-semibold tracking-wide text-marca-500 uppercase">
+            <span className="text-marca-500 font-mono text-xs font-semibold tracking-wide uppercase">
               Início do Atendimento
             </span>
-            <span className="font-mono text-xs font-semibold tracking-wide text-marca-500 uppercase">
+            <span className="text-marca-500 font-mono text-xs font-semibold tracking-wide uppercase">
               Término do Atendimento
             </span>
-            <p className="rounded-lg bg-lime-100 px-3 py-2.5 font-mono text-sm text-marca-800">
+            <p className="text-marca-800 rounded-lg bg-lime-100 px-3 py-2.5 font-mono text-sm">
               {formatarDataHora(dataInicio)}
             </p>
-            <p className="rounded-lg bg-lime-100 px-3 py-2.5 font-mono text-sm text-marca-800">
+            <p className="text-marca-800 rounded-lg bg-lime-100 px-3 py-2.5 font-mono text-sm">
               {formatarDataHora(agora)}
             </p>
           </div>
 
           <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-            <span className="font-mono text-xs font-semibold tracking-wide text-marca-500 uppercase">
+            <span className="text-marca-500 font-mono text-xs font-semibold tracking-wide uppercase">
               Horas Trabalhadas
             </span>
-            <span className="font-mono text-xs font-semibold tracking-wide text-marca-500 uppercase">
+            <span className="text-marca-500 font-mono text-xs font-semibold tracking-wide uppercase">
               Horas Parada
             </span>
-            <p className="rounded-lg bg-lime-100 px-3 py-2.5 font-mono text-sm text-marca-800">
+            <p className="text-marca-800 rounded-lg bg-lime-100 px-3 py-2.5 font-mono text-sm">
               {horasTrabalhadas}h
             </p>
-            <p className="rounded-lg bg-lime-100 px-3 py-2.5 font-mono text-sm text-marca-800">
-              {horasParada}h
+            <p className="text-marca-800 rounded-lg bg-lime-100 px-3 py-2.5 font-mono text-sm">
+              {horasParada !== undefined ? `${horasParada}h` : 'Não se aplica'}
             </p>
           </div>
 
           <p className="text-xs text-slate-400">
-            Horas Trabalhadas desconta o tempo em que a OS ficou pausada (ex: esperando
-            peça) — Horas Parada conta corrido desde a abertura, sem descontar pausas.
+            {horasParada !== undefined
+              ? 'Horas Trabalhadas desconta o tempo em que a OS ficou pausada (ex: esperando peça) — Horas Parada conta corrido desde a abertura, sem descontar pausas.'
+              : 'Horas Trabalhadas desconta o tempo em que a OS ficou pausada (ex: esperando peça). Esta OS não foi marcada como "Afeta Produção": a máquina seguiu operando, então não acumula tempo de parada.'}
           </p>
 
           <div className="grid grid-cols-2 gap-4">
@@ -153,6 +160,21 @@ export function ModalEncerrarOrdemServico({
               {...register('custoManutencao', { valueAsNumber: true })}
             />
           </div>
+
+          <CampoSelecao
+            rotulo="Tipo de OS *"
+            mensagemErro={errors.tipoDefeito?.message}
+            {...register('tipoDefeito', {
+              setValueAs: (valor) => (valor === '' ? undefined : valor),
+            })}
+          >
+            <option value="">Selecione o tipo...</option>
+            {tiposDefeito.map((tipo) => (
+              <option key={tipo} value={tipo}>
+                {tipo}
+              </option>
+            ))}
+          </CampoSelecao>
 
           <CampoTextoArea
             rotulo="Defeito Constatado *"
@@ -188,7 +210,10 @@ export function ModalEncerrarOrdemServico({
               </Botao>
             </div>
             <div className="flex-1">
-              <Botao type="submit" className="flex items-center justify-center gap-2">
+              <Botao
+                type="submit"
+                className="flex items-center justify-center gap-2"
+              >
                 <CheckCircle2 size={16} />
                 Encerrar OS
               </Botao>

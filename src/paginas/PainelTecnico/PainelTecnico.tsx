@@ -1,5 +1,10 @@
 import { useState } from 'react'
-import { ClipboardCheck, Inbox, PauseCircle, type LucideIcon } from 'lucide-react'
+import {
+  ClipboardCheck,
+  Inbox,
+  PauseCircle,
+  type LucideIcon,
+} from 'lucide-react'
 import { toast } from 'react-toastify'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { CabecalhoTopo } from '../../componentes/CabecalhoTopo'
@@ -13,12 +18,17 @@ import { agruparPorSetorLoja } from '../../utilitarios/agruparPorSetorLoja'
 import { ModalDetalhesSolicitacao } from '../ModalDetalhesSolicitacao/ModalDetalhesSolicitacao'
 import { ModalEncerrarOrdemServico } from '../ModalEncerrarOrdemServico/ModalEncerrarOrdemServico'
 import type { EncerramentoOrdemServicoPayload } from '../../tipos/ordemServico'
-import { AbasPainelTecnico, type AbaPainelTecnico } from './componentes/AbasPainelTecnico'
+import {
+  AbasPainelTecnico,
+  type AbaPainelTecnico,
+} from './componentes/AbasPainelTecnico'
 import { BlocoSetorLoja } from './componentes/BlocoSetorLoja'
 import { CardOrdemServicoTecnico } from './componentes/CardOrdemServicoTecnico'
 import { ModalDetalhesEncerramento } from './componentes/ModalDetalhesEncerramento'
 import { ModalPausarOrdemServico } from './componentes/ModalPausarOrdemServico'
+import { ModalAcionarTerceiro } from './componentes/ModalAcionarTerceiro'
 import type { DadosPausarOrdemServico } from './esquemaPausarOrdemServico'
+import type { DadosAcionarTerceiro } from './esquemaAcionarTerceiro'
 
 const CHAVE_ORDENS_SERVICO_TECNICO = 'ordens-servico-tecnico'
 
@@ -26,17 +36,27 @@ export function PainelTecnico() {
   const tecnicoId = useEstadoAutenticacao((estado) => estado.tecnicoId)
   const { data: lojas = [] } = useLojas()
   const queryClient = useQueryClient()
-  const [abaSelecionada, setAbaSelecionada] = useState<AbaPainelTecnico>('em-aberto')
-  const [ordemParaPausar, setOrdemParaPausar] = useState<OrdemServico | null>(null)
-  const [ordemParaEncerrar, setOrdemParaEncerrar] = useState<OrdemServico | null>(null)
-  const [ordemParaVerDetalhes, setOrdemParaVerDetalhes] = useState<OrdemServico | null>(null)
+  const [abaSelecionada, setAbaSelecionada] =
+    useState<AbaPainelTecnico>('em-aberto')
+  const [ordemParaPausar, setOrdemParaPausar] = useState<OrdemServico | null>(
+    null,
+  )
+  const [ordemParaEncerrar, setOrdemParaEncerrar] =
+    useState<OrdemServico | null>(null)
+  const [ordemParaAcionarTerceiro, setOrdemParaAcionarTerceiro] =
+    useState<OrdemServico | null>(null)
+  const [ordemParaVerDetalhes, setOrdemParaVerDetalhes] =
+    useState<OrdemServico | null>(null)
   const [solicitacaoParaVisualizar, setSolicitacaoParaVisualizar] =
     useState<SolicitacaoOS | null>(null)
 
-  const { data: ordensServico = [], isLoading } = useOrdensServicoTecnico(tecnicoId)
+  const { data: ordensServico = [], isLoading } =
+    useOrdensServicoTecnico(tecnicoId)
 
   function invalidarOrdensServico() {
-    return queryClient.invalidateQueries({ queryKey: [CHAVE_ORDENS_SERVICO_TECNICO] })
+    return queryClient.invalidateQueries({
+      queryKey: [CHAVE_ORDENS_SERVICO_TECNICO],
+    })
   }
 
   const { mutateAsync: iniciar } = useMutation({
@@ -60,6 +80,11 @@ export function PainelTecnico() {
     onSuccess: invalidarOrdensServico,
   })
 
+  const { mutateAsync: acionarTerceiro } = useMutation({
+    mutationFn: servicoOrdensServico.acionarTerceiro,
+    onSuccess: invalidarOrdensServico,
+  })
+
   async function aoIniciar(ordemServico: OrdemServico) {
     await iniciar(ordemServico.id)
     toast.success(`OS #${ordemServico.id} iniciada.`)
@@ -79,8 +104,24 @@ export function PainelTecnico() {
     toast.success(`OS #${ordemServico.id} retomada.`)
   }
 
+  async function aoConfirmarAcionamentoTerceiro(dados: DadosAcionarTerceiro) {
+    if (!ordemParaAcionarTerceiro) {
+      return
+    }
+
+    await acionarTerceiro({
+      ordemServicoId: ordemParaAcionarTerceiro.id,
+      ...dados,
+    })
+    toast.success(
+      `OS #${ordemParaAcionarTerceiro.id} encaminhada para empresa terceirizada.`,
+    )
+  }
+
   async function aoVerSolicitacao(ordemServico: OrdemServico) {
-    const solicitacao = await servicoSolicitacoes.obterPorId(ordemServico.solicitacaoId)
+    const solicitacao = await servicoSolicitacoes.obterPorId(
+      ordemServico.solicitacaoId,
+    )
     setSolicitacaoParaVisualizar(solicitacao)
   }
 
@@ -97,7 +138,9 @@ export function PainelTecnico() {
 
   const ordensPorAba: Record<AbaPainelTecnico, OrdemServico[]> = {
     'em-aberto': ordensServico.filter(
-      (ordem) => ordem.statusExecucao === 'Aberta' || ordem.statusExecucao === 'Em Andamento',
+      (ordem) =>
+        ordem.statusExecucao === 'Aberta' ||
+        ordem.statusExecucao === 'Em Andamento',
     ),
     'pendentes-pausadas': ordensServico.filter(
       (ordem) => ordem.statusExecucao === 'Pausada',
@@ -106,12 +149,13 @@ export function PainelTecnico() {
     // regra de "OS Finalizada" usada no Gestor e no Administrador (ver CLAUDE.md, item
     // 9/13). Uma OS que o Técnico já encerrou mas ainda sem custo lançado fica "invisível"
     // nas abas dele até esse lançamento.
-    concluidas: ordensServico.filter(
-      (ordem) => ordem.finalizada,
-    ),
+    concluidas: ordensServico.filter((ordem) => ordem.finalizada),
   }
 
-  const ESTADO_VAZIO: Record<AbaPainelTecnico, { Icone: LucideIcon; mensagem: string }> = {
+  const ESTADO_VAZIO: Record<
+    AbaPainelTecnico,
+    { Icone: LucideIcon; mensagem: string }
+  > = {
     'em-aberto': { Icone: Inbox, mensagem: 'Nenhuma OS em aberto no momento.' },
     'pendentes-pausadas': {
       Icone: PauseCircle,
@@ -126,25 +170,42 @@ export function PainelTecnico() {
 
   const ordensExibidas = ordensPorAba[abaSelecionada]
   const gruposExibidos = agruparPorSetorLoja(ordensExibidas, lojas)
-  const { Icone: IconeVazio, mensagem: mensagemVazia } = ESTADO_VAZIO[abaSelecionada]
+  const { Icone: IconeVazio, mensagem: mensagemVazia } =
+    ESTADO_VAZIO[abaSelecionada]
 
   function renderizarCard(ordemServico: OrdemServico) {
     return (
       <CardOrdemServicoTecnico
         ordemServico={ordemServico}
-        aoIniciar={ordemServico.statusExecucao === 'Aberta' ? aoIniciar : undefined}
+        aoIniciar={
+          ordemServico.statusExecucao === 'Aberta' ? aoIniciar : undefined
+        }
         aoPausar={
           ordemServico.statusExecucao === 'Aberta' ||
           ordemServico.statusExecucao === 'Em Andamento'
             ? setOrdemParaPausar
             : undefined
         }
-        aoRetomar={ordemServico.statusExecucao === 'Pausada' ? aoRetomar : undefined}
+        aoRetomar={
+          ordemServico.statusExecucao === 'Pausada' ? aoRetomar : undefined
+        }
         aoFinalizar={
-          ordemServico.statusExecucao === 'Em Andamento' ? setOrdemParaEncerrar : undefined
+          ordemServico.statusExecucao === 'Em Andamento'
+            ? setOrdemParaEncerrar
+            : undefined
         }
         aoVerDetalhes={
-          ordemServico.statusExecucao === 'Concluída' ? setOrdemParaVerDetalhes : undefined
+          ordemServico.statusExecucao === 'Concluída'
+            ? setOrdemParaVerDetalhes
+            : undefined
+        }
+        // Acionar terceiro é decisão de quem está com a OS na mão, e vale enquanto ela
+        // não estiver encerrada — inclusive Pausada, que é onde ela costuma ficar
+        // esperando a empresa aparecer.
+        aoAcionarTerceiro={
+          ordemServico.statusExecucao !== 'Concluída'
+            ? setOrdemParaAcionarTerceiro
+            : undefined
         }
         aoVerSolicitacao={aoVerSolicitacao}
       />
@@ -172,7 +233,9 @@ export function PainelTecnico() {
 
         <div className="flex flex-col gap-6">
           {isLoading && (
-            <p className="py-10 text-center text-sm text-slate-300">Carregando...</p>
+            <p className="py-10 text-center text-sm text-slate-300">
+              Carregando...
+            </p>
           )}
 
           {!isLoading && ordensExibidas.length === 0 && (
@@ -205,6 +268,14 @@ export function PainelTecnico() {
           ordemServico={ordemParaPausar}
           aoFechar={() => setOrdemParaPausar(null)}
           aoSalvar={aoConfirmarPausa}
+        />
+      )}
+
+      {ordemParaAcionarTerceiro && (
+        <ModalAcionarTerceiro
+          ordemServico={ordemParaAcionarTerceiro}
+          aoFechar={() => setOrdemParaAcionarTerceiro(null)}
+          aoSalvar={aoConfirmarAcionamentoTerceiro}
         />
       )}
 

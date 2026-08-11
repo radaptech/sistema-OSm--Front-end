@@ -1,4 +1,4 @@
-// Solicitação e OS apontam ou para uma máquina cadastrada (maquinário/terceiros) ou para
+// Solicitação e OS apontam ou para uma máquina cadastrada (maquinário) ou para
 // um item digitado na hora (pequeno reparo). Estes helpers centralizam essa escolha, para
 // os componentes não repetirem o mesmo encadeamento de fallback.
 

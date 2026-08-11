@@ -22,12 +22,14 @@ export function ModalDetalhesSolicitacao({
   const ehPreventiva = solicitacao.origem === 'preventiva'
   // Anexos vêm do servidor: a foto do defeito é obrigatória, o vídeo é opcional.
   const fotoDefeito = solicitacao.anexos.find((anexo) => anexo.tipo === 'foto')
-  const videoDefeito = solicitacao.anexos.find((anexo) => anexo.tipo === 'video')
+  const videoDefeito = solicitacao.anexos.find(
+    (anexo) => anexo.tipo === 'video',
+  )
 
   return createPortal(
     <div className="animate-fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-      <div className="animate-pop-in w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-pop">
-        <div className="flex items-start justify-between bg-gradient-to-r from-marca-900 to-marca-500 px-6 py-4">
+      <div className="animate-pop-in shadow-pop w-full max-w-md overflow-hidden rounded-2xl bg-white">
+        <div className="from-marca-900 to-marca-500 flex items-start justify-between bg-gradient-to-r px-6 py-4">
           <div>
             <p className="font-mono text-xs font-bold tracking-widest text-white/80 uppercase">
               {contexto}
@@ -73,7 +75,7 @@ export function ModalDetalhesSolicitacao({
               <img
                 src={solicitacao.maquinaFotoUrl}
                 alt={obterNomeAlvo(solicitacao)}
-                className="h-40 w-full rounded-lg object-contain bg-slate-50"
+                className="h-40 w-full rounded-lg bg-slate-50 object-contain"
               />
             </div>
           )}
@@ -81,12 +83,18 @@ export function ModalDetalhesSolicitacao({
           {fotoDefeito && (
             <div>
               <p className="mb-1 font-mono text-xs font-semibold tracking-wide text-slate-400 uppercase">
-                {solicitacao.tipo === 'reparo' ? 'Foto do Item' : 'Foto do Defeito'}
+                {solicitacao.tipo === 'reparo'
+                  ? 'Foto do Item'
+                  : 'Foto do Defeito'}
               </p>
               <img
                 src={fotoDefeito.url}
-                alt={solicitacao.tipo === 'reparo' ? 'Foto do item' : 'Foto do defeito'}
-                className="h-40 w-full rounded-lg object-contain bg-slate-50"
+                alt={
+                  solicitacao.tipo === 'reparo'
+                    ? 'Foto do item'
+                    : 'Foto do defeito'
+                }
+                className="h-40 w-full rounded-lg bg-slate-50 object-contain"
               />
             </div>
           )}
@@ -127,21 +135,15 @@ export function ModalDetalhesSolicitacao({
             <span className="mt-2 font-mono text-xs font-semibold tracking-wide text-slate-400 uppercase">
               Data/Hora
             </span>
-            <p className="text-slate-700">{solicitacao.solicitanteNome ?? 'Sistema (Preventiva)'}</p>
+            <p className="text-slate-700">
+              {solicitacao.solicitanteNome ?? 'Sistema (Preventiva)'}
+            </p>
             <p className="font-mono text-slate-700">
               {formatarDataHora(solicitacao.criadoEm)}
             </p>
 
-            {solicitacao.tipoDefeito && (
-              <>
-                <span className="mt-2 font-mono text-xs font-semibold tracking-wide text-slate-400 uppercase">
-                  Tipo de Defeito
-                </span>
-                <span className="mt-2" />
-                <p className="text-slate-700">{solicitacao.tipoDefeito}</p>
-                <p />
-              </>
-            )}
+            {/* O Tipo de OS (Predial/Corretiva) não aparece aqui: a solicitação nasce sem
+                classificação — quem classifica é quem executa, no encerramento. */}
           </div>
 
           <div>
@@ -155,11 +157,11 @@ export function ModalDetalhesSolicitacao({
 
           <div>
             <p className="font-mono text-xs font-semibold tracking-wide text-slate-400 uppercase">
-              Marcadores de Impacto
+              Impacto na Produção
             </p>
             {solicitacao.impactos.length === 0 ? (
               <p className="mt-1 text-sm text-slate-400">
-                Nenhum marcador informado.
+                Máquina seguiu operando — não acumula tempo de parada.
               </p>
             ) : (
               <div className="mt-1 flex flex-wrap gap-2">
@@ -174,6 +176,22 @@ export function ModalDetalhesSolicitacao({
               </div>
             )}
           </div>
+
+          {solicitacao.status === 'Rejeitada' && solicitacao.motivoRejeicao && (
+            <div className="rounded-lg bg-red-50 px-3 py-2.5">
+              <p className="font-mono text-xs font-semibold tracking-wide text-red-700 uppercase">
+                Motivo da Rejeição
+              </p>
+              <p className="mt-1 text-sm text-red-700">
+                {solicitacao.motivoRejeicao}
+              </p>
+              {solicitacao.rejeitadoPorNome && (
+                <p className="mt-1 text-xs text-red-600/80">
+                  Rejeitada por {solicitacao.rejeitadoPorNome}
+                </p>
+              )}
+            </div>
+          )}
 
           <Botao type="button" variante="secundario" onClick={aoFechar}>
             Fechar

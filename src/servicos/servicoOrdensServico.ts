@@ -1,6 +1,7 @@
 import { api } from './api'
 import { montarQuery } from './montarQuery'
 import type {
+  AcionamentoTerceiroPayload,
   EncerramentoOrdemServicoPayload,
   LancamentoCustoManutencaoPayload,
   OrdemServico,
@@ -26,12 +27,23 @@ export const servicoOrdensServico = {
 
   obterPorId: (id: number) => api.get<OrdemServico>(`/ordens-servico/${id}`),
 
-  iniciar: (id: number) => api.post<OrdemServico>(`/ordens-servico/${id}/iniciar`),
+  iniciar: (id: number) =>
+    api.post<OrdemServico>(`/ordens-servico/${id}/iniciar`),
 
   pausar: (id: number, motivo: string) =>
     api.post<OrdemServico>(`/ordens-servico/${id}/pausar`, { motivo }),
 
-  retomar: (id: number) => api.post<OrdemServico>(`/ordens-servico/${id}/retomar`),
+  retomar: (id: number) =>
+    api.post<OrdemServico>(`/ordens-servico/${id}/retomar`),
+
+  // Encaminha a OS para uma empresa externa sem tirá-la do Técnico: muda o tipo para
+  // 'terceiros' e grava a empresa. O ciclo de vida (iniciar/pausar/retomar/encerrar) segue
+  // igual — ver AcionamentoTerceiroPayload.
+  acionarTerceiro: ({ ordemServicoId, ...dados }: AcionamentoTerceiroPayload) =>
+    api.post<OrdemServico>(
+      `/ordens-servico/${ordemServicoId}/acionar-terceiro`,
+      dados,
+    ),
 
   encerrar: ({ ordemServicoId, ...dados }: EncerramentoOrdemServicoPayload) =>
     api.post<OrdemServico>(`/ordens-servico/${ordemServicoId}/encerrar`, dados),

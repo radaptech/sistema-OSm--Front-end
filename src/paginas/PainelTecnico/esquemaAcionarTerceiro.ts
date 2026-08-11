@@ -1,10 +1,10 @@
 import { z } from 'zod'
 
-export const esquemaAprovarOSTerceiros = z.object({
+export const esquemaAcionarTerceiro = z.object({
   empresaTerceirizadaId: z
     .number('Selecione a empresa terceirizada.')
     .int()
     .positive('Selecione a empresa terceirizada.'),
 })
 
-export type DadosAprovarOSTerceiros = z.infer<typeof esquemaAprovarOSTerceiros>
+export type DadosAcionarTerceiro = z.infer<typeof esquemaAcionarTerceiro>

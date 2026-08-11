@@ -146,7 +146,7 @@ export function DashboardGestor() {
                 </div>
 
                 <GraficoRosca
-                  titulo="Paradas por Tipo de Defeito"
+                  titulo="Paradas por Tipo de OS"
                   dados={segmentosRosca}
                   rotuloCentral="Total"
                   valorCentral={`${indicadores.horasParadaTotal}h`}

@@ -26,7 +26,11 @@ export function ModalDetalhesOS({
   // Nome da loja, do técnico e da empresa vêm resolvidos na própria OS; horas e custo
   // total vêm calculados do servidor.
   const custo = ordemServico.custo
-  const horasParada = ordemServico.horasParada
+  // Sem o marcador "Afeta Produção" a máquina seguiu operando: não há tempo de parada a
+  // reportar, e o servidor nem devolve `horasParada`.
+  const horasParada = ordemServico.afetaProducao
+    ? ordemServico.horasParada
+    : undefined
 
   useEffect(() => {
     if (!autoImprimir) {
@@ -39,8 +43,8 @@ export function ModalDetalhesOS({
 
   return createPortal(
     <div className="animate-fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-      <div className="animate-pop-in w-full max-w-lg overflow-hidden rounded-2xl bg-white shadow-pop">
-        <div className="flex items-start justify-between bg-gradient-to-r from-marca-900 to-marca-500 px-6 py-4 print:hidden">
+      <div className="animate-pop-in shadow-pop w-full max-w-lg overflow-hidden rounded-2xl bg-white">
+        <div className="from-marca-900 to-marca-500 flex items-start justify-between bg-gradient-to-r px-6 py-4 print:hidden">
           <div>
             <p className="font-mono text-xs font-bold tracking-widest text-white/80 uppercase">
               {contexto}
@@ -59,7 +63,10 @@ export function ModalDetalhesOS({
           </button>
         </div>
 
-        <div id="area-impressao-os" className="flex max-h-[75vh] flex-col gap-4 overflow-y-auto p-6">
+        <div
+          id="area-impressao-os"
+          className="flex max-h-[75vh] flex-col gap-4 overflow-y-auto p-6"
+        >
           <div className="hidden print:block">
             <p className="font-mono text-xs font-bold tracking-widest text-slate-500 uppercase">
               Solicitação OS
@@ -74,12 +81,16 @@ export function ModalDetalhesOS({
               <p className="font-display font-semibold text-slate-800">
                 {obterNomeAlvo(ordemServico)}
               </p>
-              <p className="font-mono text-sm text-slate-400">{obterCodigoAlvo(ordemServico)}</p>
+              <p className="font-mono text-sm text-slate-400">
+                {obterCodigoAlvo(ordemServico)}
+              </p>
             </div>
             <div className="flex flex-col items-end gap-1.5">
               <BadgeStatusExecucao status={ordemServico.statusExecucao} />
               <BadgeTipoOS tipo={ordemServico.tipo} />
-              {ordemServico.urgencia && <BadgeUrgencia urgencia={ordemServico.urgencia} />}
+              {ordemServico.urgencia && (
+                <BadgeUrgencia urgencia={ordemServico.urgencia} />
+              )}
             </div>
           </div>
 
@@ -98,22 +109,42 @@ export function ModalDetalhesOS({
             </div>
             <div>
               <p className="font-mono text-xs font-semibold tracking-wide text-slate-400 uppercase">
-                Solicitante
+                Tipo de OS
               </p>
-              <p className="text-slate-700">{ordemServico.solicitanteNome ?? '—'}</p>
+              <p className="text-slate-700">
+                {ordemServico.tipoDefeito ?? '—'}
+              </p>
             </div>
             <div>
               <p className="font-mono text-xs font-semibold tracking-wide text-slate-400 uppercase">
-                {ordemServico.tipo === 'terceiros' ? 'Empresa Terceirizada' : 'Técnico Responsável'}
+                Solicitante
               </p>
               <p className="text-slate-700">
-                {ordemServico.tipo === 'terceiros'
-                  ? (ordemServico.empresaTerceirizadaNome ?? '—')
-                  : ordemServico.tecnicoNome
-                    ? `${ordemServico.tecnicoNome} — ${ordemServico.tecnicoArea ?? ''}`
-                    : '—'}
+                {ordemServico.solicitanteNome ?? '—'}
               </p>
             </div>
+            <div>
+              <p className="font-mono text-xs font-semibold tracking-wide text-slate-400 uppercase">
+                Técnico Responsável
+              </p>
+              <p className="text-slate-700">
+                {ordemServico.tecnicoNome
+                  ? `${ordemServico.tecnicoNome} — ${ordemServico.tecnicoArea ?? ''}`
+                  : '—'}
+              </p>
+            </div>
+            {/* Terceirizada é acréscimo, não substituição: o Técnico continua dono da OS
+                mesmo quando a execução foi de uma empresa externa. */}
+            {ordemServico.empresaTerceirizadaNome && (
+              <div>
+                <p className="font-mono text-xs font-semibold tracking-wide text-slate-400 uppercase">
+                  Empresa Terceirizada
+                </p>
+                <p className="text-slate-700">
+                  {ordemServico.empresaTerceirizadaNome}
+                </p>
+              </div>
+            )}
             <div>
               <p className="font-mono text-xs font-semibold tracking-wide text-slate-400 uppercase">
                 Abertura da OS
@@ -127,8 +158,13 @@ export function ModalDetalhesOS({
                 Início / Término
               </p>
               <p className="font-mono text-slate-700">
-                {ordemServico.dataInicio ? formatarDataHora(ordemServico.dataInicio) : '—'} até{' '}
-                {ordemServico.dataFim ? formatarDataHora(ordemServico.dataFim) : '—'}
+                {ordemServico.dataInicio
+                  ? formatarDataHora(ordemServico.dataInicio)
+                  : '—'}{' '}
+                até{' '}
+                {ordemServico.dataFim
+                  ? formatarDataHora(ordemServico.dataFim)
+                  : '—'}
               </p>
             </div>
           </div>
@@ -149,13 +185,19 @@ export function ModalDetalhesOS({
               <div>
                 <p className="text-xs text-slate-400">Horas Parada</p>
                 <p className="font-mono font-semibold text-slate-700">
-                  {horasParada !== undefined ? `${horasParada}h` : '—'}
+                  {horasParada !== undefined
+                    ? `${horasParada}h`
+                    : ordemServico.afetaProducao
+                      ? '—'
+                      : 'Não se aplica'}
                 </p>
               </div>
               <div>
                 <p className="text-xs text-slate-400">Custo Hora Técnico</p>
                 <p className="font-mono font-semibold text-slate-700">
-                  {custo?.custoHoraTecnico != null ? formatarMoeda(custo.custoHoraTecnico) : '—'}
+                  {custo?.custoHoraTecnico != null
+                    ? formatarMoeda(custo.custoHoraTecnico)
+                    : '—'}
                 </p>
               </div>
               <div>
@@ -167,7 +209,7 @@ export function ModalDetalhesOS({
             </div>
             <div className="mt-3 border-t border-slate-200 pt-3">
               <p className="text-xs text-slate-400">Custo Total</p>
-              <p className="font-mono text-lg font-bold text-marca-800">
+              <p className="text-marca-800 font-mono text-lg font-bold">
                 {custo ? formatarMoeda(custo.custoTotal) : '—'}
               </p>
             </div>
@@ -177,21 +219,27 @@ export function ModalDetalhesOS({
             <p className="font-mono text-xs font-semibold tracking-wide text-slate-400 uppercase">
               Defeito Constatado
             </p>
-            <p className="mt-1 text-sm text-slate-600">{ordemServico.encerramento?.defeitoConstatado ?? '—'}</p>
+            <p className="mt-1 text-sm text-slate-600">
+              {ordemServico.encerramento?.defeitoConstatado ?? '—'}
+            </p>
           </div>
 
           <div>
             <p className="font-mono text-xs font-semibold tracking-wide text-slate-400 uppercase">
               Causa Raiz
             </p>
-            <p className="mt-1 text-sm text-slate-600">{ordemServico.encerramento?.causaRaiz ?? '—'}</p>
+            <p className="mt-1 text-sm text-slate-600">
+              {ordemServico.encerramento?.causaRaiz ?? '—'}
+            </p>
           </div>
 
           <div>
             <p className="font-mono text-xs font-semibold tracking-wide text-slate-400 uppercase">
               Solução Aplicada
             </p>
-            <p className="mt-1 text-sm text-slate-600">{ordemServico.encerramento?.solucao ?? custo?.descricaoServico ?? '—'}</p>
+            <p className="mt-1 text-sm text-slate-600">
+              {ordemServico.encerramento?.solucao ?? '—'}
+            </p>
           </div>
 
           <div className="mt-1 flex gap-3 print:hidden">

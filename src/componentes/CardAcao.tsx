@@ -18,8 +18,9 @@ const ESTILOS_VARIANTE: Record<
   // da OS de Maquinário (verde), sem reaproveitar o âmbar já usado como cor de "alerta"
   // (BadgeOrigemPreventiva, status Pausada) em outras telas.
   reparo: { card: 'bg-orange-600', icone: 'bg-white/15' },
-  // OS Terceiros usa azul para reforçar o caráter "externo/parceiro" do atendimento,
-  // sem repetir verde (Maquinário), laranja (Pequenos Reparos) ou âmbar (alerta).
+  // Azul reforça o caráter "externo/parceiro" do atendimento terceirizado, sem repetir
+  // verde (Maquinário), laranja (Pequenos Reparos) ou âmbar (alerta). Sem uso na Home
+  // desde que terceirizar virou decisão do Técnico — mantido para listagens de OS.
   terceiros: { card: 'bg-blue-600', icone: 'bg-white/15' },
 }
 
@@ -36,7 +37,7 @@ export function CardAcao({
     <button
       type="button"
       onClick={aoClicar}
-      className={`group flex w-full items-center gap-4 rounded-2xl p-4 text-left shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card-hover hover:brightness-110 active:translate-y-0 active:scale-[0.99] ${estilos.card}`}
+      className={`group shadow-card hover:shadow-card-hover flex w-full items-center gap-4 rounded-2xl p-4 text-left transition-all duration-200 hover:-translate-y-0.5 hover:brightness-110 active:translate-y-0 active:scale-[0.99] ${estilos.card}`}
     >
       <span
         className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl transition-transform duration-200 group-hover:scale-105 ${estilos.icone}`}

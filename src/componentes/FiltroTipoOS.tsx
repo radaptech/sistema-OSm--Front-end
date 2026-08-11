@@ -16,7 +16,9 @@ const OPCOES: { valor: TipoOS | ''; rotulo: string }[] = [
 export function FiltroTipoOS({ valor, aoMudar }: FiltroTipoOSProps) {
   return (
     <CampoSelecao
-      rotulo="Tipo de OS"
+      // "Tipo de OS" agora significa Predial/Corretiva (definido no encerramento). Este
+      // filtro é sobre a origem/desfecho da OS — o mesmo nome usado no formulário.
+      rotulo="Tipo de Solicitação"
       value={valor}
       onChange={(evento) => aoMudar(evento.target.value as TipoOS | '')}
     >

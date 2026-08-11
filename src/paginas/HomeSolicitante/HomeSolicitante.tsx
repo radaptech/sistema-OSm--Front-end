@@ -1,4 +1,4 @@
-import { CirclePlus, ClipboardList, Hammer, Truck } from 'lucide-react'
+import { CirclePlus, ClipboardList } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { CabecalhoTopo } from '../../componentes/CabecalhoTopo'
 import { CardAcao } from '../../componentes/CardAcao'
@@ -36,26 +36,14 @@ export function HomeSolicitante() {
             Icone={ClipboardList}
             aoClicar={() => navegar('/minhas-solicitacoes')}
           />
+          {/* Os tipos de OS deixaram de ser caminhos daqui: o Solicitante escolhe
+              Maquinário ou Pequenos Reparos dentro do próprio formulário. */}
           <CardAcao
-            titulo="Nova Solicitação OS Maquinário"
-            descricao="Abra uma nova ordem de serviço para uma máquina"
+            titulo="Nova Solicitação"
+            descricao="Maquinário ou Pequenos Reparos"
             Icone={CirclePlus}
             variante="destaque"
-            aoClicar={() => navegar('/nova-solicitacao-os')}
-          />
-          <CardAcao
-            titulo="Nova Solicitação OS Pequenos Reparos"
-            descricao="Lâmpada queimada, vidro quebrado, piso rachado..."
-            Icone={Hammer}
-            variante="reparo"
-            aoClicar={() => navegar('/nova-solicitacao-reparo')}
-          />
-          <CardAcao
-            titulo="Nova Solicitação OS Terceiros"
-            descricao="Máquina que precisa ser reparada por empresa terceirizada"
-            Icone={Truck}
-            variante="terceiros"
-            aoClicar={() => navegar('/nova-solicitacao-os-terceiros')}
+            aoClicar={() => navegar('/nova-solicitacao')}
           />
         </div>
 

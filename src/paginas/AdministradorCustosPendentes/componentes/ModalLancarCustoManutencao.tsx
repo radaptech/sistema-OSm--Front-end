@@ -4,11 +4,11 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { CheckCircle2, XCircle } from 'lucide-react'
 import { Botao } from '../../../componentes/Botao'
 import { CampoTexto } from '../../../componentes/CampoTexto'
-import { CampoTextoArea } from '../../../componentes/CampoTextoArea'
+import { obterNomeAlvo } from '../../../utilitarios/alvoOS'
 import { formatarDataHora } from '../../../utilitarios/formatarData'
 import type { OrdemServico } from '../../../tipos/ordemServico'
 import {
-  criarEsquemaLancarCustoManutencao,
+  esquemaLancarCustoManutencao,
   type DadosLancarCustoManutencao,
 } from '../esquemaLancarCustoManutencao'
 
@@ -23,20 +23,15 @@ export function ModalLancarCustoManutencao({
   aoFechar,
   aoSalvar,
 }: ModalLancarCustoManutencaoProps) {
-  const ehTerceiros = ordemServico.tipo === 'terceiros'
-
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<DadosLancarCustoManutencao>({
-    resolver: zodResolver(criarEsquemaLancarCustoManutencao(ehTerceiros)),
+    resolver: zodResolver(esquemaLancarCustoManutencao),
     defaultValues: {
-      custoHoraTecnico: ehTerceiros
-        ? undefined
-        : (ordemServico.custo?.custoHoraTecnico ?? undefined),
+      custoHoraTecnico: ordemServico.custo?.custoHoraTecnico ?? undefined,
       custoManutencao: ordemServico.custo?.custoManutencao,
-      descricaoServico: ordemServico.custo?.descricaoServico ?? '',
     },
   })
 
@@ -47,8 +42,8 @@ export function ModalLancarCustoManutencao({
 
   return createPortal(
     <div className="animate-fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-      <div className="animate-pop-in w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-pop">
-        <div className="flex items-start justify-between bg-gradient-to-r from-marca-900 to-marca-500 px-6 py-4">
+      <div className="animate-pop-in shadow-pop w-full max-w-md overflow-hidden rounded-2xl bg-white">
+        <div className="from-marca-900 to-marca-500 flex items-start justify-between bg-gradient-to-r px-6 py-4">
           <div>
             <p className="font-mono text-xs font-bold tracking-widest text-white/80 uppercase">
               Painel do Administrador
@@ -56,7 +51,9 @@ export function ModalLancarCustoManutencao({
             <p className="font-display text-lg font-bold text-white">
               Lançar Custos · OS #{ordemServico.id}
             </p>
-            <p className="text-xs text-white/80">{ordemServico.maquinaNome}</p>
+            <p className="text-xs text-white/80">
+              {obterNomeAlvo(ordemServico)}
+            </p>
           </div>
           <button
             type="button"
@@ -76,39 +73,52 @@ export function ModalLancarCustoManutencao({
           noValidate
           className="flex flex-col gap-5 p-6"
         >
-          {ehTerceiros ? (
-            <div className="text-sm">
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            <div>
               <p className="font-mono text-xs font-semibold tracking-wider text-slate-400 uppercase">
-                Aceita pelo Gestor em
+                Encerrada em
               </p>
               <p className="font-mono text-slate-700">
-                {formatarDataHora(ordemServico.dataAbertura)}
+                {ordemServico.dataFim
+                  ? formatarDataHora(ordemServico.dataFim)
+                  : '—'}
               </p>
             </div>
-          ) : (
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <p className="font-mono text-xs font-semibold tracking-wider text-slate-400 uppercase">
-                  Encerrada em
-                </p>
-                <p className="font-mono text-slate-700">
-                  {ordemServico.dataFim ? formatarDataHora(ordemServico.dataFim) : '—'}
-                </p>
-              </div>
-              <div>
-                <p className="font-mono text-xs font-semibold tracking-wider text-slate-400 uppercase">
-                  Horas Trabalhadas
-                </p>
-                <p className="font-mono text-slate-700">
-                  {ordemServico.horasTrabalhadas !== undefined
-                    ? `${ordemServico.horasTrabalhadas}h`
-                    : '—'}
-                </p>
-              </div>
+            <div>
+              <p className="font-mono text-xs font-semibold tracking-wider text-slate-400 uppercase">
+                Horas Trabalhadas
+              </p>
+              <p className="font-mono text-slate-700">
+                {ordemServico.horasTrabalhadas !== undefined
+                  ? `${ordemServico.horasTrabalhadas}h`
+                  : '—'}
+              </p>
             </div>
+          </div>
+
+          {/* O serviço saiu de uma empresa externa: o valor a conferir é o da nota dela. */}
+          {ordemServico.empresaTerceirizadaNome && (
+            <p className="rounded-lg bg-blue-50 px-3 py-2 text-xs text-blue-800">
+              Serviço executado por{' '}
+              <span className="font-semibold">
+                {ordemServico.empresaTerceirizadaNome}
+              </span>{' '}
+              — confira o Custo de Manutenção contra a nota fiscal da empresa.
+            </p>
           )}
 
-          {ehTerceiros ? (
+          <div className="grid grid-cols-2 gap-4">
+            <CampoTexto
+              rotulo="Custo Hora Técnico (R$)"
+              variante="claro"
+              type="number"
+              min={0}
+              step="0.01"
+              placeholder="Ex: 80.00"
+              mensagemErro={errors.custoHoraTecnico?.message}
+              {...register('custoHoraTecnico', { valueAsNumber: true })}
+            />
+
             <CampoTexto
               rotulo="Custo de Manutenção (R$) *"
               variante="claro"
@@ -119,42 +129,7 @@ export function ModalLancarCustoManutencao({
               mensagemErro={errors.custoManutencao?.message}
               {...register('custoManutencao', { valueAsNumber: true })}
             />
-          ) : (
-            <div className="grid grid-cols-2 gap-4">
-              <CampoTexto
-                rotulo="Custo Hora Técnico (R$)"
-                variante="claro"
-                type="number"
-                min={0}
-                step="0.01"
-                placeholder="Ex: 80.00"
-                mensagemErro={errors.custoHoraTecnico?.message}
-                {...register('custoHoraTecnico', { valueAsNumber: true })}
-              />
-
-              <CampoTexto
-                rotulo="Custo de Manutenção (R$) *"
-                variante="claro"
-                type="number"
-                min={0}
-                step="0.01"
-                placeholder="Ex: 120.00"
-                mensagemErro={errors.custoManutencao?.message}
-                {...register('custoManutencao', { valueAsNumber: true })}
-              />
-            </div>
-          )}
-
-          {ehTerceiros && (
-            <CampoTextoArea
-              rotulo="Descrição do Serviço Realizado *"
-              rows={3}
-              maxLength={500}
-              placeholder="Descreva o que a empresa terceirizada fez, além do valor informado na nota..."
-              mensagemErro={errors.descricaoServico?.message}
-              {...register('descricaoServico')}
-            />
-          )}
+          </div>
 
           <div className="mt-1 flex gap-3">
             <div className="flex-1">
@@ -163,7 +138,10 @@ export function ModalLancarCustoManutencao({
               </Botao>
             </div>
             <div className="flex-1">
-              <Botao type="submit" className="flex items-center justify-center gap-2">
+              <Botao
+                type="submit"
+                className="flex items-center justify-center gap-2"
+              >
                 <CheckCircle2 size={16} />
                 Salvar Custos
               </Botao>
