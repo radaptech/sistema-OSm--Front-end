@@ -122,11 +122,11 @@ export function CadastrarEmpresaTerceirizada() {
               <div className="flex-1">
                 <Botao
                   type="submit"
-                  disabled={isPending}
+                  carregando={isPending}
                   className="flex items-center justify-center gap-2"
                 >
                   <CheckCircle2 size={16} />
-                  {isPending ? 'Salvando...' : emEdicao ? 'Salvar Alterações' : 'Cadastrar'}
+                  {emEdicao ? 'Salvar Alterações' : 'Cadastrar'}
                 </Botao>
               </div>
             </div>

@@ -1,6 +1,11 @@
 import { toast } from 'react-toastify'
+import { simularFetch } from '../mocks/apiMock'
 
 declare const process: { env: Record<string, string | undefined> }
+
+// Modo alternável (ver CLAUDE.md): sem back-end disponível, VITE_USE_MOCKS troca o
+// fetch real por src/mocks/apiMock.ts, mantendo intacta a lógica de erro/401/blob abaixo.
+const USAR_MOCKS = import.meta.env.VITE_USE_MOCKS === 'true'
 
 const URL_HOMOLOGACAO = 'https://homolog-api.sistema-os.com.br'
 
@@ -108,17 +113,19 @@ async function requisitar<T = unknown>(
   let resposta: Response
 
   try {
-    resposta = await fetch(`${obterUrlBase()}${endpoint}`, {
-      method: metodo,
-      credentials: 'include',
-      headers: cabecalhosFinais,
-      body:
-        corpo === undefined
-          ? undefined
-          : ehFormData
-            ? (corpo as FormData)
-            : JSON.stringify(corpo),
-    })
+    resposta = USAR_MOCKS
+      ? await simularFetch(endpoint, metodo, corpo)
+      : await fetch(`${obterUrlBase()}${endpoint}`, {
+          method: metodo,
+          credentials: 'include',
+          headers: cabecalhosFinais,
+          body:
+            corpo === undefined
+              ? undefined
+              : ehFormData
+                ? (corpo as FormData)
+                : JSON.stringify(corpo),
+        })
   } catch {
     const mensagem = 'Não foi possível conectar ao servidor. Verifique sua conexão.'
     toast.error(mensagem)

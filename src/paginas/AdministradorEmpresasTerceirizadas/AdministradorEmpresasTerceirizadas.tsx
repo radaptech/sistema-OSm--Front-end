@@ -7,9 +7,11 @@ import { CabecalhoSubpagina } from '../../componentes/CabecalhoSubpagina'
 import { CampoBusca } from '../../componentes/CampoBusca'
 import { ModalConfirmarExclusao } from '../../componentes/ModalConfirmarExclusao'
 import { Paginacao } from '../../componentes/Paginacao'
+import { EsqueletoLista, EsqueletoLinhaCadastro } from '../../componentes/Esqueleto'
 import { useEmpresasTerceirizadas } from '../../hooks/useEmpresasTerceirizadas'
 import { servicoEmpresasTerceirizadas } from '../../servicos/servicoEmpresasTerceirizadas'
 import type { EmpresaTerceirizada } from '../../tipos/empresaTerceirizada'
+import { atrasoEntrada } from '../../utilitarios/atrasoEntrada'
 
 const TAMANHO_PAGINA = 10
 
@@ -91,9 +93,9 @@ export function AdministradorEmpresasTerceirizadas() {
 
         <div className="flex flex-1 flex-col gap-3 lg:grid lg:grid-cols-2 lg:content-start lg:items-start lg:gap-4">
           {isLoading && (
-            <p className="py-10 text-center text-sm text-slate-300 lg:col-span-2">
-              Carregando...
-            </p>
+            <EsqueletoLista quantidade={4}>
+              <EsqueletoLinhaCadastro />
+            </EsqueletoLista>
           )}
 
           {!isLoading && empresasFiltradas.length === 0 && (
@@ -103,10 +105,11 @@ export function AdministradorEmpresasTerceirizadas() {
             </div>
           )}
 
-          {empresasPaginadas.map((empresa) => (
+          {empresasPaginadas.map((empresa, indice) => (
             <div
               key={empresa.id}
-              className="flex flex-col gap-3 rounded-xl bg-white p-4 shadow-card transition-shadow duration-200 hover:shadow-card-hover sm:flex-row sm:items-center sm:justify-between"
+              style={atrasoEntrada(indice)}
+              className="animate-surgir flex flex-col gap-3 rounded-xl bg-white p-4 shadow-card transition-shadow duration-200 hover:shadow-card-hover sm:flex-row sm:items-center sm:justify-between"
             >
               <div className="flex min-w-0 items-center gap-3">
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-r from-marca-900 to-marca-500 text-white">

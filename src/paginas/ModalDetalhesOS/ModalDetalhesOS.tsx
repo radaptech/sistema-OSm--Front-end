@@ -9,6 +9,7 @@ import { obterNomeAlvo, obterCodigoAlvo } from '../../utilitarios/alvoOS'
 import { formatarDataHora } from '../../utilitarios/formatarData'
 import { formatarMoeda } from '../../utilitarios/formatarMoeda'
 import type { OrdemServico } from '../../tipos/ordemServico'
+import { useSaidaAnimada } from '../../hooks/useSaidaAnimada'
 
 interface ModalDetalhesOSProps {
   ordemServico: OrdemServico
@@ -23,6 +24,8 @@ export function ModalDetalhesOS({
   autoImprimir = false,
   contexto = 'Painel do Administrador',
 }: ModalDetalhesOSProps) {
+  const { fechar, classeFundo, classeCartao } = useSaidaAnimada(aoFechar)
+
   // Nome da loja, do técnico e da empresa vêm resolvidos na própria OS; horas e custo
   // total vêm calculados do servidor.
   const custo = ordemServico.custo
@@ -42,8 +45,8 @@ export function ModalDetalhesOS({
   }, [autoImprimir])
 
   return createPortal(
-    <div className="animate-fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-      <div className="animate-pop-in shadow-pop w-full max-w-lg overflow-hidden rounded-2xl bg-white">
+    <div className={`${classeFundo} fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm`}>
+      <div className={`${classeCartao} shadow-pop w-full max-w-lg overflow-hidden rounded-2xl bg-white`}>
         <div className="from-marca-900 to-marca-500 flex items-start justify-between bg-gradient-to-r px-6 py-4 print:hidden">
           <div>
             <p className="font-mono text-xs font-bold tracking-widest text-white/80 uppercase">
@@ -56,7 +59,7 @@ export function ModalDetalhesOS({
           <button
             type="button"
             aria-label="Fechar"
-            onClick={aoFechar}
+            onClick={fechar}
             className="text-white/90 transition hover:text-white"
           >
             <XCircle size={22} />
@@ -213,6 +216,21 @@ export function ModalDetalhesOS({
                 {custo ? formatarMoeda(custo.custoTotal) : '—'}
               </p>
             </div>
+            {custo?.numeroNotaFiscal && (
+              <div className="mt-3 border-t border-slate-200 pt-3">
+                <p className="text-xs text-slate-400">Nota Fiscal</p>
+                <p className="text-sm font-semibold text-slate-700">
+                  {custo.numeroNotaFiscal}
+                  {custo.serieNotaFiscal ? ` / série ${custo.serieNotaFiscal}` : ''}
+                </p>
+              </div>
+            )}
+            {custo?.descricaoServicoTerceiro && (
+              <div className="mt-3 border-t border-slate-200 pt-3">
+                <p className="text-xs text-slate-400">Descrição do Serviço</p>
+                <p className="text-sm text-slate-700">{custo.descricaoServicoTerceiro}</p>
+              </div>
+            )}
           </div>
 
           <div>
@@ -244,7 +262,7 @@ export function ModalDetalhesOS({
 
           <div className="mt-1 flex gap-3 print:hidden">
             <div className="flex-1">
-              <Botao type="button" variante="secundario" onClick={aoFechar}>
+              <Botao type="button" variante="secundario" onClick={fechar}>
                 Fechar
               </Botao>
             </div>

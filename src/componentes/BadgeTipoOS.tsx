@@ -29,7 +29,7 @@ export function BadgeTipoOS({ tipo }: BadgeTipoOSProps) {
 
   return (
     <span
-      className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 font-mono text-xs font-semibold whitespace-nowrap ring-1 ring-inset ${estilo}`}
+      className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1 font-mono text-xs font-semibold whitespace-nowrap ring-1 ring-inset ${estilo}`}
     >
       <Icone size={12} />
       {rotulo}

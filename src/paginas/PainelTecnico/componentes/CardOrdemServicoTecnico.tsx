@@ -9,6 +9,7 @@ import {
 import { BadgeAfetaProducao } from '../../../componentes/BadgeAfetaProducao'
 import { BadgeStatusExecucao } from '../../../componentes/BadgeStatusExecucao'
 import { BadgeUrgencia } from '../../../componentes/BadgeUrgencia'
+import { obterNomeAlvo } from '../../../utilitarios/alvoOS'
 import { formatarDataHora } from '../../../utilitarios/formatarData'
 import type { OrdemServico } from '../../../tipos/ordemServico'
 
@@ -71,11 +72,13 @@ export function CardOrdemServicoTecnico({
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <span className="font-display font-semibold text-slate-800">
-              {ordemServico.maquinaNome}
+              {obterNomeAlvo(ordemServico)}
             </span>
-            <span className="font-mono text-sm text-slate-400">
-              · {ordemServico.maquinaCodigo}
-            </span>
+            {ordemServico.maquinaCodigo && (
+              <span className="font-mono text-sm text-slate-400">
+                · {ordemServico.maquinaCodigo}
+              </span>
+            )}
             <BadgeStatusExecucao status={ordemServico.statusExecucao} />
             {ordemServico.urgencia && (
               <BadgeUrgencia urgencia={ordemServico.urgencia} />

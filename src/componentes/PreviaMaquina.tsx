@@ -1,4 +1,5 @@
 import { PackageSearch } from 'lucide-react'
+import { ImagemProgressiva } from './ImagemProgressiva'
 import type { Maquina } from '../tipos/maquina'
 
 interface PreviaMaquinaProps {
@@ -9,7 +10,7 @@ export function PreviaMaquina({ maquina }: PreviaMaquinaProps) {
   return (
     <div className="flex h-40 w-full items-center justify-center overflow-hidden rounded-lg border border-dashed border-slate-300 bg-slate-50 transition-colors sm:h-48">
       {maquina?.fotoUrl ? (
-        <img
+        <ImagemProgressiva
           src={maquina.fotoUrl}
           alt={maquina.nome}
           className="h-full w-full object-contain"

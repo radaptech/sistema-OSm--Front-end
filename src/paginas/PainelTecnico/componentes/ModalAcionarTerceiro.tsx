@@ -11,6 +11,7 @@ import {
   esquemaAcionarTerceiro,
   type DadosAcionarTerceiro,
 } from '../esquemaAcionarTerceiro'
+import { useSaidaAnimada } from '../../../hooks/useSaidaAnimada'
 
 interface ModalAcionarTerceiroProps {
   ordemServico: OrdemServico
@@ -23,6 +24,8 @@ export function ModalAcionarTerceiro({
   aoFechar,
   aoSalvar,
 }: ModalAcionarTerceiroProps) {
+  const { fechar, classeFundo, classeCartao } = useSaidaAnimada(aoFechar)
+
   const { data: empresas = [], isLoading } = useEmpresasTerceirizadas()
 
   const {
@@ -38,12 +41,12 @@ export function ModalAcionarTerceiro({
 
   function aoSalvarFormulario(dados: DadosAcionarTerceiro) {
     aoSalvar(dados)
-    aoFechar()
+    fechar()
   }
 
   return createPortal(
-    <div className="animate-fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-      <div className="animate-pop-in shadow-pop w-full max-w-md overflow-hidden rounded-2xl bg-white">
+    <div className={`${classeFundo} fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm`}>
+      <div className={`${classeCartao} shadow-pop w-full max-w-md overflow-hidden rounded-2xl bg-white`}>
         <div className="flex items-start justify-between bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-4">
           <div>
             <p className="font-mono text-xs font-bold tracking-widest text-white/80 uppercase">
@@ -59,7 +62,7 @@ export function ModalAcionarTerceiro({
           <button
             type="button"
             aria-label="Fechar"
-            onClick={aoFechar}
+            onClick={fechar}
             className="text-white/90 transition hover:text-white"
           >
             <XCircle size={22} />
@@ -106,7 +109,7 @@ export function ModalAcionarTerceiro({
 
           <div className="mt-1 flex gap-3">
             <div className="flex-1">
-              <Botao type="button" variante="secundario" onClick={aoFechar}>
+              <Botao type="button" variante="secundario" onClick={fechar}>
                 Cancelar
               </Botao>
             </div>

@@ -143,6 +143,11 @@ export interface CustoOrdemServico {
   custoHoraTecnico: number | null
   custoManutencao: number
   custoTotal: number
+  // Preenchidos pelo Administrador só em OS de terceiros (ver AcionamentoTerceiroPayload),
+  // para auditoria do valor lançado em `custoManutencao` contra a nota fiscal da empresa.
+  numeroNotaFiscal?: string
+  serieNotaFiscal?: string
+  descricaoServicoTerceiro?: string
   lancadoPorNome: string
   lancadoEm: string
 }
@@ -210,7 +215,10 @@ export interface EncerramentoOrdemServicoPayload {
   defeitoConstatado: string
   causaRaiz: string
   solucao: string
-  custoHoraTecnico: number
+  // Só existe para tipo === 'maquinario'. Ausente em 'terceiros' (quem trabalhou foi a
+  // empresa externa, não o Técnico — ver AcionamentoTerceiroPayload) e em 'reparo'
+  // (Pequenos Reparos não cobram hora técnica, só o Custo de Manutenção).
+  custoHoraTecnico?: number
   custoManutencao: number
 }
 
@@ -218,6 +226,9 @@ export interface LancamentoCustoManutencaoPayload {
   ordemServicoId: number
   custoManutencao: number
   custoHoraTecnico?: number
+  numeroNotaFiscal?: string
+  serieNotaFiscal?: string
+  descricaoServicoTerceiro?: string
 }
 
 // Contadores da Home do Solicitante.

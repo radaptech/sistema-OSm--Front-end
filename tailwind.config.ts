@@ -33,6 +33,18 @@ export default {
       backgroundSize: {
         grade: '28px 28px',
       },
+      // Curvas próprias — `ease`/`ease-out` do navegador são fracas demais e deixam a
+      // animação com aquele ar de "template". Ver docs/principios-de-motion.md.
+      transitionTimingFunction: {
+        entrada: 'cubic-bezier(0.22, 1, 0.36, 1)',
+        saida: 'cubic-bezier(0.4, 0, 1, 1)',
+        painel: 'cubic-bezier(0.32, 0.72, 0, 1)',
+      },
+      transitionDuration: {
+        instantaneo: '120ms',
+        rapido: '160ms',
+        padrao: '200ms',
+      },
       keyframes: {
         'fade-in': {
           from: { opacity: '0' },
@@ -42,10 +54,37 @@ export default {
           from: { opacity: '0', transform: 'scale(0.96) translateY(4px)' },
           to: { opacity: '1', transform: 'scale(1) translateY(0)' },
         },
+        // Saída é sempre mais discreta que a entrada: a atenção de quem fecha já foi
+        // para outro lugar, então não vale gastar movimento nela.
+        'fade-out': {
+          from: { opacity: '1' },
+          to: { opacity: '0' },
+        },
+        'pop-out': {
+          from: { opacity: '1', transform: 'scale(1) translateY(0)' },
+          to: { opacity: '0', transform: 'scale(0.98) translateY(2px)' },
+        },
+        // Entrada padrão de conteúdo (cards, blocos de lista): opacidade + subida curta
+        // + desfoque, o que disfarça o "salto" de um item aparecendo do nada.
+        'surgir': {
+          from: { opacity: '0', transform: 'translateY(6px)', filter: 'blur(3px)' },
+          to: { opacity: '1', transform: 'translateY(0)', filter: 'blur(0)' },
+        },
+        // Varredura do skeleton. Termina fora da área visível: com
+        // prefers-reduced-motion o navegador congela no estado final e sobra apenas o
+        // bloco cinza estático, que é exatamente o comportamento desejado.
+        'varrer': {
+          from: { transform: 'translateX(-100%)' },
+          to: { transform: 'translateX(100%)' },
+        },
       },
       animation: {
-        'fade-in': 'fade-in 0.15s ease-out',
-        'pop-in': 'pop-in 0.18s ease-out',
+        'fade-in': 'fade-in 0.15s cubic-bezier(0.22, 1, 0.36, 1)',
+        'pop-in': 'pop-in 0.18s cubic-bezier(0.32, 0.72, 0, 1)',
+        'fade-out': 'fade-out 0.12s cubic-bezier(0.4, 0, 1, 1) forwards',
+        'pop-out': 'pop-out 0.12s cubic-bezier(0.4, 0, 1, 1) forwards',
+        surgir: 'surgir 0.2s cubic-bezier(0.22, 1, 0.36, 1) both',
+        varrer: 'varrer 1.4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
       },
     },
   },

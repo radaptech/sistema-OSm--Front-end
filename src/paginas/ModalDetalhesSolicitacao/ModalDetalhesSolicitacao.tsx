@@ -4,9 +4,11 @@ import { Botao } from '../../componentes/Botao'
 import { BadgeOrigemPreventiva } from '../../componentes/BadgeOrigemPreventiva'
 import { BadgeStatus } from '../../componentes/BadgeStatus'
 import { BadgeTipoOS } from '../../componentes/BadgeTipoOS'
+import { ImagemProgressiva } from '../../componentes/ImagemProgressiva'
 import { obterNomeAlvo, obterCodigoAlvo } from '../../utilitarios/alvoOS'
 import { formatarDataHora } from '../../utilitarios/formatarData'
 import type { SolicitacaoOS } from '../../tipos/ordemServico'
+import { useSaidaAnimada } from '../../hooks/useSaidaAnimada'
 
 interface ModalDetalhesSolicitacaoProps {
   solicitacao: SolicitacaoOS
@@ -19,6 +21,8 @@ export function ModalDetalhesSolicitacao({
   contexto,
   aoFechar,
 }: ModalDetalhesSolicitacaoProps) {
+  const { fechar, classeFundo, classeCartao } = useSaidaAnimada(aoFechar)
+
   const ehPreventiva = solicitacao.origem === 'preventiva'
   // Anexos vêm do servidor: a foto do defeito é obrigatória, o vídeo é opcional.
   const fotoDefeito = solicitacao.anexos.find((anexo) => anexo.tipo === 'foto')
@@ -27,8 +31,8 @@ export function ModalDetalhesSolicitacao({
   )
 
   return createPortal(
-    <div className="animate-fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-      <div className="animate-pop-in shadow-pop w-full max-w-md overflow-hidden rounded-2xl bg-white">
+    <div className={`${classeFundo} fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm`}>
+      <div className={`${classeCartao} shadow-pop w-full max-w-md overflow-hidden rounded-2xl bg-white`}>
         <div className="from-marca-900 to-marca-500 flex items-start justify-between bg-gradient-to-r px-6 py-4">
           <div>
             <p className="font-mono text-xs font-bold tracking-widest text-white/80 uppercase">
@@ -41,7 +45,7 @@ export function ModalDetalhesSolicitacao({
           <button
             type="button"
             aria-label="Fechar"
-            onClick={aoFechar}
+            onClick={fechar}
             className="text-white/90 transition hover:text-white"
           >
             <XCircle size={22} />
@@ -72,7 +76,7 @@ export function ModalDetalhesSolicitacao({
               <p className="mb-1 font-mono text-xs font-semibold tracking-wide text-slate-400 uppercase">
                 Foto da Máquina (cadastro)
               </p>
-              <img
+              <ImagemProgressiva
                 src={solicitacao.maquinaFotoUrl}
                 alt={obterNomeAlvo(solicitacao)}
                 className="h-40 w-full rounded-lg bg-slate-50 object-contain"
@@ -87,7 +91,7 @@ export function ModalDetalhesSolicitacao({
                   ? 'Foto do Item'
                   : 'Foto do Defeito'}
               </p>
-              <img
+              <ImagemProgressiva
                 src={fotoDefeito.url}
                 alt={
                   solicitacao.tipo === 'reparo'
@@ -193,7 +197,7 @@ export function ModalDetalhesSolicitacao({
             </div>
           )}
 
-          <Botao type="button" variante="secundario" onClick={aoFechar}>
+          <Botao type="button" variante="secundario" onClick={fechar}>
             Fechar
           </Botao>
         </div>

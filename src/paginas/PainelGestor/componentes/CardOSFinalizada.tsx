@@ -1,5 +1,6 @@
 import { Eye, Printer } from 'lucide-react'
 import { BadgeTipoOS } from '../../../componentes/BadgeTipoOS'
+import { obterNomeAlvo } from '../../../utilitarios/alvoOS'
 import { formatarDataHora } from '../../../utilitarios/formatarData'
 import { formatarMoeda } from '../../../utilitarios/formatarMoeda'
 import type { OrdemServico } from '../../../tipos/ordemServico'
@@ -26,11 +27,13 @@ export function CardOSFinalizada({
             #{ordemServico.id}
           </span>
           <span className="truncate font-semibold text-slate-800">
-            {ordemServico.maquinaNome}
+            {obterNomeAlvo(ordemServico)}
           </span>
-          <span className="font-mono text-sm text-slate-400">
-            · {ordemServico.maquinaCodigo}
-          </span>
+          {ordemServico.maquinaCodigo && (
+            <span className="font-mono text-sm text-slate-400">
+              · {ordemServico.maquinaCodigo}
+            </span>
+          )}
           <BadgeTipoOS tipo={ordemServico.tipo} />
         </div>
         <p className="mt-1 truncate font-mono text-xs text-slate-400">

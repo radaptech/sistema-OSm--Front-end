@@ -11,9 +11,10 @@ import { agoraParaBackend } from '../../utilitarios/dataBackend'
 import { formatarDataHora } from '../../utilitarios/formatarData'
 import { tiposDefeito, type OrdemServico } from '../../tipos/ordemServico'
 import {
-  esquemaEncerrarOrdemServico,
+  criarEsquemaEncerrarOrdemServico,
   type DadosEncerrarOrdemServico,
 } from './esquemaEncerrarOrdemServico'
+import { useSaidaAnimada } from '../../hooks/useSaidaAnimada'
 
 interface DadosConfirmarEncerramento extends DadosEncerrarOrdemServico {
   dataInicio: string
@@ -32,8 +33,13 @@ export function ModalEncerrarOrdemServico({
   aoFechar,
   aoSalvar,
 }: ModalEncerrarOrdemServicoProps) {
+  const { fechar, classeFundo, classeCartao } = useSaidaAnimada(aoFechar)
+
   const dataInicio = ordemServico.dataInicio ?? ordemServico.dataAbertura
   const agora = agoraParaBackend()
+  // Só "Maquinário" cobra Custo Hora Técnico — em 'terceiros' quem trabalhou foi a
+  // empresa externa, em 'reparo' o serviço é pequeno demais para justificar hora técnica.
+  const exigirCustoHoraTecnico = ordemServico.tipo === 'maquinario'
 
   // Prévia local, só para o Técnico conferir antes de encerrar. Os valores definitivos
   // são calculados pelo servidor a partir do histórico de pausas e voltam na resposta.
@@ -49,7 +55,7 @@ export function ModalEncerrarOrdemServico({
     handleSubmit,
     formState: { errors },
   } = useForm<DadosEncerrarOrdemServico>({
-    resolver: zodResolver(esquemaEncerrarOrdemServico),
+    resolver: zodResolver(criarEsquemaEncerrarOrdemServico(exigirCustoHoraTecnico)),
     defaultValues: {
       tipoDefeito: undefined,
       defeitoConstatado: '',
@@ -67,12 +73,12 @@ export function ModalEncerrarOrdemServico({
       dataFim: agora,
       horasTrabalhadas,
     })
-    aoFechar()
+    fechar()
   }
 
   return createPortal(
-    <div className="animate-fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-      <div className="animate-pop-in shadow-pop w-full max-w-md overflow-hidden rounded-2xl bg-white">
+    <div className={`${classeFundo} fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm`}>
+      <div className={`${classeCartao} shadow-pop w-full max-w-md overflow-hidden rounded-2xl bg-white`}>
         <div className="from-marca-900 to-marca-500 flex items-start justify-between bg-gradient-to-r px-6 py-4">
           <div>
             <p className="font-mono text-xs font-bold tracking-widest text-white/80 uppercase">
@@ -86,7 +92,7 @@ export function ModalEncerrarOrdemServico({
           <button
             type="button"
             aria-label="Fechar"
-            onClick={aoFechar}
+            onClick={fechar}
             className="text-white/90 transition hover:text-white"
           >
             <XCircle size={22} />
@@ -137,20 +143,42 @@ export function ModalEncerrarOrdemServico({
               : 'Horas Trabalhadas desconta o tempo em que a OS ficou pausada (ex: esperando peça). Esta OS não foi marcada como "Afeta Produção": a máquina seguiu operando, então não acumula tempo de parada.'}
           </p>
 
-          <div className="grid grid-cols-2 gap-4">
-            <CampoTexto
-              rotulo="Custo Hora Técnico (R$) *"
-              variante="claro"
-              type="number"
-              min={0}
-              step="0.01"
-              placeholder="Ex: 80.00"
-              mensagemErro={errors.custoHoraTecnico?.message}
-              {...register('custoHoraTecnico', { valueAsNumber: true })}
-            />
+          {ordemServico.tipo === 'terceiros' && (
+            <p className="rounded-lg bg-blue-50 px-3 py-2.5 text-xs text-blue-700">
+              Serviço executado por {ordemServico.empresaTerceirizadaNome ?? 'empresa terceirizada'}:
+              não há Custo Hora Técnico a lançar aqui, só o Custo de Manutenção (confira contra a
+              nota fiscal da empresa).
+            </p>
+          )}
+
+          {ordemServico.tipo === 'reparo' && (
+            <p className="rounded-lg bg-slate-100 px-3 py-2.5 text-xs text-slate-600">
+              Pequenos Reparos não têm Custo Hora Técnico — informe apenas o Custo de Manutenção.
+            </p>
+          )}
+
+          {/* items-end: se um rótulo quebrar em duas linhas, os inputs continuam
+              alinhados pela base em vez de um descer sozinho. */}
+          <div
+            className={`grid items-end gap-4 ${
+              exigirCustoHoraTecnico ? 'grid-cols-2' : 'grid-cols-1'
+            }`}
+          >
+            {exigirCustoHoraTecnico && (
+              <CampoTexto
+                rotulo="Custo Hora Técnico (R$) *"
+                variante="claro"
+                type="number"
+                min={0}
+                step="0.01"
+                placeholder="Ex: 80.00"
+                mensagemErro={errors.custoHoraTecnico?.message}
+                {...register('custoHoraTecnico', { valueAsNumber: true })}
+              />
+            )}
 
             <CampoTexto
-              rotulo="Custo de Manutenção (R$) *"
+              rotulo="Custo Manutenção (R$) *"
               variante="claro"
               type="number"
               min={0}
@@ -205,7 +233,7 @@ export function ModalEncerrarOrdemServico({
 
           <div className="mt-1 flex gap-3">
             <div className="flex-1">
-              <Botao type="button" variante="secundario" onClick={aoFechar}>
+              <Botao type="button" variante="secundario" onClick={fechar}>
                 Cancelar
               </Botao>
             </div>

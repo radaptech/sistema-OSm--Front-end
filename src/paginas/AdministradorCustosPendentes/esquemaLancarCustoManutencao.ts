@@ -13,6 +13,20 @@ export const esquemaLancarCustoManutencao = z.object({
     .number('Informe o custo de manutenção.')
     .nonnegative('O custo não pode ser negativo.')
     .max(999999, 'Informe um valor de até R$ 999.999.'),
+  // Só fazem sentido em OS de terceiros: dados da nota fiscal da empresa, para o
+  // Administrador registrar o que embasou o Custo de Manutenção lançado.
+  numeroNotaFiscal: z
+    .string()
+    .max(20, 'Informe até 20 caracteres.')
+    .optional(),
+  serieNotaFiscal: z
+    .string()
+    .max(10, 'Informe até 10 caracteres.')
+    .optional(),
+  descricaoServicoTerceiro: z
+    .string()
+    .max(300, 'A descrição deve ter no máximo 300 caracteres.')
+    .optional(),
 })
 
 export type DadosLancarCustoManutencao = z.infer<

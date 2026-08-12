@@ -3,6 +3,8 @@ import { Inbox, SearchX } from 'lucide-react'
 import { CabecalhoPagina } from '../../componentes/CabecalhoPagina'
 import { useSolicitacoes } from '../../hooks/useSolicitacoes'
 import { Paginacao } from '../../componentes/Paginacao'
+import { EsqueletoLista, EsqueletoCardOS } from '../../componentes/Esqueleto'
+import { atrasoEntrada } from '../../utilitarios/atrasoEntrada'
 import { BarraFiltros, type FiltroStatus } from './componentes/BarraFiltros'
 import { CardSolicitacao } from './componentes/CardSolicitacao'
 
@@ -60,9 +62,9 @@ export function MinhasSolicitacoes() {
           }`}
         >
           {isLoading && (
-            <p className="py-10 text-center text-sm text-slate-300">
-              Carregando solicitações...
-            </p>
+            <EsqueletoLista quantidade={4}>
+              <EsqueletoCardOS />
+            </EsqueletoLista>
           )}
 
           {isError && (
@@ -82,8 +84,14 @@ export function MinhasSolicitacoes() {
             </div>
           )}
 
-          {solicitacoes.map((solicitacao) => (
-            <CardSolicitacao key={solicitacao.id} solicitacao={solicitacao} />
+          {solicitacoes.map((solicitacao, indice) => (
+            <div
+              key={solicitacao.id}
+              style={atrasoEntrada(indice)}
+              className="animate-surgir"
+            >
+              <CardSolicitacao solicitacao={solicitacao} />
+            </div>
           ))}
         </div>
 

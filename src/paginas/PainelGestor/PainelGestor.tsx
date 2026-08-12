@@ -4,6 +4,7 @@ import { toast } from 'react-toastify'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { CabecalhoTopo } from '../../componentes/CabecalhoTopo'
 import { FiltroTipoOS } from '../../componentes/FiltroTipoOS'
+import { EsqueletoLista, EsqueletoCardOS } from '../../componentes/Esqueleto'
 import { useEstadoAutenticacao } from '../../estado/estadoAutenticacao'
 import { useTodasSolicitacoes } from '../../hooks/useTodasSolicitacoes'
 import { useOrdensServicoTodas } from '../../hooks/useOrdensServicoTodas'
@@ -303,9 +304,9 @@ export function PainelGestor() {
         {abaSelecionada === 'solicitacoes' && (
           <div className="flex flex-col gap-6">
             {carregandoSolicitacoes && (
-              <p className="py-10 text-center text-sm text-slate-300">
-                Carregando...
-              </p>
+              <EsqueletoLista quantidade={3}>
+                <EsqueletoCardOS />
+              </EsqueletoLista>
             )}
 
             {!carregandoSolicitacoes &&
@@ -344,9 +345,9 @@ export function PainelGestor() {
         {abaSelecionada === 'os-em-andamento' && (
           <div className="flex flex-col gap-6">
             {carregandoOrdensServico && (
-              <p className="py-10 text-center text-sm text-slate-300">
-                Carregando...
-              </p>
+              <EsqueletoLista quantidade={3}>
+                <EsqueletoCardOS />
+              </EsqueletoLista>
             )}
 
             {!carregandoOrdensServico &&
@@ -367,9 +368,9 @@ export function PainelGestor() {
         {abaSelecionada === 'os-finalizadas' && (
           <div className="flex flex-col gap-6">
             {carregandoOrdensServico && (
-              <p className="py-10 text-center text-sm text-slate-300">
-                Carregando...
-              </p>
+              <EsqueletoLista quantidade={3}>
+                <EsqueletoCardOS />
+              </EsqueletoLista>
             )}
 
             {!carregandoOrdensServico &&
@@ -398,9 +399,9 @@ export function PainelGestor() {
         {abaSelecionada === 'manutencao-preventiva' && (
           <div className="flex flex-col gap-6">
             {carregandoPreventivas && (
-              <p className="py-10 text-center text-sm text-slate-300">
-                Carregando...
-              </p>
+              <EsqueletoLista quantidade={3}>
+                <EsqueletoCardOS />
+              </EsqueletoLista>
             )}
 
             {!carregandoPreventivas &&

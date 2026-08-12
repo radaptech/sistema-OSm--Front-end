@@ -1,6 +1,7 @@
 import { Inbox, Store, Tag } from 'lucide-react'
 import type { ReactNode } from 'react'
 import type { GrupoAcessoGestorPorLoja } from '../../../utilitarios/acessoGestor'
+import { atrasoEntrada } from '../../../utilitarios/atrasoEntrada'
 
 interface BlocoLojaProps<T> {
   grupo: GrupoAcessoGestorPorLoja<T>
@@ -43,7 +44,13 @@ export function BlocoLoja<T>({
           ) : (
             <div className="flex flex-col gap-3">
               {subgrupo.itens.map((item, indice) => (
-                <div key={obterChave(item)}>{renderItem(item, indice)}</div>
+                <div
+                  key={obterChave(item)}
+                  style={atrasoEntrada(indice)}
+                  className="animate-surgir"
+                >
+                  {renderItem(item, indice)}
+                </div>
               ))}
             </div>
           )}

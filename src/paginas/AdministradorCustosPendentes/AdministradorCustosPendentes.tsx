@@ -7,9 +7,12 @@ import { BadgeTipoOS } from '../../componentes/BadgeTipoOS'
 import { CampoBusca } from '../../componentes/CampoBusca'
 import { CampoSelecao } from '../../componentes/CampoSelecao'
 import { FiltroTipoOS } from '../../componentes/FiltroTipoOS'
+import { EsqueletoLista, EsqueletoCardOS } from '../../componentes/Esqueleto'
 import { useLojas } from '../../hooks/useLojas'
 import { useOrdensServicoTodas } from '../../hooks/useOrdensServicoTodas'
 import { servicoOrdensServico } from '../../servicos/servicoOrdensServico'
+import { obterNomeAlvo } from '../../utilitarios/alvoOS'
+import { atrasoEntrada } from '../../utilitarios/atrasoEntrada'
 import { formatarDataHora } from '../../utilitarios/formatarData'
 import { formatarMoeda } from '../../utilitarios/formatarMoeda'
 import type { OrdemServico, TipoOS } from '../../tipos/ordemServico'
@@ -99,11 +102,14 @@ export function AdministradorCustosPendentes() {
           </div>
         </div>
 
-        <div className="flex flex-1 flex-col gap-3 lg:grid lg:grid-cols-2 lg:content-start lg:items-start lg:gap-4">
+        {/* Sem items-start os cards da mesma linha esticam para a altura do mais alto —
+            os que têm menos informação (sem Nota Fiscal, sem Custo Hora) param de deixar
+            um degrau na grade. */}
+        <div className="flex flex-1 flex-col gap-3 lg:grid lg:grid-cols-2 lg:content-start lg:gap-4">
           {isLoading && (
-            <p className="py-10 text-center text-sm text-slate-300 lg:col-span-2">
-              Carregando...
-            </p>
+            <EsqueletoLista quantidade={4}>
+              <EsqueletoCardOS />
+            </EsqueletoLista>
           )}
 
           {!isLoading && ordensConcluidas.length === 0 && (
@@ -115,48 +121,78 @@ export function AdministradorCustosPendentes() {
             </div>
           )}
 
-          {ordensConcluidas.map((ordem) => {
+          {ordensConcluidas.map((ordem, indice) => {
+            const mostrarCustoHoraTecnico = ordem.tipo === 'maquinario'
+
             return (
               <div
                 key={ordem.id}
-                className="shadow-card hover:shadow-card-hover flex flex-col gap-3 rounded-xl bg-white p-4 transition-shadow duration-200 sm:flex-row sm:items-center sm:justify-between lg:[&:last-child:nth-child(odd)]:col-span-2"
+                style={atrasoEntrada(indice)}
+                className="animate-surgir shadow-card hover:shadow-card-hover flex flex-col gap-3 rounded-xl bg-white p-4 transition-shadow duration-200 sm:flex-row sm:items-start sm:justify-between"
               >
                 <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2">
+                  {/* Uma linha só: sem flex-wrap o badge nunca cai para a linha de baixo,
+                      então todo card tem a mesma altura de cabeçalho e a coluna alinha. */}
+                  <div className="flex items-center gap-2">
                     <span className="from-marca-900 to-marca-500 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-r font-mono text-sm font-bold text-white">
                       #{ordem.id}
                     </span>
-                    <span className="font-semibold text-slate-800">
-                      {ordem.maquinaNome}
+                    <span className="truncate font-semibold text-slate-800">
+                      {obterNomeAlvo(ordem)}
                     </span>
-                    <span className="font-mono text-sm text-slate-400">
-                      · {ordem.maquinaCodigo}
-                    </span>
+                    {ordem.maquinaCodigo && (
+                      <span className="shrink-0 font-mono text-sm text-slate-400">
+                        · {ordem.maquinaCodigo}
+                      </span>
+                    )}
                     <BadgeTipoOS tipo={ordem.tipo} />
                   </div>
-                  <p className="mt-1 text-xs text-slate-400">
+                  <p className="mt-1 truncate text-xs text-slate-400">
                     {lojas.find((loja) => loja.id === ordem.lojaId)?.nome ??
                       ordem.lojaId}{' '}
                     · {ordem.setorNome} · Encerrada em{' '}
                     {ordem.dataFim ? formatarDataHora(ordem.dataFim) : '—'}
                   </p>
-                  <p className="mt-1 text-xs text-slate-400">
-                    Custo Hora do Técnico:{' '}
-                    {ordem.custo?.custoHoraTecnico !== undefined
-                      ? formatarMoeda(ordem.custo?.custoHoraTecnico ?? 0)
-                      : '—'}
-                    {' · '}
-                    Custo de Manutenção:{' '}
-                    {ordem.custo?.custoManutencao !== undefined
-                      ? formatarMoeda(ordem.custo?.custoManutencao)
-                      : '—'}
-                  </p>
+
+                  <div className="mt-2 flex flex-wrap gap-x-6 gap-y-1 text-xs">
+                    {mostrarCustoHoraTecnico && (
+                      <p className="text-slate-400">
+                        Custo Hora Técnico{' '}
+                        <span className="font-mono font-semibold text-slate-600">
+                          {ordem.custo?.custoHoraTecnico != null
+                            ? formatarMoeda(ordem.custo.custoHoraTecnico)
+                            : '—'}
+                        </span>
+                      </p>
+                    )}
+                    <p className="text-slate-400">
+                      Custo Manutenção{' '}
+                      <span className="font-mono font-semibold text-slate-600">
+                        {ordem.custo?.custoManutencao !== undefined
+                          ? formatarMoeda(ordem.custo.custoManutencao)
+                          : '—'}
+                      </span>
+                    </p>
+                  </div>
+                  {ordem.tipo === 'terceiros' && (
+                    <p className="mt-1 text-xs text-slate-400">
+                      Nota Fiscal{' '}
+                      {ordem.custo?.numeroNotaFiscal ? (
+                        <span className="font-mono font-semibold text-slate-600">
+                          {ordem.custo.numeroNotaFiscal}
+                          {ordem.custo.serieNotaFiscal ? ` / série ${ordem.custo.serieNotaFiscal}` : ''}
+                        </span>
+                      ) : (
+                        <span className="font-semibold text-amber-600">ainda não informada</span>
+                      )}
+                    </p>
+                  )}
                 </div>
 
                 <button
                   type="button"
                   onClick={() => setOrdemParaLancarCusto(ordem)}
-                  className="from-marca-900 to-marca-500 font-display shadow-card hover:shadow-card-hover focus:ring-marca-500 flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-white transition-all duration-200 hover:brightness-110 focus:ring-2 focus:outline-none active:scale-[0.98]"
+                  className="from-marca-900 to-marca-500 font-display shadow-card hover:shadow-card-hover focus:ring-marca-500 flex shrink-0 items-center justify-center gap-2 rounded-xl bg-gradient-to-r px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-white transition-all duration-200 hover:brightness-110 focus:ring-2 focus:outline-none active:scale-[0.98]"
                 >
                   <CircleDollarSign size={14} />
                   Editar Custos

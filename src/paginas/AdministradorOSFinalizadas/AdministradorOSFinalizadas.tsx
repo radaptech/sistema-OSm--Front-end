@@ -6,8 +6,11 @@ import { CampoBusca } from '../../componentes/CampoBusca'
 import { CampoSelecao } from '../../componentes/CampoSelecao'
 import { FiltroTipoOS } from '../../componentes/FiltroTipoOS'
 import { Paginacao } from '../../componentes/Paginacao'
+import { EsqueletoLista, EsqueletoCardOS } from '../../componentes/Esqueleto'
 import { useLojas } from '../../hooks/useLojas'
 import { useOrdensServicoTodas } from '../../hooks/useOrdensServicoTodas'
+import { obterNomeAlvo } from '../../utilitarios/alvoOS'
+import { atrasoEntrada } from '../../utilitarios/atrasoEntrada'
 import { formatarDataHora } from '../../utilitarios/formatarData'
 import { formatarMoeda } from '../../utilitarios/formatarMoeda'
 import type { OrdemServico, TipoOS } from '../../tipos/ordemServico'
@@ -93,11 +96,11 @@ export function AdministradorOSFinalizadas() {
           </div>
         </div>
 
-        <div className="flex flex-1 flex-col gap-3 lg:grid lg:grid-cols-2 lg:content-start lg:items-start lg:gap-4">
+        <div className="flex flex-1 flex-col gap-3 lg:grid lg:grid-cols-2 lg:content-start lg:gap-4">
           {isLoading && (
-            <p className="py-10 text-center text-sm text-slate-300 lg:col-span-2">
-              Carregando...
-            </p>
+            <EsqueletoLista quantidade={4}>
+              <EsqueletoCardOS />
+            </EsqueletoLista>
           )}
 
           {!isLoading && ordensPaginadas.length === 0 && (
@@ -107,25 +110,29 @@ export function AdministradorOSFinalizadas() {
             </div>
           )}
 
-          {ordensPaginadas.map((ordem) => {
+          {ordensPaginadas.map((ordem, indice) => {
             const custoTotal = (ordem.custo?.custoHoraTecnico ?? 0) + (ordem.custo?.custoManutencao ?? 0)
 
             return (
               <div
                 key={ordem.id}
-                className="flex flex-col gap-3 rounded-xl bg-white p-4 shadow-card transition-shadow duration-200 hover:shadow-card-hover sm:flex-row sm:items-center sm:justify-between lg:[&:last-child:nth-child(odd)]:col-span-2"
+                style={atrasoEntrada(indice)}
+                className="animate-surgir flex flex-col gap-3 rounded-xl bg-white p-4 shadow-card transition-shadow duration-200 hover:shadow-card-hover sm:flex-row sm:items-start sm:justify-between"
               >
                 <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2">
+                  {/* Uma linha só: sem flex-wrap o badge nunca cai para a linha de baixo. */}
+                  <div className="flex items-center gap-2">
                     <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-r from-marca-900 to-marca-500 font-mono text-sm font-bold text-white">
                       #{ordem.id}
                     </span>
                     <span className="truncate font-semibold text-slate-800">
-                      {ordem.maquinaNome}
+                      {obterNomeAlvo(ordem)}
                     </span>
-                    <span className="font-mono text-sm text-slate-400">
-                      · {ordem.maquinaCodigo}
-                    </span>
+                    {ordem.maquinaCodigo && (
+                      <span className="shrink-0 font-mono text-sm text-slate-400">
+                        · {ordem.maquinaCodigo}
+                      </span>
+                    )}
                     <BadgeTipoOS tipo={ordem.tipo} />
                   </div>
                   <p className="mt-1 truncate text-xs text-slate-400">

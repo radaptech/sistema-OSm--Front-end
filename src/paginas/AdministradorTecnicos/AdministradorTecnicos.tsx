@@ -8,10 +8,12 @@ import { CampoBusca } from '../../componentes/CampoBusca'
 import { CampoSelecao } from '../../componentes/CampoSelecao'
 import { ModalConfirmarExclusao } from '../../componentes/ModalConfirmarExclusao'
 import { Paginacao } from '../../componentes/Paginacao'
+import { EsqueletoLista, EsqueletoLinhaCadastro } from '../../componentes/Esqueleto'
 import { useLojas } from '../../hooks/useLojas'
 import { useTecnicos } from '../../hooks/useTecnicos'
 import { servicoUsuarios } from '../../servicos/servicoUsuarios'
 import type { Tecnico } from '../../tipos/tecnico'
+import { atrasoEntrada } from '../../utilitarios/atrasoEntrada'
 import { ModalEditarTecnico } from './componentes/ModalEditarTecnico'
 import type { DadosEditarTecnico } from './esquemaEditarTecnico'
 
@@ -126,9 +128,9 @@ export function AdministradorTecnicos() {
 
         <div className="flex flex-1 flex-col gap-3 lg:grid lg:grid-cols-2 lg:content-start lg:items-start lg:gap-4">
           {isLoading && (
-            <p className="py-10 text-center text-sm text-slate-300 lg:col-span-2">
-              Carregando...
-            </p>
+            <EsqueletoLista quantidade={4}>
+              <EsqueletoLinhaCadastro />
+            </EsqueletoLista>
           )}
 
           {!isLoading && tecnicosFiltrados.length === 0 && (
@@ -138,10 +140,11 @@ export function AdministradorTecnicos() {
             </div>
           )}
 
-          {tecnicosPaginados.map((tecnico) => (
+          {tecnicosPaginados.map((tecnico, indice) => (
             <div
               key={tecnico.id}
-              className="flex flex-col gap-3 rounded-xl bg-white p-4 shadow-card transition-shadow duration-200 hover:shadow-card-hover sm:flex-row sm:items-center sm:justify-between"
+              style={atrasoEntrada(indice)}
+              className="animate-surgir flex flex-col gap-3 rounded-xl bg-white p-4 shadow-card transition-shadow duration-200 hover:shadow-card-hover sm:flex-row sm:items-center sm:justify-between"
             >
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">

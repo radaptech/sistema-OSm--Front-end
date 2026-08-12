@@ -3,6 +3,7 @@ import { BadgeOrigemPreventiva } from '../../../componentes/BadgeOrigemPreventiv
 import { BadgeStatus } from '../../../componentes/BadgeStatus'
 import { BadgeTipoOS } from '../../../componentes/BadgeTipoOS'
 import { Botao } from '../../../componentes/Botao'
+import { obterNomeAlvo } from '../../../utilitarios/alvoOS'
 import { formatarDataHora } from '../../../utilitarios/formatarData'
 import type { SolicitacaoOS } from '../../../tipos/ordemServico'
 
@@ -42,11 +43,13 @@ export function CardSolicitacaoGestor({
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
               <span className="font-semibold text-slate-800">
-                {solicitacao.maquinaNome}
+                {obterNomeAlvo(solicitacao)}
               </span>
-              <span className="font-mono text-sm text-slate-400">
-                · {solicitacao.maquinaCodigo}
-              </span>
+              {solicitacao.maquinaCodigo && (
+                <span className="font-mono text-sm text-slate-400">
+                  · {solicitacao.maquinaCodigo}
+                </span>
+              )}
               <BadgeStatus status={solicitacao.status} />
               <BadgeTipoOS tipo={solicitacao.tipo} />
               {ehPreventiva && <BadgeOrigemPreventiva />}

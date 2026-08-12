@@ -10,6 +10,7 @@ import { useLojas } from '../../../hooks/useLojas'
 import { areasTecnico } from '../../../tipos/tecnico'
 import type { Tecnico } from '../../../tipos/tecnico'
 import { esquemaEditarTecnico, type DadosEditarTecnico } from '../esquemaEditarTecnico'
+import { useSaidaAnimada } from '../../../hooks/useSaidaAnimada'
 
 
 interface ModalEditarTecnicoProps {
@@ -19,6 +20,8 @@ interface ModalEditarTecnicoProps {
 }
 
 export function ModalEditarTecnico({ tecnico, aoFechar, aoSalvar }: ModalEditarTecnicoProps) {
+  const { fechar, classeFundo, classeCartao } = useSaidaAnimada(aoFechar)
+
   const {
     register,
     handleSubmit,
@@ -42,12 +45,12 @@ export function ModalEditarTecnico({ tecnico, aoFechar, aoSalvar }: ModalEditarT
 
   function aoSalvarFormulario(dados: DadosEditarTecnico) {
     aoSalvar(dados)
-    aoFechar()
+    fechar()
   }
 
   return createPortal(
-    <div className="animate-fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-      <div className="animate-pop-in w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-pop">
+    <div className={`${classeFundo} fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm`}>
+      <div className={`${classeCartao} w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-pop`}>
         <div className="flex items-start justify-between bg-gradient-to-r from-marca-900 to-marca-500 px-6 py-4">
           <div>
             <p className="font-mono text-xs font-bold tracking-widest text-white/80 uppercase">
@@ -58,7 +61,7 @@ export function ModalEditarTecnico({ tecnico, aoFechar, aoSalvar }: ModalEditarT
           <button
             type="button"
             aria-label="Fechar"
-            onClick={aoFechar}
+            onClick={fechar}
             className="text-white/90 transition hover:text-white"
           >
             <XCircle size={22} />
@@ -124,7 +127,7 @@ export function ModalEditarTecnico({ tecnico, aoFechar, aoSalvar }: ModalEditarT
 
           <div className="mt-1 flex gap-3">
             <div className="flex-1">
-              <Botao type="button" variante="secundario" onClick={aoFechar}>
+              <Botao type="button" variante="secundario" onClick={fechar}>
                 Cancelar
               </Botao>
             </div>

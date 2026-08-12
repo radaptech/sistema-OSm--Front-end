@@ -8,10 +8,12 @@ import { CampoBusca } from '../../componentes/CampoBusca'
 import { CampoSelecao } from '../../componentes/CampoSelecao'
 import { ModalConfirmarExclusao } from '../../componentes/ModalConfirmarExclusao'
 import { Paginacao } from '../../componentes/Paginacao'
+import { EsqueletoLista, EsqueletoLinhaCadastro } from '../../componentes/Esqueleto'
 import { useLojas } from '../../hooks/useLojas'
 import { useSetores } from '../../hooks/useSetores'
 import { servicoSetores } from '../../servicos/servicoSetores'
 import type { SetorCadastrado } from '../../tipos/setor'
+import { atrasoEntrada } from '../../utilitarios/atrasoEntrada'
 
 const TAMANHO_PAGINA = 10
 
@@ -95,9 +97,9 @@ export function AdministradorSetores() {
 
         <div className="flex flex-1 flex-col gap-3 lg:grid lg:grid-cols-2 lg:content-start lg:items-start lg:gap-4">
           {isLoading && (
-            <p className="py-10 text-center text-sm text-slate-300 lg:col-span-2">
-              Carregando...
-            </p>
+            <EsqueletoLista quantidade={4}>
+              <EsqueletoLinhaCadastro />
+            </EsqueletoLista>
           )}
 
           {!isLoading && setoresFiltrados.length === 0 && (
@@ -107,10 +109,11 @@ export function AdministradorSetores() {
             </div>
           )}
 
-          {setoresPaginados.map((setor) => (
+          {setoresPaginados.map((setor, indice) => (
             <div
               key={setor.id}
-              className="flex flex-col gap-3 rounded-xl bg-white p-4 shadow-card transition-shadow duration-200 hover:shadow-card-hover sm:flex-row sm:items-center sm:justify-between"
+              style={atrasoEntrada(indice)}
+              className="animate-surgir flex flex-col gap-3 rounded-xl bg-white p-4 shadow-card transition-shadow duration-200 hover:shadow-card-hover sm:flex-row sm:items-center sm:justify-between"
             >
               <div className="flex min-w-0 items-center gap-3">
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-r from-marca-900 to-marca-500 text-white">

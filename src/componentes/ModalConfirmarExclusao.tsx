@@ -1,6 +1,7 @@
 import { createPortal } from 'react-dom'
 import { AlertTriangle, Trash2, XCircle } from 'lucide-react'
 import { Botao } from './Botao'
+import { useSaidaAnimada } from '../hooks/useSaidaAnimada'
 
 interface ModalConfirmarExclusaoProps {
   titulo: string
@@ -17,9 +18,11 @@ export function ModalConfirmarExclusao({
   aoFechar,
   confirmando = false,
 }: ModalConfirmarExclusaoProps) {
+  const { fechar, classeFundo, classeCartao } = useSaidaAnimada(aoFechar)
+
   return createPortal(
-    <div className="animate-fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-      <div className="animate-pop-in w-full max-w-sm overflow-hidden rounded-2xl bg-white shadow-pop">
+    <div className={`${classeFundo} fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm`}>
+      <div className={`${classeCartao} w-full max-w-sm overflow-hidden rounded-2xl bg-white shadow-pop`}>
         <div className="flex items-start justify-between bg-gradient-to-r from-red-500 to-red-600 px-6 py-4">
           <div className="flex items-center gap-2">
             <AlertTriangle className="text-white" size={20} />
@@ -28,7 +31,7 @@ export function ModalConfirmarExclusao({
           <button
             type="button"
             aria-label="Fechar"
-            onClick={aoFechar}
+            onClick={fechar}
             className="text-white/90 transition hover:text-white"
           >
             <XCircle size={22} />
@@ -40,19 +43,20 @@ export function ModalConfirmarExclusao({
 
           <div className="flex gap-3">
             <div className="flex-1">
-              <Botao type="button" variante="secundario" onClick={aoFechar}>
+              <Botao type="button" variante="secundario" onClick={fechar}>
                 Cancelar
               </Botao>
             </div>
             <div className="flex-1">
               <Botao
                 type="button"
-                disabled={confirmando}
+                carregando={confirmando}
+                rotuloCarregando="Excluindo..."
                 onClick={aoConfirmar}
                 className="flex items-center justify-center gap-2 bg-gradient-to-r from-red-500 to-red-600"
               >
                 <Trash2 size={16} />
-                {confirmando ? 'Excluindo...' : 'Excluir'}
+                Excluir
               </Botao>
             </div>
           </div>

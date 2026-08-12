@@ -46,6 +46,11 @@ body {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
+    /* Sem zerar o delay, um card com entrada escalonada (animationDelay inline, ver
+       `surgir`) ficaria preso no estado inicial — invisível — pelo tempo do atraso,
+       mesmo com a animação já "desligada". */
+    animation-delay: 0.001ms !important;
+    transition-delay: 0.001ms !important;
   }
 }
 

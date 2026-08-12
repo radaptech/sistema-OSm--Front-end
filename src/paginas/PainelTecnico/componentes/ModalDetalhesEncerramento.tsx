@@ -6,6 +6,7 @@ import { calcularHoras } from '../../../utilitarios/calcularHoras'
 import { formatarDataHora } from '../../../utilitarios/formatarData'
 import { formatarMoeda } from '../../../utilitarios/formatarMoeda'
 import type { OrdemServico } from '../../../tipos/ordemServico'
+import { useSaidaAnimada } from '../../../hooks/useSaidaAnimada'
 
 interface ModalDetalhesEncerramentoProps {
   ordemServico: OrdemServico
@@ -16,6 +17,8 @@ export function ModalDetalhesEncerramento({
   ordemServico,
   aoFechar,
 }: ModalDetalhesEncerramentoProps) {
+  const { fechar, classeFundo, classeCartao } = useSaidaAnimada(aoFechar)
+
   // Só a OS marcada como "Afeta Produção" acumula tempo de máquina parada; nas demais a
   // máquina seguiu operando durante o atendimento.
   const horasParada =
@@ -24,8 +27,8 @@ export function ModalDetalhesEncerramento({
       : undefined
 
   return createPortal(
-    <div className="animate-fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-      <div className="animate-pop-in shadow-pop w-full max-w-md overflow-hidden rounded-2xl bg-white">
+    <div className={`${classeFundo} fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm`}>
+      <div className={`${classeCartao} shadow-pop w-full max-w-md overflow-hidden rounded-2xl bg-white`}>
         <div className="from-marca-900 to-marca-500 flex items-start justify-between bg-gradient-to-r px-6 py-4">
           <div>
             <p className="font-mono text-xs font-bold tracking-widest text-white/80 uppercase">
@@ -38,7 +41,7 @@ export function ModalDetalhesEncerramento({
           <button
             type="button"
             aria-label="Fechar"
-            onClick={aoFechar}
+            onClick={fechar}
             className="text-white/90 transition hover:text-white"
           >
             <XCircle size={22} />
@@ -160,7 +163,7 @@ export function ModalDetalhesEncerramento({
             </p>
           </div>
 
-          <Botao type="button" variante="secundario" onClick={aoFechar}>
+          <Botao type="button" variante="secundario" onClick={fechar}>
             Fechar
           </Botao>
         </div>

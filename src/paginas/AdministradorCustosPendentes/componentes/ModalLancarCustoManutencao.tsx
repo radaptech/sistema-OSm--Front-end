@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { CheckCircle2, XCircle } from 'lucide-react'
 import { Botao } from '../../../componentes/Botao'
 import { CampoTexto } from '../../../componentes/CampoTexto'
+import { CampoTextoArea } from '../../../componentes/CampoTextoArea'
 import { obterNomeAlvo } from '../../../utilitarios/alvoOS'
 import { formatarDataHora } from '../../../utilitarios/formatarData'
 import type { OrdemServico } from '../../../tipos/ordemServico'
@@ -11,6 +12,7 @@ import {
   esquemaLancarCustoManutencao,
   type DadosLancarCustoManutencao,
 } from '../esquemaLancarCustoManutencao'
+import { useSaidaAnimada } from '../../../hooks/useSaidaAnimada'
 
 interface ModalLancarCustoManutencaoProps {
   ordemServico: OrdemServico
@@ -23,6 +25,12 @@ export function ModalLancarCustoManutencao({
   aoFechar,
   aoSalvar,
 }: ModalLancarCustoManutencaoProps) {
+  const { fechar, classeFundo, classeCartao } = useSaidaAnimada(aoFechar)
+
+  const ehTerceiros = ordemServico.tipo === 'terceiros'
+  // Só "Maquinário" cobra Custo Hora Técnico — Pequenos Reparos e OS de terceiros não.
+  const mostrarCustoHoraTecnico = ordemServico.tipo === 'maquinario'
+
   const {
     register,
     handleSubmit,
@@ -32,17 +40,20 @@ export function ModalLancarCustoManutencao({
     defaultValues: {
       custoHoraTecnico: ordemServico.custo?.custoHoraTecnico ?? undefined,
       custoManutencao: ordemServico.custo?.custoManutencao,
+      numeroNotaFiscal: ordemServico.custo?.numeroNotaFiscal ?? '',
+      serieNotaFiscal: ordemServico.custo?.serieNotaFiscal ?? '',
+      descricaoServicoTerceiro: ordemServico.custo?.descricaoServicoTerceiro ?? '',
     },
   })
 
   function aoSalvarFormulario(dados: DadosLancarCustoManutencao) {
     aoSalvar(dados)
-    aoFechar()
+    fechar()
   }
 
   return createPortal(
-    <div className="animate-fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-      <div className="animate-pop-in shadow-pop w-full max-w-md overflow-hidden rounded-2xl bg-white">
+    <div className={`${classeFundo} fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm`}>
+      <div className={`${classeCartao} shadow-pop w-full max-w-md overflow-hidden rounded-2xl bg-white`}>
         <div className="from-marca-900 to-marca-500 flex items-start justify-between bg-gradient-to-r px-6 py-4">
           <div>
             <p className="font-mono text-xs font-bold tracking-widest text-white/80 uppercase">
@@ -58,7 +69,7 @@ export function ModalLancarCustoManutencao({
           <button
             type="button"
             aria-label="Fechar"
-            onClick={aoFechar}
+            onClick={fechar}
             className="text-white/90 transition hover:text-white"
           >
             <XCircle size={22} />
@@ -103,24 +114,39 @@ export function ModalLancarCustoManutencao({
               <span className="font-semibold">
                 {ordemServico.empresaTerceirizadaNome}
               </span>{' '}
-              — confira o Custo de Manutenção contra a nota fiscal da empresa.
+              — não há Custo Hora Técnico aqui, confira só o Custo de Manutenção contra a
+              nota fiscal da empresa.
             </p>
           )}
 
-          <div className="grid grid-cols-2 gap-4">
-            <CampoTexto
-              rotulo="Custo Hora Técnico (R$)"
-              variante="claro"
-              type="number"
-              min={0}
-              step="0.01"
-              placeholder="Ex: 80.00"
-              mensagemErro={errors.custoHoraTecnico?.message}
-              {...register('custoHoraTecnico', { valueAsNumber: true })}
-            />
+          {ordemServico.tipo === 'reparo' && (
+            <p className="rounded-lg bg-slate-100 px-3 py-2 text-xs text-slate-600">
+              Pequenos Reparos não têm Custo Hora Técnico — só o Custo de Manutenção.
+            </p>
+          )}
+
+          {/* items-end: se um rótulo quebrar em duas linhas, os inputs continuam
+              alinhados pela base em vez de um descer sozinho. */}
+          <div
+            className={`grid items-end gap-4 ${
+              mostrarCustoHoraTecnico ? 'grid-cols-2' : 'grid-cols-1'
+            }`}
+          >
+            {mostrarCustoHoraTecnico && (
+              <CampoTexto
+                rotulo="Custo Hora Técnico (R$)"
+                variante="claro"
+                type="number"
+                min={0}
+                step="0.01"
+                placeholder="Ex: 80.00"
+                mensagemErro={errors.custoHoraTecnico?.message}
+                {...register('custoHoraTecnico', { valueAsNumber: true })}
+              />
+            )}
 
             <CampoTexto
-              rotulo="Custo de Manutenção (R$) *"
+              rotulo="Custo Manutenção (R$) *"
               variante="claro"
               type="number"
               min={0}
@@ -131,9 +157,40 @@ export function ModalLancarCustoManutencao({
             />
           </div>
 
+          {ehTerceiros && (
+            <>
+              <div className="grid grid-cols-2 gap-4">
+                <CampoTexto
+                  rotulo="Número da Nota Fiscal"
+                  variante="claro"
+                  placeholder="Ex: 12345"
+                  mensagemErro={errors.numeroNotaFiscal?.message}
+                  {...register('numeroNotaFiscal')}
+                />
+
+                <CampoTexto
+                  rotulo="Série"
+                  variante="claro"
+                  placeholder="Ex: 1"
+                  mensagemErro={errors.serieNotaFiscal?.message}
+                  {...register('serieNotaFiscal')}
+                />
+              </div>
+
+              <CampoTextoArea
+                rotulo="Descrição do Serviço"
+                rows={3}
+                maxLength={300}
+                placeholder="Descreva o que foi feito pela empresa terceirizada, conforme a nota fiscal..."
+                mensagemErro={errors.descricaoServicoTerceiro?.message}
+                {...register('descricaoServicoTerceiro')}
+              />
+            </>
+          )}
+
           <div className="mt-1 flex gap-3">
             <div className="flex-1">
-              <Botao type="button" variante="secundario" onClick={aoFechar}>
+              <Botao type="button" variante="secundario" onClick={fechar}>
                 Cancelar
               </Botao>
             </div>

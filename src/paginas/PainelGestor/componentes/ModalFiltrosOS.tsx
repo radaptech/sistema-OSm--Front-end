@@ -6,6 +6,7 @@ import { CampoSelecao } from '../../../componentes/CampoSelecao'
 import { CampoTexto } from '../../../componentes/CampoTexto'
 import type { Loja } from '../../../tipos/loja'
 import { FILTROS_AVANCADOS_OS_VAZIOS, type FiltrosAvancadosOS } from '../filtrosOS'
+import { useSaidaAnimada } from '../../../hooks/useSaidaAnimada'
 
 const ID_LISTA_MAQUINAS = 'filtro-os-maquinas-sugeridas'
 
@@ -24,6 +25,8 @@ export function ModalFiltrosOS({
   aoFechar,
   aoAplicar,
 }: ModalFiltrosOSProps) {
+  const { fechar, classeFundo, classeCartao } = useSaidaAnimada(aoFechar)
+
   const [rascunho, setRascunho] = useState<FiltrosAvancadosOS>(filtros)
 
   const dataInvalida =
@@ -51,8 +54,8 @@ export function ModalFiltrosOS({
   }
 
   return createPortal(
-    <div className="animate-fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-      <div className="animate-pop-in w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-pop">
+    <div className={`${classeFundo} fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm`}>
+      <div className={`${classeCartao} w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-pop`}>
         <div className="flex items-start justify-between bg-gradient-to-r from-marca-900 to-marca-500 px-6 py-4">
           <div>
             <p className="font-mono text-xs font-bold tracking-widest text-white/80 uppercase">
@@ -64,7 +67,7 @@ export function ModalFiltrosOS({
           <button
             type="button"
             aria-label="Fechar"
-            onClick={aoFechar}
+            onClick={fechar}
             className="text-white/90 transition hover:text-white"
           >
             <XCircle size={22} />

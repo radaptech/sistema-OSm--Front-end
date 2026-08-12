@@ -9,6 +9,7 @@ import {
   CircleDollarSign,
 } from 'lucide-react'
 import { CabecalhoSubpagina } from '../../componentes/CabecalhoSubpagina'
+import { Esqueleto } from '../../componentes/Esqueleto'
 import { useEstadoAutenticacao } from '../../estado/estadoAutenticacao'
 import { useMaquinas } from '../../hooks/useMaquinas'
 import { useIndicadoresMaquina } from '../../hooks/useIndicadoresMaquina'
@@ -82,9 +83,19 @@ export function DashboardGestor() {
         </div>
 
         {carregandoMaquinas && (
-          <p className="py-10 text-center text-sm text-slate-300">
-            Carregando máquinas...
-          </p>
+          <div
+            role="status"
+            aria-busy="true"
+            aria-label="Carregando máquinas"
+            className="shadow-card flex flex-col gap-3 rounded-2xl bg-white p-4"
+          >
+            <Esqueleto className="h-3 w-32" />
+            <div className="flex flex-wrap gap-2">
+              {Array.from({ length: 4 }, (_, indice) => (
+                <Esqueleto key={indice} className="h-9 w-36 rounded-xl" />
+              ))}
+            </div>
+          </div>
         )}
 
         {!carregandoMaquinas && grupos.length === 0 && (
@@ -114,10 +125,28 @@ export function DashboardGestor() {
               </span>
             </div>
 
+            {/* Esqueleto no formato exato do painel (4 indicadores + rosca + barras):
+                quando os números chegam nada muda de lugar. */}
             {carregandoIndicadores && (
-              <p className="py-10 text-center text-sm text-slate-300">
-                Carregando indicadores...
-              </p>
+              <div role="status" aria-busy="true" aria-label="Carregando indicadores">
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                  {Array.from({ length: 4 }, (_, indice) => (
+                    <div key={indice} className="shadow-card rounded-2xl bg-white p-4">
+                      <Esqueleto className="h-4 w-4 rounded" />
+                      <Esqueleto className="mt-3 h-3 w-20" />
+                      <Esqueleto className="mt-2 h-5 w-16" />
+                    </div>
+                  ))}
+                </div>
+                <div className="shadow-card mt-4 flex flex-col items-center gap-4 rounded-2xl bg-white p-5">
+                  <Esqueleto className="h-3 w-44" />
+                  <Esqueleto className="h-40 w-40 rounded-full" />
+                </div>
+                <div className="shadow-card mt-4 rounded-2xl bg-white p-5">
+                  <Esqueleto className="h-3 w-52" />
+                  <Esqueleto className="mt-4 h-40 w-full rounded-lg" />
+                </div>
+              </div>
             )}
 
             {indicadores && (

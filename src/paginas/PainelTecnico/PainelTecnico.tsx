@@ -8,6 +8,7 @@ import {
 import { toast } from 'react-toastify'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { CabecalhoTopo } from '../../componentes/CabecalhoTopo'
+import { EsqueletoLista, EsqueletoCardOS } from '../../componentes/Esqueleto'
 import { useEstadoAutenticacao } from '../../estado/estadoAutenticacao'
 import { useOrdensServicoTecnico } from '../../hooks/useOrdensServicoTecnico'
 import { useLojas } from '../../hooks/useLojas'
@@ -15,6 +16,7 @@ import { servicoSolicitacoes } from '../../servicos/servicoSolicitacoes'
 import { servicoOrdensServico } from '../../servicos/servicoOrdensServico'
 import type { OrdemServico, SolicitacaoOS } from '../../tipos/ordemServico'
 import { agruparPorSetorLoja } from '../../utilitarios/agruparPorSetorLoja'
+import { ordenarPorPrioridade } from '../../utilitarios/ordenarPrioridadeOS'
 import { ModalDetalhesSolicitacao } from '../ModalDetalhesSolicitacao/ModalDetalhesSolicitacao'
 import { ModalEncerrarOrdemServico } from '../ModalEncerrarOrdemServico/ModalEncerrarOrdemServico'
 import type { EncerramentoOrdemServicoPayload } from '../../tipos/ordemServico'
@@ -27,6 +29,7 @@ import { CardOrdemServicoTecnico } from './componentes/CardOrdemServicoTecnico'
 import { ModalDetalhesEncerramento } from './componentes/ModalDetalhesEncerramento'
 import { ModalPausarOrdemServico } from './componentes/ModalPausarOrdemServico'
 import { ModalAcionarTerceiro } from './componentes/ModalAcionarTerceiro'
+import { ResumoLojasTecnico } from './componentes/ResumoLojasTecnico'
 import type { DadosPausarOrdemServico } from './esquemaPausarOrdemServico'
 import type { DadosAcionarTerceiro } from './esquemaAcionarTerceiro'
 
@@ -38,6 +41,7 @@ export function PainelTecnico() {
   const queryClient = useQueryClient()
   const [abaSelecionada, setAbaSelecionada] =
     useState<AbaPainelTecnico>('em-aberto')
+  const [lojaSelecionada, setLojaSelecionada] = useState<number | null>(null)
   const [ordemParaPausar, setOrdemParaPausar] = useState<OrdemServico | null>(
     null,
   )
@@ -136,20 +140,26 @@ export function PainelTecnico() {
     toast.success(`OS #${ordemParaEncerrar.id} encerrada com sucesso.`)
   }
 
+  // Um Técnico pode atender mais de uma loja (ver ResumoLojasTecnico) — o filtro se aplica
+  // antes de separar por aba, para o contador de cada aba já refletir a loja escolhida.
+  const ordensNaLojaSelecionada = lojaSelecionada
+    ? ordensServico.filter((ordem) => ordem.lojaId === lojaSelecionada)
+    : ordensServico
+
   const ordensPorAba: Record<AbaPainelTecnico, OrdemServico[]> = {
-    'em-aberto': ordensServico.filter(
+    'em-aberto': ordensNaLojaSelecionada.filter(
       (ordem) =>
         ordem.statusExecucao === 'Aberta' ||
         ordem.statusExecucao === 'Em Andamento',
     ),
-    'pendentes-pausadas': ordensServico.filter(
+    'pendentes-pausadas': ordensNaLojaSelecionada.filter(
       (ordem) => ordem.statusExecucao === 'Pausada',
     ),
     // Só aparece aqui depois que o Administrador lança o custo de manutenção — a mesma
     // regra de "OS Finalizada" usada no Gestor e no Administrador (ver CLAUDE.md, item
     // 9/13). Uma OS que o Técnico já encerrou mas ainda sem custo lançado fica "invisível"
     // nas abas dele até esse lançamento.
-    concluidas: ordensServico.filter((ordem) => ordem.finalizada),
+    concluidas: ordensNaLojaSelecionada.filter((ordem) => ordem.finalizada),
   }
 
   const ESTADO_VAZIO: Record<
@@ -168,7 +178,10 @@ export function PainelTecnico() {
     },
   }
 
-  const ordensExibidas = ordensPorAba[abaSelecionada]
+  // Máquina Parada primeiro, depois Urgência, depois a OS mais antiga — ver
+  // ordenarPrioridadeOS.ts. Ordena antes de agrupar para cada bloco de Setor/Loja já sair
+  // com os cards na prioridade certa.
+  const ordensExibidas = ordenarPorPrioridade(ordensPorAba[abaSelecionada])
   const gruposExibidos = agruparPorSetorLoja(ordensExibidas, lojas)
   const { Icone: IconeVazio, mensagem: mensagemVazia } =
     ESTADO_VAZIO[abaSelecionada]
@@ -226,6 +239,13 @@ export function PainelTecnico() {
           </p>
         </div>
 
+        <ResumoLojasTecnico
+          ordensServico={ordensServico}
+          lojas={lojas}
+          lojaSelecionada={lojaSelecionada}
+          aoSelecionarLoja={setLojaSelecionada}
+        />
+
         <AbasPainelTecnico
           abaSelecionada={abaSelecionada}
           aoSelecionarAba={setAbaSelecionada}
@@ -233,9 +253,9 @@ export function PainelTecnico() {
 
         <div className="flex flex-col gap-6">
           {isLoading && (
-            <p className="py-10 text-center text-sm text-slate-300">
-              Carregando...
-            </p>
+            <EsqueletoLista quantidade={3}>
+              <EsqueletoCardOS />
+            </EsqueletoLista>
           )}
 
           {!isLoading && ordensExibidas.length === 0 && (

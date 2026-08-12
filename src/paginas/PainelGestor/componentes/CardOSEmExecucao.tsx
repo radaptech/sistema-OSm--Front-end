@@ -3,7 +3,7 @@ import { BadgeTipoOS } from '../../../componentes/BadgeTipoOS'
 import { BadgeUrgencia } from '../../../componentes/BadgeUrgencia'
 import { calcularHoras } from '../../../utilitarios/calcularHoras'
 import { agoraParaBackend } from '../../../utilitarios/dataBackend'
-import { obterNomeAlvo, obterCodigoAlvo } from '../../../utilitarios/alvoOS'
+import { obterNomeAlvo } from '../../../utilitarios/alvoOS'
 import { formatarDataHora } from '../../../utilitarios/formatarData'
 import type { OrdemServico } from '../../../tipos/ordemServico'
 
@@ -32,9 +32,11 @@ export function CardOSEmExecucao({ ordemServico }: CardOSEmExecucaoProps) {
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <span className="font-semibold text-slate-800">{obterNomeAlvo(ordemServico)}</span>
-            <span className="font-mono text-sm text-slate-400">
-              · {obterCodigoAlvo(ordemServico)}
-            </span>
+            {ordemServico.maquinaCodigo && (
+              <span className="font-mono text-sm text-slate-400">
+                · {ordemServico.maquinaCodigo}
+              </span>
+            )}
             <BadgeStatusExecucao status={ordemServico.statusExecucao} />
             <BadgeTipoOS tipo={ordemServico.tipo} />
             {ordemServico.urgencia && <BadgeUrgencia urgencia={ordemServico.urgencia} />}

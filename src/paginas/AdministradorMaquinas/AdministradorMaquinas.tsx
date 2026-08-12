@@ -8,11 +8,14 @@ import { CampoBusca } from '../../componentes/CampoBusca'
 import { CampoSelecao } from '../../componentes/CampoSelecao'
 import { ModalConfirmarExclusao } from '../../componentes/ModalConfirmarExclusao'
 import { Paginacao } from '../../componentes/Paginacao'
+import { EsqueletoLista, EsqueletoLinhaCadastro } from '../../componentes/Esqueleto'
+import { ImagemProgressiva } from '../../componentes/ImagemProgressiva'
 import { useLojas } from '../../hooks/useLojas'
 import { useMaquinas } from '../../hooks/useMaquinas'
 import { useSetores } from '../../hooks/useSetores'
 import { servicoMaquinas } from '../../servicos/servicoMaquinas'
 import type { Maquina } from '../../tipos/maquina'
+import { atrasoEntrada } from '../../utilitarios/atrasoEntrada'
 
 const TAMANHO_PAGINA = 10
 
@@ -122,9 +125,9 @@ export function AdministradorMaquinas() {
 
         <div className="flex flex-1 flex-col gap-3 lg:grid lg:grid-cols-2 lg:content-start lg:items-start lg:gap-4">
           {isLoading && (
-            <p className="py-10 text-center text-sm text-slate-300 lg:col-span-2">
-              Carregando...
-            </p>
+            <EsqueletoLista quantidade={4}>
+              <EsqueletoLinhaCadastro />
+            </EsqueletoLista>
           )}
 
           {!isLoading && maquinasFiltradas.length === 0 && (
@@ -134,14 +137,15 @@ export function AdministradorMaquinas() {
             </div>
           )}
 
-          {maquinasPaginadas.map((maquina) => (
+          {maquinasPaginadas.map((maquina, indice) => (
             <div
               key={maquina.id}
-              className="flex flex-col gap-3 rounded-xl bg-white p-4 shadow-card transition-shadow duration-200 hover:shadow-card-hover sm:flex-row sm:items-center sm:justify-between"
+              style={atrasoEntrada(indice)}
+              className="animate-surgir flex flex-col gap-3 rounded-xl bg-white p-4 shadow-card transition-shadow duration-200 hover:shadow-card-hover sm:flex-row sm:items-center sm:justify-between"
             >
               <div className="flex min-w-0 items-center gap-3">
                 {maquina.fotoUrl ? (
-                  <img
+                  <ImagemProgressiva
                     src={maquina.fotoUrl}
                     alt={maquina.nome}
                     className="h-10 w-10 shrink-0 rounded-lg object-cover"

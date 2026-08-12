@@ -1,6 +1,7 @@
 import { Store, Tag } from 'lucide-react'
 import type { ReactNode } from 'react'
 import type { GrupoSetorLoja } from '../../../utilitarios/agruparPorSetorLoja'
+import { atrasoEntrada } from '../../../utilitarios/atrasoEntrada'
 
 interface BlocoSetorLojaProps<T> {
   grupo: GrupoSetorLoja<T>
@@ -28,8 +29,14 @@ export function BlocoSetorLoja<T>({
       </div>
 
       <div className="flex flex-col gap-3">
-        {grupo.itens.map((item) => (
-          <div key={obterChave(item)}>{renderItem(item)}</div>
+        {grupo.itens.map((item, indice) => (
+          <div
+            key={obterChave(item)}
+            style={atrasoEntrada(indice)}
+            className="animate-surgir"
+          >
+            {renderItem(item)}
+          </div>
         ))}
       </div>
     </div>
