@@ -302,6 +302,7 @@ export const rotasSolicitacoes: Rota[] = [
         statusExecucao: 'Aberta',
         finalizada: false,
         afetaProducao: solicitacao.impactos.includes('Afeta Produção'),
+        dataSolicitacao: solicitacao.criadoEm,
         dataAbertura: agoraParaBackend(),
         pausas: [],
       }

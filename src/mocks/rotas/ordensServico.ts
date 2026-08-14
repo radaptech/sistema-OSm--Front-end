@@ -243,7 +243,7 @@ export const rotasOrdensServico: Rota[] = [
       ordem.statusExecucao = 'Concluída'
       ordem.horasTrabalhadas = calcularHorasTrabalhadas(ordem.dataInicio, dataFim, ordem.pausas ?? [])
       ordem.horasParada = ordem.afetaProducao
-        ? calcularHorasParada(ordem.dataAbertura, dataFim)
+        ? calcularHorasParada(ordem.dataSolicitacao, dataFim)
         : undefined
       ordem.encerramento = {
         defeitoConstatado: dados.defeitoConstatado,

@@ -146,10 +146,11 @@ export function calcularHorasTrabalhadas(
   return arredondar(Math.max(0, totalHoras - horasPausadas))
 }
 
-// Horas Parada: corre sem interrupção desde a abertura até o fim — só existe quando a OS
-// afeta produção (ver `afetaProducao` em OrdemServico).
-export function calcularHorasParada(dataAbertura: string, dataFim: string): number {
-  return arredondar(horasEntre(dataAbertura, dataFim))
+// Horas Parada: corre sem interrupção desde a solicitação (a máquina já parou ali, mesmo
+// que o Gestor só abra a OS depois) até o fim — só existe quando a OS afeta produção
+// (ver `afetaProducao` em OrdemServico).
+export function calcularHorasParada(dataSolicitacao: string, dataFim: string): number {
+  return arredondar(horasEntre(dataSolicitacao, dataFim))
 }
 
 export function calcularFinalizada(ordem: Pick<OrdemServico, 'statusExecucao' | 'custo'>): boolean {

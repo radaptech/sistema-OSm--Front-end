@@ -193,12 +193,18 @@ export interface OrdemServico {
   // seguiu operando e a OS não acumula tempo de parada: `horasParada` vem indefinida e as
   // telas exibem "Não se aplica" em vez de um número.
   afetaProducao: boolean
+  // Instante em que o Solicitante enviou o pedido (`criadoEm` da solicitação de origem),
+  // denormalizado pelo servidor no mesmo padrão de `maquinaNome`/`lojaNome`. É daqui que
+  // parte o relógio de máquina parada: ela já estava parada enquanto a solicitação
+  // esperava na fila do Gestor, então contar só a partir de `dataAbertura` esconderia
+  // justamente o tempo de espera que o indicador precisa expor.
+  dataSolicitacao: string
   dataAbertura: string
   dataInicio?: string
   dataFim?: string
-  // Horas já calculadas pelo servidor a partir de dataAbertura/dataInicio/dataFim e do
-  // histórico de pausas. Só existem em OS encerrada — e `horasParada` só existe quando
-  // `afetaProducao` é verdadeira.
+  // Horas já calculadas pelo servidor: as trabalhadas a partir de dataInicio/dataFim menos
+  // as pausas, as de parada a partir de dataSolicitacao/dataFim corridas. Só existem em OS
+  // encerrada — e `horasParada` só existe quando `afetaProducao` é verdadeira.
   horasTrabalhadas?: number
   horasParada?: number
   // Pausa em aberto no momento — presente somente enquanto statusExecucao === 'Pausada'.

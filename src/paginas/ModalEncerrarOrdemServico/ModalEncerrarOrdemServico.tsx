@@ -45,9 +45,10 @@ export function ModalEncerrarOrdemServico({
   // são calculados pelo servidor a partir do histórico de pausas e voltam na resposta.
   const horasTrabalhadas = calcularHoras(dataInicio, agora)
   // Só acumula parada a OS marcada como "Afeta Produção": nas demais a máquina seguiu
-  // operando, então não existe tempo de parada a exibir nem a calcular.
+  // operando, então não existe tempo de parada a exibir nem a calcular. Conta desde a
+  // solicitação, não desde a abertura da OS: a máquina parou quando o Solicitante relatou.
   const horasParada = ordemServico.afetaProducao
-    ? calcularHoras(ordemServico.dataAbertura, agora)
+    ? calcularHoras(ordemServico.dataSolicitacao, agora)
     : undefined
 
   const {
@@ -139,7 +140,7 @@ export function ModalEncerrarOrdemServico({
 
           <p className="text-xs text-slate-400">
             {horasParada !== undefined
-              ? 'Horas Trabalhadas desconta o tempo em que a OS ficou pausada (ex: esperando peça) — Horas Parada conta corrido desde a abertura, sem descontar pausas.'
+              ? 'Horas Trabalhadas desconta o tempo em que a OS ficou pausada (ex: esperando peça) — Horas Parada conta corrido desde a solicitação, sem descontar pausas nem a espera pela abertura da OS.'
               : 'Horas Trabalhadas desconta o tempo em que a OS ficou pausada (ex: esperando peça). Esta OS não foi marcada como "Afeta Produção": a máquina seguiu operando, então não acumula tempo de parada.'}
           </p>
 

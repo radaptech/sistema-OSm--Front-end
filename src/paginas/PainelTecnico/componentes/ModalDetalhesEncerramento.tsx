@@ -20,10 +20,11 @@ export function ModalDetalhesEncerramento({
   const { fechar, classeFundo, classeCartao } = useSaidaAnimada(aoFechar)
 
   // Só a OS marcada como "Afeta Produção" acumula tempo de máquina parada; nas demais a
-  // máquina seguiu operando durante o atendimento.
+  // máquina seguiu operando durante o atendimento. Conta desde a solicitação, não desde a
+  // abertura da OS: a máquina parou quando o Solicitante relatou.
   const horasParada =
     ordemServico.afetaProducao && ordemServico.dataFim
-      ? calcularHoras(ordemServico.dataAbertura, ordemServico.dataFim)
+      ? calcularHoras(ordemServico.dataSolicitacao, ordemServico.dataFim)
       : undefined
 
   return createPortal(

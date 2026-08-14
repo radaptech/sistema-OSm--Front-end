@@ -148,6 +148,16 @@ export function ModalDetalhesOS({
                 </p>
               </div>
             )}
+            {/* Exibida junto da abertura porque é daqui que parte Horas Parada — sem ela o
+                número ficaria sem origem visível. */}
+            <div>
+              <p className="font-mono text-xs font-semibold tracking-wide text-slate-400 uppercase">
+                Solicitada em
+              </p>
+              <p className="font-mono text-slate-700">
+                {formatarDataHora(ordemServico.dataSolicitacao)}
+              </p>
+            </div>
             <div>
               <p className="font-mono text-xs font-semibold tracking-wide text-slate-400 uppercase">
                 Abertura da OS
