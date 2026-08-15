@@ -28,6 +28,12 @@ function obterUrlBase(): string {
     return URL_HOMOLOGACAO
   }
 
+  // Começando com "/" é caminho de mesma origem (dev atrás do proxy reverso:
+  // REACT_APP_URL_API=/api). Sem isto o https:// seria forçado e viraria "https:///api".
+  if (urlConfigurada.startsWith('/')) {
+    return urlConfigurada
+  }
+
   return /^https?:\/\//i.test(urlConfigurada)
     ? urlConfigurada
     : `https://${urlConfigurada}`
