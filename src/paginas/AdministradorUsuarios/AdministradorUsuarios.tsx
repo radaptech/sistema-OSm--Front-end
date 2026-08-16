@@ -18,6 +18,7 @@ import type { Usuario } from '../../tipos/usuario'
 
 const ROTULO_PERFIL: Record<Usuario['perfil'], string> = {
   solicitante: 'Solicitante',
+  tecnico: 'Técnico',
   gestor: 'Gestor',
   administrador: 'Administrador',
 }
@@ -91,6 +92,7 @@ export function AdministradorUsuarios() {
             >
               <option value="">Todos os perfis</option>
               <option value="solicitante">Solicitante</option>
+              <option value="tecnico">Técnico</option>
               <option value="gestor">Gestor</option>
               <option value="administrador">Administrador</option>
             </CampoSelecao>

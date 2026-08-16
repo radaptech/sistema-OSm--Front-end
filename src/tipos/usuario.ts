@@ -15,14 +15,17 @@ export interface NovoUsuarioPayload {
   area?: AreaTecnico
 }
 
-// Usuario cobre solicitante, gestor e administrador — técnico tem seu próprio
-// registro em Tecnico (área e lojas não fazem sentido para os demais perfis).
+// Usuario cobre os quatro perfis, inclusive Técnico: /usuarios é a superfície
+// única de escrita (ver CLAUDE.md item 7), então GET /usuarios devolve a tabela
+// inteira. Tecnico (/src/tipos/tecnico.ts) é a projeção somente-leitura com
+// área de atuação, consumida por GET /tecnicos — não é um recorte diferente de
+// gente, é um recorte diferente de campos.
 export interface Usuario {
   id: number
   nome: string
   telefone?: string
   email: string
-  perfil: Exclude<PerfilLogin, 'tecnico'>
+  perfil: PerfilLogin
   lojasIds: number[]
   setoresIds: number[]
   acessoTotalSetores: boolean
