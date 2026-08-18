@@ -60,8 +60,8 @@ export function EsqueletoCardOS() {
   )
 }
 
-// Esqueleto das listagens simples de cadastro (Usuários, Lojas, Setores, Técnicos,
-// Máquinas, Empresas Terceirizadas): identificação à esquerda, ações à direita.
+// Esqueleto das listagens simples de cadastro (Usuários, Lojas, Setores, Máquinas,
+// Empresas Terceirizadas): identificação à esquerda, ações à direita.
 export function EsqueletoLinhaCadastro() {
   return (
     <div className="shadow-card flex flex-col gap-3 rounded-xl bg-white p-4 sm:flex-row sm:items-center sm:justify-between">

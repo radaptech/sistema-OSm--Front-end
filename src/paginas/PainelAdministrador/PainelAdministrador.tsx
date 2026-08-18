@@ -28,8 +28,8 @@ export function PainelAdministrador() {
             </h1>
           </div>
           <p className="text-sm text-slate-300">
-            Acesso total ao tenant — gerencie usuários, lojas, setores, técnicos e
-            máquinas do sistema.
+            Acesso total ao tenant — gerencie usuários, lojas, setores e máquinas do
+            sistema.
           </p>
         </div>
 
@@ -52,12 +52,6 @@ export function PainelAdministrador() {
             descricao="Setores cadastrados por loja"
             Icone={Tag}
             aoClicar={() => navegar('/administrador/setores')}
-          />
-          <CardAcao
-            titulo="Técnicos"
-            descricao="Área de atuação e valor/hora"
-            Icone={Wrench}
-            aoClicar={() => navegar('/administrador/tecnicos')}
           />
           <CardAcao
             titulo="Máquinas"

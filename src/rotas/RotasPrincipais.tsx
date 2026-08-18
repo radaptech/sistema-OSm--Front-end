@@ -60,11 +60,6 @@ const AdministradorSetores = lazy(() =>
     default: m.AdministradorSetores,
   })),
 )
-const AdministradorTecnicos = lazy(() =>
-  import('../paginas/AdministradorTecnicos/AdministradorTecnicos').then((m) => ({
-    default: m.AdministradorTecnicos,
-  })),
-)
 const AdministradorMaquinas = lazy(() =>
   import('../paginas/AdministradorMaquinas/AdministradorMaquinas').then((m) => ({
     default: m.AdministradorMaquinas,
@@ -171,11 +166,6 @@ export function RotasPrincipais() {
           />
           <Route path="/cadastrar-setor" element={<CadastrarSetor />} />
           <Route path="/cadastrar-setor/:id" element={<CadastrarSetor />} />
-
-          <Route
-            path="/administrador/tecnicos"
-            element={<AdministradorTecnicos />}
-          />
 
           <Route
             path="/administrador/maquinas"
