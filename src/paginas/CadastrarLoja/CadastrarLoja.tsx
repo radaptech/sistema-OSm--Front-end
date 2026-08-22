@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { useForm, useWatch } from 'react-hook-form'
+import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { CheckCircle2, Store } from 'lucide-react'
@@ -7,7 +7,6 @@ import { toast } from 'react-toastify'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Botao } from '../../componentes/Botao'
 import { CampoTexto } from '../../componentes/CampoTexto'
-import { CampoSelecao } from '../../componentes/CampoSelecao'
 import { CabecalhoSubpagina } from '../../componentes/CabecalhoSubpagina'
 import { useEmpresas } from '../../hooks/useEmpresas'
 import { useLojas } from '../../hooks/useLojas'
@@ -31,21 +30,18 @@ export function CadastrarLoja() {
   const {
     register,
     handleSubmit,
-    control,
     reset,
     formState: { errors },
   } = useForm<DadosCadastrarLoja>({
     resolver: zodResolver(esquemaCadastrarLoja),
-    defaultValues: { nome: '', empresaId: 0 },
+    defaultValues: { nome: '' },
   })
 
   useEffect(() => {
     if (lojaExistente) {
-      reset({ nome: lojaExistente.nome, empresaId: lojaExistente.empresaId })
+      reset({ nome: lojaExistente.nome })
     }
   }, [lojaExistente, reset])
-
-  const empresaId = useWatch({ control, name: 'empresaId' })
 
   const { mutateAsync: criar, isPending: criando } = useMutation({
     mutationFn: servicoLojas.criar,
@@ -67,10 +63,12 @@ export function CadastrarLoja() {
 
     await criar(dados)
     toast.success('Loja cadastrada com sucesso.')
-    reset({ nome: '', empresaId: dados.empresaId })
+    reset({ nome: '' })
   }
 
-  const lojasDaEmpresa = lojas.filter((loja) => loja.empresaId === empresaId)
+  // Uma empresa por tenant (empresa É o tenant no back-end), então toda loja
+  // listada já é dessa empresa -- não há o que filtrar.
+  const empresa = empresas[0]
   const isPending = criando || atualizando
 
   return (
@@ -97,18 +95,17 @@ export function CadastrarLoja() {
                 {...register('nome')}
               />
 
-              <CampoSelecao
-                rotulo="Empresa *"
-                mensagemErro={errors.empresaId?.message}
-                {...register('empresaId', { valueAsNumber: true })}
-              >
-                <option value="">Selecionar...</option>
-                {empresas.map((empresa) => (
-                  <option key={empresa.id} value={empresa.id}>
-                    {empresa.nome}
-                  </option>
-                ))}
-              </CampoSelecao>
+              {/* Empresa não é escolha: há exatamente uma por tenant e o
+                  servidor a deriva do token. Fica visível só como contexto. */}
+              <CampoTexto
+                rotulo="Empresa"
+                variante="claro"
+                name="empresa"
+                value={empresa?.nome ?? ''}
+                readOnly
+                tabIndex={-1}
+                className="cursor-default opacity-70"
+              />
             </div>
 
             <div className="mt-2 flex flex-col-reverse gap-3 sm:flex-row">
@@ -129,16 +126,16 @@ export function CadastrarLoja() {
               </div>
             </div>
 
-            {!emEdicao && empresaId && (
+            {!emEdicao && (
               <div className="flex flex-col gap-2 border-t border-slate-100 pt-5">
                 <span className="text-xs font-semibold tracking-wide text-slate-400 uppercase">
                   Lojas já cadastradas dessa empresa
                 </span>
-                {lojasDaEmpresa.length === 0 ? (
+                {lojas.length === 0 ? (
                   <p className="text-sm text-slate-400">Nenhuma loja cadastrada ainda.</p>
                 ) : (
                   <div className="flex flex-wrap gap-2">
-                    {lojasDaEmpresa.map((loja) => (
+                    {lojas.map((loja) => (
                       <span
                         key={loja.id}
                         className="flex items-center gap-1 rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600"

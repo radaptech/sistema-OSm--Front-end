@@ -133,7 +133,10 @@ export function CadastrarSetor() {
               </div>
             </div>
 
-            {!emEdicao && lojaId && (
+            {/* lojaId > 0 e não só lojaId: o select começa em 0, e `0 && (...)`
+                avalia para 0 — que o React RENDERIZA, deixando um zero solto na
+                tela enquanto nenhuma loja está escolhida. */}
+            {!emEdicao && lojaId > 0 && (
               <div className="flex flex-col gap-2 border-t border-slate-100 pt-5">
                 <span className="text-xs font-semibold tracking-wide text-slate-400 uppercase">
                   Setores já cadastrados nessa loja

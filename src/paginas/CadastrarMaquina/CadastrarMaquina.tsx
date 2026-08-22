@@ -98,6 +98,22 @@ export function CadastrarMaquina() {
   const lojaSelecionadaId = useWatch({ control, name: 'lojaId' })
   const { data: setoresDaLoja = [] } = useSetores(lojaSelecionadaId || undefined)
 
+  // O <select> de setor só ganha as options quando useSetores(lojaId) responde, e o
+  // reset() da edição roda ANTES disso: o valor cai num select que ainda não tem a
+  // option correspondente e o campo aparece em "Selecionar...", obrigatório e vazio.
+  // Reaplica assim que a lista da loja chega. Não atrapalha quem está editando à mão:
+  // setoresDaLoja é referência estável do cache, então o efeito não re-roda a cada
+  // escolha do usuário.
+  useEffect(() => {
+    if (!maquinaExistente || setoresDaLoja.length === 0) {
+      return
+    }
+
+    if (setoresDaLoja.some((setor) => setor.id === maquinaExistente.setorId)) {
+      setValue('setorId', maquinaExistente.setorId)
+    }
+  }, [maquinaExistente, setoresDaLoja, setValue])
+
   // Trocar de loja invalida o setor escolhido (ele pertence à loja anterior). A limpeza
   // fica no onChange do select, e não num watch da lojaId, para não apagar o setor que o
   // reset() acabou de preencher ao carregar a máquina em edição.
@@ -163,7 +179,11 @@ export function CadastrarMaquina() {
             noValidate
             className="flex flex-col gap-5 p-6 sm:p-8"
           >
-            <UploadFoto foto={foto} aoSelecionarFoto={setFoto} />
+            <UploadFoto
+              foto={foto}
+              aoSelecionarFoto={setFoto}
+              urlExistente={maquinaExistente?.fotoUrl}
+            />
 
             <CampoTexto
               rotulo="Nome *"
