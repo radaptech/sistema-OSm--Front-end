@@ -41,16 +41,15 @@ export interface PreventivaInterna {
   ativa: boolean
 }
 
-export const empresas: Empresa[] = [
-  { id: 1, nome: 'Rede Verde Supermercados' },
-  { id: 2, nome: 'Distribuidora Nordeste' },
-]
+// Uma empresa só: empresa É o tenant no back-end, então GET /empresas nunca
+// devolve mais de um item (back-end/CLAUDE.md, "Empresa É o tenant").
+export const empresas: Empresa[] = [{ id: 1, nome: 'Rede Verde Supermercados' }]
 
 export const lojas: Loja[] = [
   { id: 1, nome: 'Loja 1 - Matriz', empresaId: 1, ativa: true },
   { id: 2, nome: 'Loja 2 - Filial Sul', empresaId: 1, ativa: true },
   { id: 3, nome: 'Loja 3 - Filial Norte', empresaId: 1, ativa: true },
-  { id: 4, nome: 'Loja 4 - Centro de Distribuição', empresaId: 2, ativa: true },
+  { id: 4, nome: 'Loja 4 - Centro de Distribuição', empresaId: 1, ativa: true },
 ]
 
 export const setores: SetorCadastrado[] = [

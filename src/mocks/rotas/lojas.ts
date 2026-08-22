@@ -1,5 +1,5 @@
 import type { NovaLojaPayload } from '../../tipos/loja'
-import { lojas } from '../bancoMock'
+import { empresas, lojas } from '../bancoMock'
 import { atraso, gerarId, responderErro, responderJson, type Rota } from '../utilidadesMock'
 
 export const rotasLojas: Rota[] = [
@@ -26,7 +26,8 @@ export const rotasLojas: Rota[] = [
     async tratar({ corpo }) {
       await atraso()
       const dados = corpo as NovaLojaPayload
-      const nova = { id: gerarId(lojas), nome: dados.nome, empresaId: dados.empresaId, ativa: true }
+      // empresaId é derivado do tenant, nunca do corpo -- igual ao back.
+      const nova = { id: gerarId(lojas), nome: dados.nome, empresaId: empresas[0].id, ativa: true }
       lojas.push(nova)
       return responderJson(nova, 201)
     },
@@ -44,7 +45,6 @@ export const rotasLojas: Rota[] = [
 
       const dados = corpo as NovaLojaPayload
       loja.nome = dados.nome
-      loja.empresaId = dados.empresaId
       return responderJson(loja)
     },
   },

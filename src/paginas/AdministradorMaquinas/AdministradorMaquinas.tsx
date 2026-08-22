@@ -158,7 +158,12 @@ export function AdministradorMaquinas() {
                 <div className="min-w-0">
                   <p className="truncate font-semibold text-slate-800">
                     {maquina.nome}{' '}
-                    <span className="font-mono text-sm text-slate-400">· {maquina.id}</span>
+                    {/* Patrimônio, não o id do banco: é por ele que a busca desta
+                        mesma tela filtra, e é o número que existe na etiqueta da
+                        máquina. O id só aparece quando não há patrimônio. */}
+                    <span className="font-mono text-sm text-slate-400">
+                      · {maquina.numeroPatrimonio || maquina.id}
+                    </span>
                   </p>
                   <p className="truncate text-xs text-slate-400">
                     {lojas.find((loja) => loja.id === maquina.lojaId)?.nome ?? maquina.lojaId} ·{' '}

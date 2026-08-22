@@ -7,7 +7,11 @@ declare const process: { env: Record<string, string | undefined> }
 // fetch real por src/mocks/apiMock.ts, mantendo intacta a lógica de erro/401/blob abaixo.
 const USAR_MOCKS = import.meta.env.VITE_USE_MOCKS === 'true'
 
-const URL_HOMOLOGACAO = 'https://homolog-api.sistema-os.com.br'
+// Fallback de quando REACT_APP_URL_API não é definida. Tem que ficar no mesmo
+// domínio registrável do front (*.radaptech.com.br): o cookie de sessão é
+// SameSite=Lax, então apontar para outro domínio faz o navegador descartar o
+// cookie depois de um login que respondeu 200 -- login em loop, sem erro visível.
+const URL_PADRAO_API = 'https://api.radaptech.com.br'
 
 const CHAVES_ERRO_BACKEND = ['error', 'erro', 'message', 'detalhes'] as const
 
@@ -25,7 +29,7 @@ function obterUrlBase(): string {
   const urlConfigurada = process.env.REACT_APP_URL_API
 
   if (!urlConfigurada) {
-    return URL_HOMOLOGACAO
+    return URL_PADRAO_API
   }
 
   // Começando com "/" é caminho de mesma origem (dev atrás do proxy reverso:

@@ -5,6 +5,10 @@ import { toast } from 'react-toastify'
 interface UploadFotoProps {
   foto: File | null
   aoSelecionarFoto: (arquivo: File | null) => void
+  // Foto que já está salva no servidor (tela de edição). Sem isto, uma máquina COM
+  // foto abre mostrando "Clique para selecionar uma foto", e o administrador não tem
+  // como saber que ela existe — nem que salvar sem escolher nada a preserva.
+  urlExistente?: string
   rotulo?: string
   textoAlternativo?: string
 }
@@ -12,19 +16,25 @@ interface UploadFotoProps {
 export function UploadFoto({
   foto,
   aoSelecionarFoto,
+  urlExistente,
   rotulo = 'Foto da Máquina',
   textoAlternativo = 'Pré-visualização da máquina',
 }: UploadFotoProps) {
   const inputRef = useRef<HTMLInputElement>(null)
-  const previewUrl = useMemo(() => (foto ? URL.createObjectURL(foto) : null), [foto])
+
+  // Só o preview local é blob: é ele, e não a urlExistente, que precisa de revoke.
+  const previewLocal = useMemo(() => (foto ? URL.createObjectURL(foto) : null), [foto])
 
   useEffect(() => {
     return () => {
-      if (previewUrl) {
-        URL.revokeObjectURL(previewUrl)
+      if (previewLocal) {
+        URL.revokeObjectURL(previewLocal)
       }
     }
-  }, [previewUrl])
+  }, [previewLocal])
+
+  // Arquivo novo ganha da foto salva: é o que o usuário acabou de escolher.
+  const previewUrl = previewLocal ?? urlExistente ?? null
 
   function aoMudarArquivo(evento: ChangeEvent<HTMLInputElement>) {
     const arquivo = evento.target.files?.[0]
@@ -69,7 +79,7 @@ export function UploadFoto({
         )}
       </button>
 
-      {foto && (
+      {foto ? (
         <button
           type="button"
           onClick={() => aoSelecionarFoto(null)}
@@ -77,6 +87,12 @@ export function UploadFoto({
         >
           Remover foto
         </button>
+      ) : (
+        urlExistente && (
+          <span className="self-start text-xs text-slate-400">
+            Foto atual — escolha um arquivo para trocar
+          </span>
+        )
       )}
 
       <input

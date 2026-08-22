@@ -56,7 +56,7 @@ A arquitetura do projeto deve seguir uma separação clara de responsabilidades 
 - **Gerenciamento de Sessão via Cookies:** O token JWT retornado pelo back-end é gerenciado via **Cookies HttpOnly**. É terminantemente proibido armazenar o JWT em `localStorage` ou variáveis globais. O cliente HTTP usa `credentials: "include"`.
 - **Restauração de Sessão no Bootstrap (`PortaoSessao`):** `App.tsx` envolve as rotas no `PortaoSessao` (`/src/componentes/PortaoSessao.tsx`), que chama `useSessao` (`GET /autenticacao/sessao`) antes de renderizar qualquer rota e exibe `CarregandoSessao` enquanto isso. Sem esse passo, recarregar a página derrubaria o usuário mesmo com o cookie ainda válido no servidor. O endpoint responde **401 quando não há sessão** — o que não é erro, é só "não logado" — por isso `useSessao` usa `retry: false` e `staleTime: Infinity`.
 - **Tratamento Global de Erros (401 Não Autorizado):** Se a API retornar 401 e a rota atual não for `/login`, o `api.ts` dispara um toast ("Sua sessão expirou.") e redireciona forçosamente para o Login.
-- **Hierarquia Organizacional (Tenant > Empresa > Loja > Setor):** cada tenant possui uma ou mais **Empresas** (`Empresa`, `/src/tipos/empresa.ts` — só `id`/`nome`, listada por `GET /empresas` e usada como vínculo obrigatório da Loja em `CadastrarLoja`); cada Empresa possui **Lojas** (unidades/filiais, com `empresaId`); cada Loja possui seus **Setores**. Máquinas e Ordens de Serviço pertencem sempre a uma Loja + Setor (`lojaId` + `setor`).
+- **Hierarquia Organizacional (Tenant = Empresa > Loja > Setor):** **empresa É o tenant** (decisão fechada no back-end: `loja.tenant_id` referencia `empresa (id)`, não existe coluna `empresa_id`). Consequências no front: `GET /empresas` devolve **uma lista de um item só**, `Loja.empresaId` é o `tenant_id` da própria linha (campo derivado, só leitura) e `NovaLojaPayload` **não tem** `empresaId` — em `CadastrarLoja` a empresa aparece como campo somente leitura, não como select, e o servidor a tira do token. Não reintroduza a escolha: aceitar empresa do cliente é aceitar tenant do cliente. Cada Empresa possui **Lojas** (unidades/filiais, com `empresaId`); cada Loja possui seus **Setores**. Máquinas e Ordens de Serviço pertencem sempre a uma Loja + Setor (`lojaId` + `setor`).
 - **Controle de Acesso por Loja e Setor (Gestor):** o acesso do Gestor é definido por uma lista de **escopos** (`EscopoAcessoGestor[]`, `/src/tipos/autenticacao.ts`), onde cada escopo vincula uma Loja a um conjunto de setores:
   - **Restrito a setores específicos** dentro de uma Loja (`setoresIds: number[]`) — ex: Gestor que responde apenas por "Padaria" e "Açougue" da Loja 1, enquanto outro Gestor da mesma loja responde por "Hortifruti" e "Peixaria".
   - **Total sobre uma Loja inteira** (`setoresIds: 'todos'`) — ex: Gestor que responde por todos os setores das Lojas 2 e 3 simultaneamente (um Gestor pode ter múltiplos escopos).
@@ -284,6 +284,58 @@ Regras transversais que valem para **todos** os serviços. Ao criar um endpoint 
   - **Gestor** (aba `OS Finalizadas` do `PainelGestor`, item 6): as finalizadas **dentro do seu escopo** (restringido pelo servidor), agrupadas por Loja/Setor.
 - **`ModalDetalhesOS` (compartilhado, `/src/paginas/ModalDetalhesOS/`):** modal somente leitura reaproveitado pelas duas telas (a prop `contexto` troca o rótulo do cabeçalho — "Painel do Administrador" ou "Painel do Gestor") com máquina/item, loja, setor, Tipo de OS (Predial/Corretiva), solicitante, urgência, datas de **solicitação**/abertura/início/término (a de solicitação aparece porque é dela que parte Horas Parada — item 9), Horas Trabalhadas, Custo Hora do Técnico, Custo Manutenção, Custo Total e os textos de Defeito Constatado/Causa Raiz/Solução. "Técnico Responsável" aparece sempre; **"Empresa Terceirizada"** é um campo **adicional**, exibido só quando `empresaTerceirizadaNome` existe — terceirizar não tira a OS do Técnico. `BadgeTipoOS` identifica o tipo no cabeçalho. Cada card na listagem tem `Eye` (**Visualizar**) e `Printer` (**Imprimir**, abre o modal já disparando a impressão via prop `autoImprimir`).
 - **Impressão (atual: `@media print` no front):** o conteúdo do modal fica num contêiner com `id="area-impressao-os"`, e uma regra `@media print` global (`index.css`) esconde o resto da aplicação (`body * { visibility: hidden }`) e mostra só esse contêiner — os botões `Fechar`/`Imprimir` e o cabeçalho verde levam `print:hidden`. O endpoint de PDF do servidor já existe no contrato (`servicoOrdensServico.obterPdfImpressao` → `GET /ordens-servico/:id/impressao`, devolvendo Blob) mas **ainda não está ligado a nenhuma tela** — trocar a impressão local pelo PDF do back-end é o passo seguinte.
+
+## Verificação pelo navegador (22/08/2026) — o que já foi provado e o que quebrou
+
+Os cinco cadastros do Administrador foram percorridos **na tela, contra a API real** (não
+mock, não curl): login, lojas, setores em cascata, os perfis de usuário com escopo, máquina
+com foto (multipart → R2 → URL assinada renderizando no `<img>`), preventiva com data e
+empresa terceirizada. Tudo passou. Os bugs abaixo foram achados **nessa passagem** e já
+estão corrigidos — não reintroduza.
+
+- ⚠️ **`PortaoSessao` precisa esperar o espelhamento no estado, não só a query.** O
+  `entrar(sessao)` roda num `useEffect`, ou seja, DEPOIS da primeira renderização dos
+  filhos — que acontecia com `autenticado = false`, e a `RotaProtegida` redirecionava antes
+  do efeito rodar. Efeito prático: **todo F5 ou link direto numa rota interna**
+  (`/cadastrar-setor`, `/cadastrar-loja/3`) devolvia o usuário para a rota inicial do
+  perfil, com a sessão válida no servidor. A guarda hoje é
+  `if (isPending || (sessao && !autenticado))`.
+- ⚠️ **`{condicao && numero && (...)}` renderiza o número quando ele é 0.** Era o "0" solto
+  que aparecia em `CadastrarSetor` antes de escolher a loja (o select começa em 0). Use
+  `lojaId > 0`. O mesmo padrão existia em `CadastrarLoja` e saiu junto com o select de
+  empresa.
+- ⚠️ **Na edição, o `<select>` em cascata perde o valor que o `reset()` acabou de pôr**: as
+  options só existem quando `useSetores(lojaId)` responde, e o `reset` roda antes — o
+  campo obrigatório aparece vazio. `CadastrarMaquina` reaplica com um efeito sobre
+  `setoresDaLoja`; o mesmo cuidado vale para qualquer cascata nova.
+- ⚠️ **`UploadFoto` recebe `urlExistente`** para mostrar a foto já salva no servidor. Sem
+  isso, a máquina COM foto abria dizendo "Clique para selecionar uma foto", e o
+  administrador não tinha como saber que ela existia — nem que salvar sem escolher a
+  preserva (o back faz `COALESCE`). Só o preview local é blob e leva `revokeObjectURL`.
+- **Card de máquina mostra `numeroPatrimonio`, não `maquina.id`**: é por ele que a busca da
+  mesma tela filtra, e é o número que existe na etiqueta.
+
+**Ainda quebrado, e é front:** os cards "Custos Pendentes" e "OS Finalizadas" do
+`PainelAdministrador` chamam `/ordens-servico`, que não existe no back — o admin clica e
+recebe toast de erro. Esconder os dois até a OS existir.
+
+**Não existe `AdministradorTecnicos`** (nem pasta, nem card, nem rota), apesar de o item 12
+descrever a tela. `GET /tecnicos` já existe no back e hoje só alimenta o
+`ModalAbrirOrdemServico`; `servicoTecnicos.obterPorId` não é chamado por ninguém.
+
+## Domínio e build (antes de subir)
+
+Front e API ficam sob o **mesmo domínio registrável** — `*.radaptech.com.br` nos dois. O
+cookie de sessão é `HttpOnly` + `SameSite=Lax`: em domínios registráveis diferentes o login
+responde 200 e o navegador **descarta o cookie**, e o usuário volta pro login em loop sem
+erro visível. O CORS do back só libera `radaptech.com.br` e `localhost`.
+
+⚠️ **`REACT_APP_URL_API` é resolvida em BUILD TIME**, não em runtime: o `define` do
+`vite.config.ts` injeta o valor no bundle. Definir a variável só no runtime do serviço não
+tem efeito — ela precisa existir no momento do `vite build`, senão o bundle sai com o
+fallback (`URL_PADRAO_API` em `api.ts`) compilado dentro. Em dev o compose sobrescreve com
+`/api` (mesma origem, atrás do traefik), e por isso o `api.ts` deixa passar valor começado
+por `/`.
 
 ## Helpers de Domínio (evite reimplementar)
 - **`alvoOS.ts`** — Solicitação e OS apontam ou para uma máquina cadastrada (Maquinário) ou para um item digitado na hora (Pequeno Reparo). Use `obterNomeAlvo`, `obterCodigoAlvo` e `combinaBuscaAlvo` em vez de repetir o encadeamento `maquinaNome ?? itemDescricao ?? '—'`.
