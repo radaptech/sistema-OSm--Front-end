@@ -344,6 +344,30 @@ fallback (`URL_PADRAO_API` em `api.ts`) compilado dentro. Em dev o compose sobre
 `/api` (mesma origem, atrás do traefik), e por isso o `api.ts` deixa passar valor começado
 por `/`.
 
+## Dockerfile de produção
+`dockerfile` (raiz do repo) — multi-stage, sem Node em produção: um SPA compila pra
+arquivo estático, então rodar um processo Node 24h só pra servir arquivo já pronto é
+desperdício. `builder` (`node:22-alpine`) roda `npm ci` + `npm run build`; o estágio
+final é `nginx:alpine` servindo `dist/` — **94.6MB**, testado local (`docker build` +
+`docker run` fora do Compose, como o Railway rodaria).
+- **`REACT_APP_URL_API`/`VITE_USE_MOCKS` viram `ARG`, não `ENV` do container final** —
+  mesmo motivo de "Domínio e build" acima: são resolvidas em build time, então precisam
+  existir no `docker build --build-arg REACT_APP_URL_API=https://api.radaptech.com.br`,
+  nunca só na configuração de runtime do serviço. **Testado**: o valor aparece de fato
+  dentro do bundle (`grep` no `.js` gerado).
+- **`nginx.conf` faz o fallback de SPA** (`try_files $uri $uri/ /index.html`) — sem isso,
+  qualquer navegação direta ou F5 numa rota interna (`/painel-administrador`,
+  `/cadastrar-loja/3`) responde 404 do nginx, porque não existe arquivo com esse nome; é
+  o React Router quem decide o que renderizar, não o servidor. **Testado**: deep link
+  direto numa rota interna volta 200.
+- `gzip on` pro `.js`/`.css`/`.json`/`.svg` — o bundle principal sai ~400KB, e mobile é
+  requisito do projeto (ver "Mobile-First" acima). **Testado**: `Content-Encoding: gzip`
+  confirmado no bundle de produção.
+- **Dev não ganhou Dockerfile próprio** (diferente do back-end, que tem `dockerfile.dev`
+  separado) — o `docker-compose.yml` já roda `image: node:22-alpine` direto com
+  `npm run dev`, e o Vite faz hot-reload nativo; não existe um "CompileDaemon" do front
+  pra precisar de uma imagem própria só pra isso.
+
 ## CI
 - `.github/workflows/ci.yml` — push em `master`/`dev` e todo PR: `npm run lint`
   (`eslint .`) e `npm run build` (`tsc -b && vite build`). Sem serviço de banco (o front
