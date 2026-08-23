@@ -344,6 +344,17 @@ fallback (`URL_PADRAO_API` em `api.ts`) compilado dentro. Em dev o compose sobre
 `/api` (mesma origem, atrás do traefik), e por isso o `api.ts` deixa passar valor começado
 por `/`.
 
+## CI
+- `.github/workflows/ci.yml` — push em `master`/`dev` e todo PR: `npm run lint`
+  (`eslint .`) e `npm run build` (`tsc -b && vite build`). Sem serviço de banco (o front
+  não fala com Postgres) e sem testes automatizados (não há Jest/Vitest configurado —
+  validação hoje é manual no navegador, ver "Verificação pelo navegador" no
+  `../sistema-OSm--Back-end/CLAUDE.md`).
+- **`npm run build`, não só `tsc --noEmit`**: pega os dois de uma vez — erro de tipo
+  **e** erro que só aparece no build de produção (import quebrado, asset faltando), que
+  o `vite dev` é mais tolerante e deixaria passar batido.
+- Node 22, pareado com a imagem `node:22-alpine` do `docker-compose.yml`.
+
 ## Helpers de Domínio (evite reimplementar)
 - **`alvoOS.ts`** — Solicitação e OS apontam ou para uma máquina cadastrada (Maquinário) ou para um item digitado na hora (Pequeno Reparo). Use `obterNomeAlvo`, `obterCodigoAlvo` e `combinaBuscaAlvo` em vez de repetir o encadeamento `maquinaNome ?? itemDescricao ?? '—'`.
 - **`dataBackend.ts`** — toda conversão de data que entra ou sai da API (ver "Contrato com o Back-end").
