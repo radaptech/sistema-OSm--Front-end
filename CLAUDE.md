@@ -355,11 +355,23 @@ final é `nginx:alpine` servindo `dist/` — **94.6MB**, testado local (`docker 
   existir no `docker build --build-arg REACT_APP_URL_API=https://api.radaptech.com.br`,
   nunca só na configuração de runtime do serviço. **Testado**: o valor aparece de fato
   dentro do bundle (`grep` no `.js` gerado).
-- **`nginx.conf` faz o fallback de SPA** (`try_files $uri $uri/ /index.html`) — sem isso,
-  qualquer navegação direta ou F5 numa rota interna (`/painel-administrador`,
+- **`nginx.conf.template` faz o fallback de SPA** (`try_files $uri $uri/ /index.html`) —
+  sem isso, qualquer navegação direta ou F5 numa rota interna (`/painel-administrador`,
   `/cadastrar-loja/3`) responde 404 do nginx, porque não existe arquivo com esse nome; é
   o React Router quem decide o que renderizar, não o servidor. **Testado**: deep link
   direto numa rota interna volta 200.
+- ⚠️ **`listen ${PORT}`, não uma porta fixa — achado em produção (23/08/2026).** Primeira
+  versão tinha `listen 80` fixo; o Railway injeta `PORT` (no caso do projeto, `8080`) e
+  roteia o domínio pra ela, e nginx não lê variável de ambiente sozinho — resultado foi
+  502 (mesmo sintoma que o back-end teve com a porta fixa em `8081`, ver
+  `../sistema-OSm--Back-end/CLAUDE.md`). O arquivo virou **`nginx.conf.template`**, copiado
+  pra `/etc/nginx/templates/` em vez de direto em `conf.d/`: a imagem oficial `nginx:alpine`
+  já roda `envsubst` nesses arquivos sozinha no boot (`docker-entrypoint.d`, feature nativa,
+  sem script custom) e só substitui variáveis que **existem de verdade no ambiente** — por
+  isso `$uri`/`$uri/` do nginx (que não são env var) sobrevivem intactos, só `${PORT}` é
+  trocado. `ENV PORT=8080` no Dockerfile é o default se ninguém injetar nada. **Testado**:
+  `PORT=8080`, `PORT=3333` e sem `PORT` nenhum — os três renderizam o `listen` certo e
+  respondem 200.
 - `gzip on` pro `.js`/`.css`/`.json`/`.svg` — o bundle principal sai ~400KB, e mobile é
   requisito do projeto (ver "Mobile-First" acima). **Testado**: `Content-Encoding: gzip`
   confirmado no bundle de produção.
