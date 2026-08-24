@@ -15,6 +15,13 @@ const URL_PADRAO_API = 'sistemaos-backend.radaptech.com.br/api'
 
 const CHAVES_ERRO_BACKEND = ['error', 'erro', 'message', 'detalhes'] as const
 
+// Sem isso, uma conexão que trava (não só demora) prende o fetch pra sempre --
+// isPending do useSessao nunca vira false, e PortaoSessao fica em "Carregando
+// sessão..." indefinidamente, sem erro, sem botão, sem saída (achado
+// 23/08/2026: um pico de tráfego bastou pra travar a tela pra um usuário real).
+// 20s é folgado o bastante pra nunca falsear um request só lento de verdade.
+const TIMEOUT_REQUISICAO_MS = 20_000
+
 type MetodoHttp = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
 
 interface OpcoesRequisicao {
@@ -129,6 +136,7 @@ async function requisitar<T = unknown>(
           method: metodo,
           credentials: 'include',
           headers: cabecalhosFinais,
+          signal: AbortSignal.timeout(TIMEOUT_REQUISICAO_MS),
           body:
             corpo === undefined
               ? undefined
