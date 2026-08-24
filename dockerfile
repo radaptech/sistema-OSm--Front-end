@@ -28,5 +28,17 @@ RUN npm run build
 
 FROM nginx:alpine
 
+# Railway (e a maioria dos PaaS) injeta PORT em runtime e espera o serviço
+# escutar nela -- nginx não lê variável de ambiente sozinho, então o config
+# vira um .template em /etc/nginx/templates/: a imagem oficial já roda
+# envsubst nele sozinha no boot (docker-entrypoint.d, feature nativa da
+# imagem, sem script custom) e gera o default.conf de verdade em
+# /etc/nginx/conf.d/. O envsubst da imagem só substitui variáveis que
+# realmente existem no ambiente -- por isso $uri/$host etc. do nginx (que
+# não são env var) sobrevivem intactos, só ${PORT} é trocado.
+# O ENV aqui é só o default caso ninguém injete PORT (docker run avulso,
+# outro host); Railway sobrescreve com o valor dele.
+ENV PORT=8080
+
 COPY --from=builder /app/dist /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY nginx.conf.template /etc/nginx/templates/default.conf.template
