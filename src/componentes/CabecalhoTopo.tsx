@@ -1,17 +1,11 @@
 import { Bell, LogOut } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { useEstadoAutenticacao } from '../estado/estadoAutenticacao'
+import { useSair } from '../hooks/useSair'
 
 export function CabecalhoTopo() {
-  const navegar = useNavigate()
   const nomeUsuario = useEstadoAutenticacao((estado) => estado.nomeUsuario)
-  const sair = useEstadoAutenticacao((estado) => estado.sair)
-
-  function aoSair() {
-    sair()
-    navegar('/login')
-  }
+  const aoSair = useSair()
 
   function aoClicarNotificacoes() {
     toast.info('Nenhuma notificação no momento.')
