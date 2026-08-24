@@ -11,7 +11,7 @@ const USAR_MOCKS = import.meta.env.VITE_USE_MOCKS === 'true'
 // domínio registrável do front (*.radaptech.com.br): o cookie de sessão é
 // SameSite=Lax, então apontar para outro domínio faz o navegador descartar o
 // cookie depois de um login que respondeu 200 -- login em loop, sem erro visível.
-const URL_PADRAO_API = 'https://api.radaptech.com.br'
+const URL_PADRAO_API = 'sistemaos-backend.radaptech.com.br'
 
 const CHAVES_ERRO_BACKEND = ['error', 'erro', 'message', 'detalhes'] as const
 
