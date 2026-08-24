@@ -7,6 +7,15 @@ server {
     gzip on;
     gzip_types text/css application/javascript application/json image/svg+xml;
 
+    # Prévia de link (WhatsApp, Slack): o index.html traz __ORIGEM__ como placeholder
+    # nas tags og: (ver index.html). og:image PRECISA ser URL absoluta -- WhatsApp
+    # ignora caminho relativo -- e o host não pode ser fixo no HTML: cada tenant tem o
+    # seu subdomínio e um deploy só serve todos eles. Então quem resolve é o nginx, em
+    # runtime, com o $host da própria requisição. sub_filter só age em text/html
+    # (padrão de sub_filter_types), ou seja, não encosta no bundle .js.
+    sub_filter '__ORIGEM__' 'https://$host';
+    sub_filter_once off;
+
     # SPA: React Router decide a rota no cliente, então qualquer caminho que
     # não bate em arquivo estático (ex: /painel-administrador, F5 numa rota
     # interna) precisa cair no index.html -- sem isso o nginx responde 404

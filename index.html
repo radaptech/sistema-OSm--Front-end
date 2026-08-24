@@ -11,6 +11,35 @@
       rel="stylesheet"
     />
     <title>Solicitação OS</title>
+    <meta
+      name="description"
+      content="Abertura e acompanhamento de ordens de serviço: solicitação, execução pelo técnico e custo, num fluxo só."
+    />
+
+    <!-- Prévia de link (WhatsApp, Slack, etc). Sem estas tags o WhatsApp usa o próprio
+         domínio como título e repete a URL como descrição -- foi o que apareceu no
+         cartão feio de 23/08/2026. Só HTML estático conta aqui: o crawler não roda o
+         JS do SPA, então o que ele lê é este arquivo, não o React.
+
+         __ORIGEM__ é trocado por https://$host pelo nginx (sub_filter, ver
+         nginx.conf.template). og:image PRECISA ser URL absoluta -- WhatsApp ignora
+         caminho relativo -- e o host não pode ser fixo: cada tenant tem o seu
+         subdomínio, e um deploy só serve todos eles. Em dev o placeholder fica cru no
+         HTML, o que não incomoda: prévia de link só existe em produção. -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Solicitação OS" />
+    <meta property="og:title" content="Solicitação OS" />
+    <meta
+      property="og:description"
+      content="Abertura e acompanhamento de ordens de serviço: solicitação, execução pelo técnico e custo, num fluxo só."
+    />
+    <meta property="og:image" content="__ORIGEM__/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Solicitação OS" />
+    <meta property="og:locale" content="pt_BR" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="theme-color" content="#0f2916" />
   </head>
   <body>
     <div id="root"></div>
