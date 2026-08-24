@@ -1,7 +1,7 @@
 import { ArrowLeft, Bell, LogOut } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
-import { useEstadoAutenticacao } from '../estado/estadoAutenticacao'
+import { useSair } from '../hooks/useSair'
 
 interface CabecalhoPaginaProps {
   titulo: string
@@ -9,12 +9,7 @@ interface CabecalhoPaginaProps {
 
 export function CabecalhoPagina({ titulo }: CabecalhoPaginaProps) {
   const navegar = useNavigate()
-  const sair = useEstadoAutenticacao((estado) => estado.sair)
-
-  function aoSair() {
-    sair()
-    navegar('/login')
-  }
+  const aoSair = useSair()
 
   function aoClicarNotificacoes() {
     toast.info('Nenhuma notificação no momento.')
