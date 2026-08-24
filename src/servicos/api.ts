@@ -145,6 +145,14 @@ async function requisitar<T = unknown>(
   const { dados } = await lerCorpoResposta(resposta)
 
   if (!resposta.ok) {
+    // GET /autenticacao/sessao devolve 401 toda vez que não há sessão ainda --
+    // é o caminho normal de quem nunca logou (bootstrap do PortaoSessao, toda
+    // carga da tela de login), não um erro. useSessao já trata via retry:false;
+    // aqui só falta não estourar o toast genérico abaixo pra esse caso.
+    if (resposta.status === 401 && endpoint === '/autenticacao/sessao') {
+      throw new Error('Sem sessão.')
+    }
+
     const estaNaTelaLogin = window.location.pathname === '/login'
 
     if (resposta.status === 401 && !estaNaTelaLogin) {
