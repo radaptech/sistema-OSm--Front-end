@@ -44,7 +44,12 @@ export function CamposMaquina({ maquinas, carregando }: CamposMaquinaProps) {
         </option>
         {maquinas.map((maquina) => (
           <option key={maquina.id} value={maquina.id}>
-            {maquina.nome}
+            {/* Patrimônio, não o id do banco: é o número da etiqueta física da
+                máquina -- com várias "Forno" no mesmo setor, é o único jeito de
+                o Solicitante saber qual delas está escolhendo. Mesmo padrão de
+                AdministradorMaquinas. Cai pro id só se a máquina não tiver
+                patrimônio cadastrado. */}
+            {maquina.nome} · {maquina.numeroPatrimonio || maquina.id}
           </option>
         ))}
       </CampoSelecao>
