@@ -2,6 +2,7 @@ import { Bell, LogOut, Wrench } from 'lucide-react'
 import { toast } from 'react-toastify'
 import { useEstadoAutenticacao } from '../estado/estadoAutenticacao'
 import { useSair } from '../hooks/useSair'
+import { AlternadorTema } from './AlternadorTema'
 
 export function CabecalhoTopo() {
   const nomeUsuario = useEstadoAutenticacao((estado) => estado.nomeUsuario)
@@ -16,7 +17,7 @@ export function CabecalhoTopo() {
     // da marca, mas concentrado no selo do logo. Espalhado na largura toda ele competia
     // com o conteúdo da página em vez de emoldurá-lo.
     <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/80 shadow-sm backdrop-blur-lg">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-8">
+      <div className="flex w-full items-center justify-between px-4 py-3 sm:px-8">
         <div className="flex items-center gap-3">
           <span className="bg-marca-600 shadow-marca-600/20 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-white shadow-md">
             <Wrench size={20} strokeWidth={2.5} />
@@ -30,6 +31,8 @@ export function CabecalhoTopo() {
         </div>
 
         <div className="flex items-center gap-1">
+          <AlternadorTema />
+
           <button
             type="button"
             aria-label="Notificações"

@@ -2,6 +2,7 @@ import { ArrowLeft, Bell, LogOut } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { useSair } from '../hooks/useSair'
+import { AlternadorTema } from './AlternadorTema'
 
 interface CabecalhoPaginaProps {
   titulo: string
@@ -17,7 +18,7 @@ export function CabecalhoPagina({ titulo }: CabecalhoPaginaProps) {
 
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/80 shadow-sm backdrop-blur-lg">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-8">
+      <div className="flex w-full items-center justify-between px-4 py-3 sm:px-8">
         <div className="flex items-center gap-2.5">
           <button
             type="button"
@@ -38,6 +39,8 @@ export function CabecalhoPagina({ titulo }: CabecalhoPaginaProps) {
         </div>
 
         <div className="flex items-center gap-1">
+          <AlternadorTema />
+
           <button
             type="button"
             aria-label="Notificações"

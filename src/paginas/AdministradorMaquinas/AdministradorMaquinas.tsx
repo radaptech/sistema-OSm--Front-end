@@ -79,7 +79,7 @@ export function AdministradorMaquinas() {
     <div className="flex min-h-svh flex-col bg-slate-50">
       <CabecalhoSubpagina contexto="Painel do Administrador" titulo="Máquinas" Icone={Wrench} />
 
-      <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-4 px-4 py-6 sm:px-8 lg:max-w-6xl">
+      <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-4 px-4 py-6 sm:px-8 lg:max-w-6xl 2xl:max-w-[88rem]">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <CampoBusca valor={busca} aoMudar={setBusca} placeholder="Buscar por nome ou código..." />
 
@@ -123,7 +123,7 @@ export function AdministradorMaquinas() {
           </button>
         </div>
 
-        <div className="flex flex-1 flex-col gap-3 lg:grid lg:grid-cols-2 lg:content-start lg:items-start lg:gap-4">
+        <div className="flex flex-1 flex-col gap-3 lg:grid lg:grid-cols-2 2xl:grid-cols-3 lg:content-start lg:items-start lg:gap-4">
           {isLoading && (
             <EsqueletoLista quantidade={4}>
               <EsqueletoLinhaCadastro />

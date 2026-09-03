@@ -5,6 +5,7 @@ import { Eye, EyeOff, Wrench } from 'lucide-react'
 import { toast } from 'react-toastify'
 import { useNavigate } from 'react-router-dom'
 import { Botao } from '../../componentes/Botao'
+import { AlternadorTema } from '../../componentes/AlternadorTema'
 import { CampoTexto } from '../../componentes/CampoTexto'
 import { SeletorPerfil } from '../../componentes/SeletorPerfil'
 import { useEstadoAutenticacao } from '../../estado/estadoAutenticacao'
@@ -45,6 +46,12 @@ export function TelaLogin() {
       <div className="bg-grade-industrial bg-grade pointer-events-none absolute inset-0 opacity-[0.12]" />
       <div className="bg-marca-300/20 pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full blur-3xl" />
       <div className="bg-marca-500/30 pointer-events-none absolute -right-20 -bottom-20 h-72 w-72 rounded-full blur-3xl" />
+
+      {/* Único lugar fora dos cabeçalhos com o alternador: quem prefere o tema escuro
+          e ainda não entrou não tem cabeçalho nenhum pra clicar. */}
+      <div className="absolute top-3 right-3">
+        <AlternadorTema classe="text-white/80 hover:bg-white/10 hover:text-white" />
+      </div>
 
       <div className="animate-pop-in shadow-marca-950/40 relative w-full max-w-md overflow-hidden rounded-3xl bg-white shadow-2xl">
         <div className="p-6 sm:p-8">
