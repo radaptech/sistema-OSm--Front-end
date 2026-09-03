@@ -63,9 +63,9 @@ export function CardOrdemServicoTecnico({
   )
 
   return (
-    <div className="shadow-card hover:shadow-card-hover flex flex-col gap-3 rounded-xl bg-white p-4 transition-shadow duration-200">
+    <div className="shadow-card hover:shadow-card-hover flex flex-col gap-3 rounded-2xl bg-white p-4 transition-shadow duration-200">
       <div className="flex items-start gap-4">
-        <span className="from-marca-900 to-marca-500 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-r font-mono text-sm font-bold text-white">
+        <span className="bg-marca-600 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg font-mono text-sm font-bold text-white">
           #{ordemServico.id}
         </span>
 
@@ -151,7 +151,7 @@ export function CardOrdemServicoTecnico({
             <button
               type="button"
               onClick={() => aoIniciar(ordemServico)}
-              className="from-marca-900 to-marca-500 font-display shadow-card hover:shadow-card-hover flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-white transition-all duration-200 hover:brightness-110 active:scale-[0.98]"
+              className="bg-marca-600 font-display shadow-card hover:shadow-card-hover flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-white transition-all duration-200 hover:bg-marca-800 active:scale-[0.98]"
             >
               <PlayCircle size={14} />
               Iniciar Atendimento
@@ -162,7 +162,7 @@ export function CardOrdemServicoTecnico({
             <button
               type="button"
               onClick={() => aoFinalizar(ordemServico)}
-              className="from-marca-900 to-marca-500 font-display shadow-card hover:shadow-card-hover flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-white transition-all duration-200 hover:brightness-110 active:scale-[0.98]"
+              className="bg-marca-600 font-display shadow-card hover:shadow-card-hover flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-white transition-all duration-200 hover:bg-marca-800 active:scale-[0.98]"
             >
               <CheckCircle2 size={14} />
               Finalizar OS
@@ -179,7 +179,7 @@ export function CardOrdemServicoTecnico({
           <button
             type="button"
             onClick={() => aoRetomar(ordemServico)}
-            className="from-marca-900 to-marca-500 font-display shadow-card hover:shadow-card-hover flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-white transition-all duration-200 hover:brightness-110 active:scale-[0.98]"
+            className="bg-marca-600 font-display shadow-card hover:shadow-card-hover flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-white transition-all duration-200 hover:bg-marca-800 active:scale-[0.98]"
           >
             <PlayCircle size={14} />
             Retomar Atendimento

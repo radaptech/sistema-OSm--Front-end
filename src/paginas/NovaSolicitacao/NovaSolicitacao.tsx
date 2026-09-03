@@ -31,19 +31,16 @@ import { SeletorTipoSolicitacao } from './componentes/SeletorTipoSolicitacao'
 import { CamposMaquina } from './componentes/CamposMaquina'
 import { CamposImpacto } from './componentes/CamposImpacto'
 
-// Identidade visual de cada tipo na faixa do cartão — o botão primário segue o gradiente da
+// Identidade visual de cada tipo na faixa do cartão — o botão primário segue a cor da
 // marca em todas as telas, conforme o design system.
-const APARENCIA_POR_TIPO: Record<
-  TipoSolicitacao,
-  { faixa: string; gradiente: string }
-> = {
+const APARENCIA_POR_TIPO: Record<TipoSolicitacao, { faixa: string; cor: string }> = {
   maquinario: {
     faixa: 'Nova Ordem de Serviço · Maquinário',
-    gradiente: 'from-marca-900 to-marca-500',
+    cor: 'bg-marca-600',
   },
   reparo: {
     faixa: 'Nova Ordem de Serviço · Pequenos Reparos',
-    gradiente: 'from-orange-500 to-orange-600',
+    cor: 'bg-orange-600',
   },
 }
 
@@ -168,13 +165,13 @@ export function NovaSolicitacao() {
   }
 
   return (
-    <div className="flex min-h-svh flex-col bg-slate-600">
+    <div className="flex min-h-svh flex-col bg-slate-50">
       <CabecalhoPagina titulo="Nova Solicitação" />
 
       <main className="flex flex-1 justify-center px-4 py-8">
-        <div className="shadow-card w-full max-w-3xl overflow-hidden rounded-2xl bg-white">
+        <div className="w-full max-w-3xl overflow-hidden rounded-3xl border border-slate-200/60 bg-white shadow-sm">
           <div
-            className={`shadow-card relative isolate overflow-hidden bg-gradient-to-r py-3 text-center transition-colors duration-300 ${aparencia.gradiente}`}
+            className={`relative isolate overflow-hidden py-3 text-center transition-colors duration-300 ${aparencia.cor}`}
           >
             <div className="bg-grade-industrial bg-grade pointer-events-none absolute inset-0 opacity-20" />
             <p className="font-display relative text-sm font-bold tracking-widest text-white uppercase">
@@ -198,7 +195,6 @@ export function NovaSolicitacao() {
               {ehReparo ? (
                 <CampoTexto
                   rotulo="Item *"
-                  variante="claro"
                   placeholder="Ex: Lâmpada de LED"
                   mensagemErro={errors.item?.message}
                   {...register('item')}
@@ -212,14 +208,12 @@ export function NovaSolicitacao() {
 
               <CampoTexto
                 rotulo="Solicitante"
-                variante="claro"
                 readOnly
                 value={nomeUsuario ?? ''}
               />
 
               <CampoTexto
                 rotulo={ehReparo ? 'Setor' : 'Setor da Máquina'}
-                variante="claro"
                 readOnly
                 placeholder={ehReparo ? '' : 'Selecione uma máquina...'}
                 value={
@@ -233,7 +227,7 @@ export function NovaSolicitacao() {
                 <span className="text-marca-500 font-mono text-xs font-semibold tracking-wider uppercase">
                   Data/Hora
                 </span>
-                <p className="text-marca-800 rounded-lg bg-lime-100 px-3 py-2.5 font-mono text-sm">
+                <p className="rounded-xl border border-slate-200/60 bg-slate-50 px-4 py-2.5 text-slate-700 font-mono text-sm">
                   {formatarDataHora(dataHora)}
                 </p>
               </div>

@@ -23,7 +23,7 @@ export function Alternador({ marcado, aoAlternar, rotulo, descricao, id }: Alter
         id={id}
         onClick={() => aoAlternar(!marcado)}
         className={`relative h-6 w-11 shrink-0 rounded-full transition-colors duration-200 ${
-          marcado ? 'bg-gradient-to-r from-marca-900 to-marca-500' : 'bg-slate-300'
+          marcado ? 'bg-marca-600' : 'bg-slate-300'
         }`}
       >
         <span

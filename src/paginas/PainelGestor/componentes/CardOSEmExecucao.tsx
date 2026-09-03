@@ -20,12 +20,12 @@ export function CardOSEmExecucao({ ordemServico }: CardOSEmExecucaoProps) {
 
   return (
     <div
-      className={`flex flex-col gap-3 rounded-xl bg-white p-4 shadow-card ${
+      className={`flex flex-col gap-3 rounded-2xl bg-white p-4 shadow-card ${
         ordemServico.statusExecucao === 'Pausada' ? 'border-l-4 border-amber-400' : ''
       }`}
     >
       <div className="flex items-start gap-4">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-r from-marca-900 to-marca-500 font-mono text-sm font-bold text-white">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-marca-600 font-mono text-sm font-bold text-white">
           #{ordemServico.id}
         </span>
 

@@ -1,5 +1,6 @@
 import { ArrowLeft, type LucideIcon } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { AlternadorTema } from './AlternadorTema'
 
 interface CabecalhoSubpaginaProps {
   contexto: string
@@ -7,29 +8,40 @@ interface CabecalhoSubpaginaProps {
   Icone: LucideIcon
 }
 
-export function CabecalhoSubpagina({ contexto, titulo, Icone }: CabecalhoSubpaginaProps) {
+export function CabecalhoSubpagina({
+  contexto,
+  titulo,
+  Icone,
+}: CabecalhoSubpaginaProps) {
   const navegar = useNavigate()
 
   return (
-    <header className="relative isolate overflow-hidden bg-gradient-to-r from-marca-900 to-marca-500 px-4 py-3 shadow-card sm:px-8">
-      <div className="bg-grade-industrial bg-grade pointer-events-none absolute inset-0 opacity-20" />
-      <div className="relative flex items-center gap-3">
+    <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/80 shadow-sm backdrop-blur-lg">
+      <div className="flex w-full items-center gap-2.5 px-4 py-3 sm:px-8">
         <button
           type="button"
           aria-label="Voltar"
           onClick={() => navegar(-1)}
-          className="text-white/90 transition hover:-translate-x-0.5 hover:text-white"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
         >
           <ArrowLeft size={20} />
         </button>
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/15">
-          <Icone className="text-white" size={20} />
+
+        <span className="bg-marca-100 text-marca-600 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl">
+          <Icone size={20} strokeWidth={2.5} />
         </span>
-        <div>
-          <p className="font-mono text-xs font-bold tracking-widest text-white uppercase">
+
+        <div className="min-w-0">
+          <p className="text-marca-600 font-mono text-[10px] font-bold tracking-widest uppercase">
             {contexto}
           </p>
-          <p className="text-sm text-white/90">{titulo}</p>
+          <p className="font-display truncate text-base font-bold text-slate-800">
+            {titulo}
+          </p>
+        </div>
+
+        <div className="ml-auto">
+          <AlternadorTema />
         </div>
       </div>
     </header>

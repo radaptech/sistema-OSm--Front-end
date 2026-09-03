@@ -20,11 +20,16 @@ export default {
           100: '#e4f6e9',
         },
       },
+      // O primeiro valor de cada sombra é um anel de 1px: sobre fundo claro o card precisa
+      // de uma borda fina para se delimitar, e a sombra sozinha não delimita nada. Vindo
+      // pelo box-shadow em vez de `border`, a linha não entra no cálculo de layout e não
+      // desloca nada por 1px. Todo card do sistema passa por estes três tokens — é aqui
+      // que se ajusta o peso das superfícies, não em cada tela.
       boxShadow: {
-        card: '0 1px 2px rgba(15, 41, 22, 0.04), 0 10px 24px -14px rgba(15, 41, 22, 0.35)',
+        card: '0 0 0 1px rgba(15, 41, 22, 0.07), 0 1px 2px rgba(15, 41, 22, 0.04)',
         'card-hover':
-          '0 2px 4px rgba(15, 41, 22, 0.06), 0 20px 36px -16px rgba(15, 41, 22, 0.45)',
-        pop: '0 24px 60px -20px rgba(15, 41, 22, 0.55)',
+          '0 0 0 1px rgba(15, 41, 22, 0.09), 0 4px 12px -4px rgba(15, 41, 22, 0.14)',
+        pop: '0 0 0 1px rgba(15, 41, 22, 0.07), 0 24px 60px -24px rgba(15, 41, 22, 0.35)',
       },
       backgroundImage: {
         'grade-industrial':

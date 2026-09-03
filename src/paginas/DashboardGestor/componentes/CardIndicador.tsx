@@ -8,9 +8,9 @@ interface CardIndicadorProps {
 
 export function CardIndicador({ Icone, rotulo, valor }: CardIndicadorProps) {
   return (
-    <div className="min-w-0 rounded-xl bg-white p-3 shadow-card sm:p-4">
+    <div className="min-w-0 rounded-2xl bg-white p-3 shadow-card sm:p-4">
       <div className="flex min-w-0 items-center gap-1.5">
-        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-gradient-to-r from-marca-900 to-marca-500 text-white">
+        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-marca-600 text-white">
           <Icone size={12} />
         </span>
         <p className="truncate font-mono text-[10px] font-semibold text-slate-400 uppercase">

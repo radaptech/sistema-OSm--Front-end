@@ -10,30 +10,34 @@ export function Paginacao({ pagina, totalPaginas, aoMudarPagina }: PaginacaoProp
   const desabilitarAnterior = pagina <= 1
   const desabilitarProxima = pagina >= totalPaginas
 
+  const estiloBotao =
+    'flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-bold text-slate-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed enabled:hover:bg-slate-100'
+
   return (
-    <div className="flex items-center justify-between">
+    // Barra própria em vez de dois botões soltos: a paginação fica no fim de uma lista de
+    // cards, e sem uma superfície embaixo ela lia como parte do último card.
+    <div className="flex items-center justify-between rounded-2xl border border-slate-200/60 bg-white p-3 shadow-sm sm:px-4">
       <button
         type="button"
         disabled={desabilitarAnterior}
         onClick={() => aoMudarPagina(pagina - 1)}
-        className="flex items-center gap-1 rounded-lg bg-slate-500 px-4 py-2 text-sm font-semibold text-slate-300 transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50 enabled:hover:bg-slate-400 enabled:hover:text-white enabled:active:scale-95"
+        className={estiloBotao}
       >
         <ChevronLeft size={16} />
-        Anterior
+        <span className="hidden sm:inline">Anterior</span>
       </button>
 
-      <span className="font-mono text-sm text-slate-200">
-        Página <span className="font-semibold text-white">{pagina}</span> de{' '}
-        <span className="font-semibold text-white">{totalPaginas}</span>
+      <span className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-bold text-slate-500">
+        {pagina} de {totalPaginas}
       </span>
 
       <button
         type="button"
         disabled={desabilitarProxima}
         onClick={() => aoMudarPagina(pagina + 1)}
-        className="flex items-center gap-1 rounded-lg bg-gradient-to-r from-marca-900 to-marca-500 px-4 py-2 text-sm font-semibold text-white shadow-card transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50 enabled:hover:brightness-110 enabled:active:scale-95"
+        className={estiloBotao}
       >
-        Próxima
+        <span className="hidden sm:inline">Próxima</span>
         <ChevronRight size={16} />
       </button>
     </div>

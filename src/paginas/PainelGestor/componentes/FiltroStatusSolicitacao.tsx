@@ -36,16 +36,16 @@ export function FiltroStatusSolicitacao({
             aria-pressed={ativo}
             className={`flex items-center gap-2 rounded-full px-3.5 py-1.5 font-mono text-xs font-semibold whitespace-nowrap transition-all duration-200 ${
               ativo
-                ? 'text-marca-800 shadow-card bg-white'
-                : 'bg-white/10 text-slate-300 hover:bg-white/20'
+                ? 'bg-marca-600 text-white shadow-sm shadow-marca-600/20'
+                : 'border border-slate-200/60 bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-slate-900'
             }`}
           >
             {opcao.rotulo}
             <span
               className={`rounded-full px-1.5 py-0.5 text-[10px] tabular-nums ${
                 ativo
-                  ? 'bg-marca-100 text-marca-800'
-                  : 'bg-white/10 text-slate-300'
+                  ? 'bg-white/20 text-white'
+                  : 'border border-slate-200/60 bg-slate-50 text-slate-600'
               }`}
             >
               {contagens[opcao.valor]}

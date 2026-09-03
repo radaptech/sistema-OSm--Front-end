@@ -9,10 +9,10 @@ interface CardSolicitacaoProps {
 
 export function CardSolicitacao({ solicitacao }: CardSolicitacaoProps) {
   return (
-    <div className="shadow-card flex flex-col gap-3 rounded-xl bg-white p-4">
+    <div className="shadow-card flex flex-col gap-3 rounded-2xl bg-white p-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
         <div className="flex flex-1 items-start gap-4">
-          <span className="from-marca-900 to-marca-500 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-r font-mono text-sm font-bold text-white">
+          <span className="bg-marca-600 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg font-mono text-sm font-bold text-white">
             #{solicitacao.id}
           </span>
 

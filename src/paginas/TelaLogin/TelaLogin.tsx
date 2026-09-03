@@ -5,6 +5,7 @@ import { Eye, EyeOff, Wrench } from 'lucide-react'
 import { toast } from 'react-toastify'
 import { useNavigate } from 'react-router-dom'
 import { Botao } from '../../componentes/Botao'
+import { AlternadorTema } from '../../componentes/AlternadorTema'
 import { CampoTexto } from '../../componentes/CampoTexto'
 import { SeletorPerfil } from '../../componentes/SeletorPerfil'
 import { useEstadoAutenticacao } from '../../estado/estadoAutenticacao'
@@ -41,27 +42,33 @@ export function TelaLogin() {
   }
 
   return (
-    <div className="relative isolate flex min-h-svh items-center justify-center overflow-hidden bg-gradient-to-br from-marca-950 via-marca-800 to-marca-500 p-4">
+    <div className="bg-marca-600 relative isolate flex min-h-svh items-center justify-center overflow-hidden p-4">
       <div className="bg-grade-industrial bg-grade pointer-events-none absolute inset-0 opacity-[0.12]" />
-      <div className="pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full bg-marca-300/20 blur-3xl" />
-      <div className="pointer-events-none absolute -right-20 -bottom-20 h-72 w-72 rounded-full bg-marca-500/30 blur-3xl" />
+      <div className="bg-marca-300/20 pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full blur-3xl" />
+      <div className="bg-marca-500/30 pointer-events-none absolute -right-20 -bottom-20 h-72 w-72 rounded-full blur-3xl" />
 
-      <div className="animate-pop-in relative w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-pop">
+      {/* Único lugar fora dos cabeçalhos com o alternador: quem prefere o tema escuro
+          e ainda não entrou não tem cabeçalho nenhum pra clicar. */}
+      <div className="absolute top-3 right-3">
+        <AlternadorTema classe="text-white/80 hover:bg-white/10 hover:text-white" />
+      </div>
+
+      <div className="animate-pop-in shadow-marca-950/40 relative w-full max-w-md overflow-hidden rounded-3xl bg-white shadow-2xl">
         <div className="p-6 sm:p-8">
           <div className="text-center">
-            <span className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-marca-900 to-marca-500 shadow-card">
-              <Wrench className="text-white" size={22} />
+            <span className="bg-marca-100 text-marca-600 mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl shadow-sm">
+              <Wrench size={22} strokeWidth={2.5} />
             </span>
-            <h1 className="font-display text-2xl font-bold text-marca-800">
+            <h1 className="font-display text-2xl font-bold tracking-tight text-slate-900">
               Solicitação OS
             </h1>
-            <p className="mt-1 font-mono text-xs font-bold tracking-widest text-marca-500 uppercase">
+            <p className="mt-1 font-mono text-xs font-bold tracking-widest text-slate-400 uppercase">
               Login de Acesso
             </p>
           </div>
 
           <div className="mt-6 flex flex-col gap-1.5">
-            <span className="font-mono text-xs font-semibold tracking-wider text-marca-500 uppercase">
+            <span className="text-[10px] font-bold tracking-widest text-slate-500 uppercase">
               Perfil
             </span>
             <SeletorPerfil
@@ -77,7 +84,6 @@ export function TelaLogin() {
           >
             <CampoTexto
               rotulo="Login"
-              variante="claro"
               type="email"
               placeholder="seu@email.com"
               autoComplete="email"
@@ -88,7 +94,6 @@ export function TelaLogin() {
             <div className="flex flex-col gap-1">
               <CampoTexto
                 rotulo="Senha de Acesso"
-                variante="claro"
                 type={mostrarSenha ? 'text' : 'password'}
                 autoComplete="current-password"
                 mensagemErro={errors.senha?.message}
@@ -96,7 +101,7 @@ export function TelaLogin() {
                   <button
                     type="button"
                     onClick={() => setMostrarSenha((valor) => !valor)}
-                    className="text-marca-500 transition hover:text-marca-800"
+                    className="text-marca-500 hover:text-marca-800 transition"
                     aria-label={mostrarSenha ? 'Ocultar senha' : 'Exibir senha'}
                   >
                     {mostrarSenha ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -107,7 +112,7 @@ export function TelaLogin() {
 
               <button
                 type="button"
-                className="self-end text-xs font-medium text-marca-500 transition hover:text-marca-800 hover:underline"
+                className="text-marca-500 hover:text-marca-800 self-end text-xs font-medium transition hover:underline"
               >
                 Esqueci minha senha
               </button>
@@ -120,7 +125,7 @@ export function TelaLogin() {
         </div>
 
         <div className="border-t border-slate-100 px-6 py-4 text-center sm:px-8">
-          <span className="font-mono text-[10px] font-semibold tracking-widest text-marca-500/50 uppercase">
+          <span className="text-marca-500/50 font-mono text-[10px] font-semibold tracking-widest uppercase">
             Solicitação OS © {new Date().getFullYear()}
           </span>
         </div>

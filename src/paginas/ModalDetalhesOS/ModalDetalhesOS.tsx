@@ -47,7 +47,7 @@ export function ModalDetalhesOS({
   return createPortal(
     <div className={`${classeFundo} fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm`}>
       <div className={`${classeCartao} shadow-pop w-full max-w-lg overflow-hidden rounded-2xl bg-white`}>
-        <div className="from-marca-900 to-marca-500 flex items-start justify-between bg-gradient-to-r px-6 py-4 print:hidden">
+        <div className="flex items-start justify-between bg-marca-600 px-6 py-4 print:hidden">
           <div>
             <p className="font-mono text-xs font-bold tracking-widest text-white/80 uppercase">
               {contexto}
