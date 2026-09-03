@@ -1,4 +1,4 @@
-import { Bell, LogOut } from 'lucide-react'
+import { Bell, LogOut, Wrench } from 'lucide-react'
 import { toast } from 'react-toastify'
 import { useEstadoAutenticacao } from '../estado/estadoAutenticacao'
 import { useSair } from '../hooks/useSair'
@@ -12,31 +12,38 @@ export function CabecalhoTopo() {
   }
 
   return (
-    <header className="relative isolate overflow-hidden bg-gradient-to-r from-marca-900 to-marca-500 px-4 py-3 shadow-card sm:px-8">
-      <div className="bg-grade-industrial bg-grade pointer-events-none absolute inset-0 opacity-20" />
-      <div className="relative flex items-center justify-between">
-        <div>
-          <p className="font-mono text-xs font-bold tracking-widest text-white uppercase">
-            Solicitação OS
-          </p>
-          <p className="text-sm text-white/90">Olá, {nomeUsuario} 👋</p>
+    // Barra clara e translúcida em vez da faixa verde cheia: o verde continua sendo a cor
+    // da marca, mas concentrado no selo do logo. Espalhado na largura toda ele competia
+    // com o conteúdo da página em vez de emoldurá-lo.
+    <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/80 shadow-sm backdrop-blur-lg">
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-8">
+        <div className="flex items-center gap-3">
+          <span className="bg-marca-600 shadow-marca-600/20 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-white shadow-md">
+            <Wrench size={20} strokeWidth={2.5} />
+          </span>
+          <div>
+            <p className="font-mono text-xs font-bold tracking-widest text-slate-800 uppercase">
+              Solicitação OS
+            </p>
+            <p className="text-sm text-slate-500">Olá, {nomeUsuario} 👋</p>
+          </div>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-1">
           <button
             type="button"
             aria-label="Notificações"
             onClick={aoClicarNotificacoes}
-            className="relative text-white/90 transition hover:scale-110 hover:text-white"
+            className="relative flex h-10 w-10 items-center justify-center rounded-xl text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
           >
             <Bell size={20} />
-            <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-white" />
+            <span className="bg-marca-500 absolute top-2 right-2 h-2 w-2 rounded-full" />
           </button>
           <button
             type="button"
             aria-label="Sair"
             onClick={aoSair}
-            className="text-white/90 transition hover:scale-110 hover:text-white"
+            className="flex h-10 w-10 items-center justify-center rounded-xl text-slate-400 transition-colors hover:bg-red-50 hover:text-red-500"
           >
             <LogOut size={20} />
           </button>

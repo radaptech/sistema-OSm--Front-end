@@ -30,10 +30,12 @@
 
 ## Identidade Visual (Design Tokens)
 Definidos em `tailwind.config.ts` e usados em toda a aplicação — não hardcode cores/hex nas telas.
-- **Paleta `marca`:** `marca-950` `#0f2916` → `marca-100` `#e4f6e9`. Cabeçalhos e botões primários usam o gradiente `from-marca-900 to-marca-500`.
+- **Superfície (base de tudo):** aplicação em fundo claro (`bg-slate-50`). Conteúdo em cartão branco delimitado por linha fina, nunca cartão branco flutuando sobre fundo escuro. Seções internas usam a superfície tingida `bg-slate-50/50` + `border-slate-200/60` + `rounded-2xl`. **Não use `bg-slate-600`/`bg-slate-700` como fundo de página ou de bloco** — foi removido de todas as telas e volta a quebrar contraste de texto se reintroduzido.
+- **Paleta `marca`:** `marca-950` `#0f2916` → `marca-100` `#e4f6e9`. Botões primários e estado ativo de aba/filtro usam **verde sólido** `bg-marca-600` com sombra colorida tênue (`shadow-sm shadow-marca-600/20`). **Não use gradiente da marca em botão ou cabeçalho** — sobre fundo claro o gradiente escurece uma das pontas e desequilibra o peso do elemento. Gradiente ficou restrito a varreduras de skeleton.
+- **Controles:** altura fixa `h-[46px]` + `rounded-xl` + `border-slate-200/60` + fundo branco em todo input, select e botão. Altura fixa, e não padding: o campo convive lado a lado com botões e selects, e alinhar por padding desalinha assim que o tamanho do texto muda. Rótulo de campo é `text-[10px] font-bold tracking-widest uppercase text-slate-500`.
 - **Fontes:** `font-display` (Big Shoulders — títulos), `font-sans` (IBM Plex Sans — corpo, padrão no `body`), `font-mono` (IBM Plex Mono — rótulos em caixa alta, códigos, e-mails, rodapés).
-- **Sombras:** `shadow-card`, `shadow-card-hover` (cards e listagens), `shadow-pop` (modais).
-- **Textura:** `bg-grade-industrial` + `bg-grade` (grade sutil sobre gradientes de cabeçalho/login).
+- **Sombras:** `shadow-card`, `shadow-card-hover` (cards e listagens), `shadow-pop` (modais). **O primeiro valor de cada uma é um anel de 1px**, que é a borda fina do cartão chegando por `box-shadow` — assim ela não entra no cálculo de layout e não desloca nada. É o ponto único de ajuste do peso das superfícies: mexa no token, não em cada tela.
+- **Textura:** `bg-grade-industrial` + `bg-grade` (grade sutil). Sem uso desde que cabeçalhos e login deixaram de ter gradiente — mantida no config para blocos de cor cheia.
 - **Animações:** ver **`docs/principios-de-motion.md`** — leia antes de adicionar qualquer movimento. Resumo: ponderação Emil Kowalski (sistema de produtividade → rápido e discreto), nada acima de 300ms, só `transform`/`opacity`/`filter`, curvas próprias (`ease-entrada`/`ease-saida`/`ease-painel`) em vez de `ease` cru, saída sempre mais fraca que a entrada. Classes: `animate-fade-in`/`animate-pop-in` (entrada de modal), `animate-fade-out`/`animate-pop-out` (saída), `animate-surgir` (entrada de conteúdo em lista), `animate-varrer` (skeleton).
 - **Carregamento:** skeleton no formato do conteúdo (`componentes/Esqueleto.tsx`) em vez de texto "Carregando..."; rotas em `React.lazy` com fallback que só aparece após 150ms (`CarregandoRota`); imagens via `ImagemProgressiva` (`loading="lazy"` + fade); `Botao` com prop `carregando` nas mutações.
 - **Acessibilidade global (`index.css`):** anel de foco `:focus-visible` verde consistente, scrollbar temática e `@media (prefers-reduced-motion: reduce)` desligando animações — **incluindo `animation-delay`**, sem o qual cards com entrada escalonada ficariam invisíveis pelo tempo do atraso.
@@ -42,7 +44,7 @@ Definidos em `tailwind.config.ts` e usados em toda a aplicação — não hardco
 A arquitetura do projeto deve seguir uma separação clara de responsabilidades e **adotar estritamente a nomenclatura em Português-BR**:
 - **Idioma do Código (Português-BR):** Nomenclaturas de pastas, componentes, funções, variáveis e arquivos devem ser em Português (ex: `Botao` em vez de `Button`, `formatarData` em vez de `formatDate`). Apenas prefixos/termos nativos do React (como `use` para hooks) devem ser mantidos.
 - **Modularização e Limite de Tamanho (REGRA DE OURO):** Evite arquivos gigantes. Se um arquivo começar a ficar muito extenso e complexo, ele **DEVE** ser dividido em partes menores (criação de subcomponentes, divisão lógica de arquivos ou extração de regras de negócio para hooks/utilitários independentes).
-- **`/src/componentes`**: Componentes visuais isolados e reaproveitáveis (ex: `Botao`, `CampoTexto`, `Paginacao`). Devem ser "burros" (receber apenas props) sempre que possível.
+- **`/src/componentes`**: Componentes visuais isolados e reaproveitáveis (ex: `Botao`, `CampoTexto`, `Paginacao`, `Painel`). Devem ser "burros" (receber apenas props) sempre que possível.
 - **`/src/paginas`**: Telas completas da aplicação (ex: `PainelGestor.tsx`, `TelaLogin.tsx`). Montagem de layout e consumo de hooks/queries. Se a página for complexa, crie uma subpasta para ela com seus componentes locais (ex: `/src/paginas/PainelGestor/componentes/`) e seus esquemas Zod (ex: `esquemaRejeitarSolicitacao.ts`).
 - **`/src/servicos`**: Cliente HTTP (`api.ts`), helpers de requisição (`montarQuery.ts`, `montarMultipart.ts`) e a abstração de endpoints por domínio (`servicoMaquinas.ts`, `servicoOrdensServico.ts`, …). **Nenhum serviço guarda estado** — são funções finas sobre `api.ts`.
 - **`/src/hooks`**: Ganchos customizados, quase todos wrappers de `useQuery` (`useMaquinas.ts`, `useSessao.ts`, …). As mutações (`useMutation`) ficam nas próprias páginas, junto do `invalidateQueries` correspondente.
@@ -102,25 +104,25 @@ Regras transversais que valem para **todos** os serviços. Ao criar um endpoint 
 ## Especificações de Telas
 
 ### 1. Tela de Login (`TelaLogin`)
-- **Fundo Global:** gradiente `from-marca-950 via-marca-800 to-marca-500` com a textura `bg-grade-industrial` e halos desfocados.
-- **Card Central:** fundo branco, cantos arredondados (`rounded-2xl`), padding generoso, largura fixa elegante (`max-w-md`), `shadow-pop` e entrada `animate-pop-in`.
-- **Cabeçalho do Card:** ícone `Wrench` num quadrado com gradiente da marca, título "Solicitação OS" em `font-display`, subtítulo "LOGIN DE ACESSO" em `font-mono`, caixa alta, `text-xs`, `text-marca-500`.
-- **Labels dos Campos:** "PERFIL", "LOGIN", "SENHA DE ACESSO" em `font-mono`, caixa alta, `text-xs`, `text-marca-500`.
-- **Seletor de Perfil (Tabs):** `SeletorPerfil` compartilhado com `CadastrarUsuario` (item 7), 4 abas com ícones Lucide (`User` Solicitante, `Wrench` Técnico, `ShieldCheck` Gestor, `UserCog` Administrador). Aba ativa com fundo verde escuro e texto branco; inativas transparentes. **Layout fixo em grade 2×2 (`grid grid-cols-2`), não por breakpoint de viewport:** o seletor sempre vive dentro de um card estreito (`max-w-md`), então o espaço disponível não cresce com a tela — uma tentativa anterior de virar linha única a partir de `sm` (`sm:flex`) cortava o texto das abas em monitores largos, porque `sm` reage à largura da *viewport*, não à do *card* (~448px sempre). A grade 2×2 resolve em qualquer tamanho.
-- **Campos de Input:** variante `claro` do `CampoTexto` (fundo esverdeado bem claro, sem borda forte, `rounded-lg`, texto verde escuro). Ícone de visibilidade da senha em verde.
+- **Fundo Global:** verde sólido `bg-marca-600`, com os halos desfocados. O cartão branco no centro já é o assunto da tela; o gradiente de três paradas disputava atenção com ele.
+- **Card Central:** fundo branco, `rounded-3xl`, padding generoso, largura fixa elegante (`max-w-md`), `shadow-2xl shadow-marca-950/40` e entrada `animate-pop-in`.
+- **Cabeçalho do Card:** ícone `Wrench` num selo tingido claro (`bg-marca-100 text-marca-600`, `rounded-2xl`), título "Solicitação OS" em `font-display`, subtítulo "LOGIN DE ACESSO" em `font-mono`, caixa alta, `text-xs`, `text-slate-400`.
+- **Labels dos Campos:** "PERFIL", "LOGIN", "SENHA DE ACESSO" no rótulo padrão do sistema (`text-[10px] font-bold tracking-widest uppercase text-slate-500`).
+- **Seletor de Perfil (Tabs):** `SeletorPerfil` compartilhado com `CadastrarUsuario` (item 7), 4 abas com ícones Lucide (`User` Solicitante, `Wrench` Técnico, `ShieldCheck` Gestor, `UserCog` Administrador). Aba ativa com fundo verde sólido e texto branco; inativas transparentes sobre o trilho `bg-slate-50` com borda fina. **Layout fixo em grade 2×2 (`grid grid-cols-2`), não por breakpoint de viewport:** o seletor sempre vive dentro de um card estreito (`max-w-md`), então o espaço disponível não cresce com a tela — uma tentativa anterior de virar linha única a partir de `sm` (`sm:flex`) cortava o texto das abas em monitores largos, porque `sm` reage à largura da *viewport*, não à do *card* (~448px sempre). A grade 2×2 resolve em qualquer tamanho.
+- **Campos de Input:** `CampoTexto` no estilo único do sistema (46px, branco, borda fina). **`CampoTexto`/`CampoSelecao`/`CampoTextoArea` não têm mais prop `variante`** — as variantes `padrao` e `claro` foram removidas quando todas as chamadas convergiram para o mesmo estilo. Ícone de visibilidade da senha em verde.
 - **Link Auxiliar:** "Esqueci minha senha" à direita, fonte pequena, verde.
-- **Botão Principal:** "Entrar" com gradiente sólido da marca, texto branco, cantos arredondados.
+- **Botão Principal:** "Entrar" em verde sólido da marca, texto branco, `rounded-xl`, 46px.
 - **Rodapé do Card:** "SOLICITAÇÃO OS © {ano}" centralizado, `font-mono`, muito pequeno.
 - **Ao enviar:** `servicoAutenticacao.entrar` devolve a `SessaoUsuario` completa (perfil, `lojaId`/`setor`, `escoposGestor`, `tecnicoId`); o front guarda com `entrar(sessao)` e navega para `ROTA_POR_PERFIL[sessao.perfil]`. **O front não deriva escopo de acesso a partir do perfil escolhido na tela.**
 
 ### 2. Tela Principal do Solicitante (`HomeSolicitante`)
-- **Fundo Global:** cinza sólido uniforme (`bg-slate-600`), estruturado de ponta a ponta (header verde, conteúdo centralizado, footer discreto).
-- **Header Superior (`CabecalhoTopo`):** faixa em gradiente da marca. À esquerda, "SOLICITAÇÃO OS" e a saudação "Olá, `nome do usuário logado`". À direita, ícones de Notificações (sino) e Sair (logout — chama `servicoAutenticacao.sair` e limpa o estado).
+- **Fundo Global:** claro (`bg-slate-50`), estruturado de ponta a ponta (barra superior branca fixa, conteúdo centralizado, footer discreto).
+- **Header Superior (`CabecalhoTopo`):** barra branca translúcida fixa no topo (`sticky bg-white/80 backdrop-blur-lg`), com o verde concentrado no selo do logo. À esquerda, "SOLICITAÇÃO OS" e a saudação "Olá, `nome do usuário logado`". À direita, ícones de Notificações (sino) e Sair (logout — chama `servicoAutenticacao.sair` e limpa o estado).
 - **Área Central:** título "O que deseja fazer?" com subtítulo descritivo.
 - **Cards de Ação (dois, desde a unificação das OS):**
   - Cards de navegação centralizados em largura moderada (`CardAcao`, `/src/componentes/CardAcao.tsx`).
-  - "Minhas Solicitações" — `variante: 'padrao'`, cinza escuro secundário (`bg-slate-700`).
-  - "Nova Solicitação" — `variante: 'destaque'`, verde sólido, ícone `CirclePlus`, com a descrição "Maquinário ou Pequenos Reparos" (item 3). **A Home deixou de ser um menu de caminhos:** o tipo é escolhido dentro do próprio formulário. As variantes `'reparo'` (laranja) e `'terceiros'` (azul) do `CardAcao` continuam existindo, hoje sem uso aqui.
+  - "Minhas Solicitações" — `variante: 'padrao'`, cinza claro tingido (`bg-slate-50`).
+  - "Nova Solicitação" — `variante: 'destaque'`, verde tingido claro com selo de ícone verde sólido, ícone `CirclePlus`, com a descrição "Maquinário ou Pequenos Reparos" (item 3). **A Home deixou de ser um menu de caminhos:** o tipo é escolhido dentro do próprio formulário. As variantes `'reparo'` (laranja) e `'terceiros'` (azul) do `CardAcao` continuam existindo, hoje sem uso aqui.
 - **Cards de Estatísticas (Grid Inferior):** três blocos com os contadores `Abertas`, `Em andamento`, `Concluídas`, vindos de `useResumoSolicitacoes` (`GET /solicitacoes/resumo`, tipo `ResumoSolicitacoes`) — contagem feita no servidor, não somando listas no cliente.
 - **Rodapé:** "SOLICITAÇÃO OS © {ano}" discreto e centralizado.
 
@@ -130,7 +132,7 @@ Regras transversais que valem para **todos** os serviços. Ao criar um endpoint 
 - **Acesso:** card "Nova Solicitação" na `HomeSolicitante` (item 2). As rotas antigas (`/nova-solicitacao-os`, `/nova-solicitacao-reparo`, `/nova-solicitacao-os-terceiros`) continuam registradas em `RotasPrincipais.tsx` como `<Navigate>` para `/nova-solicitacao?tipo=…`, preservando links já salvos — a de terceiros cai na tela padrão, já que o tipo deixou de existir para o Solicitante. `NovaSolicitacao` lê esse `?tipo=` no `defaultValues` (`lerTipoDaUrl`) e cai em `maquinario` quando o valor é inválido ou ausente.
 - **Só existem dois tipos abríveis (REGRA DE NEGÓCIO):** `tiposSolicitacao = ['maquinario', 'reparo']`. **`terceiros` NÃO é um tipo de pedido** — é o desfecho de uma OS que o Técnico decidiu encaminhar para uma empresa externa (item 9). Quem sabe se o caso é interno ou terceirizado é quem olha a máquina, não quem relata o problema — mesma lógica do Tipo de OS (item 11). `SolicitacaoOS.tipo` é `TipoSolicitacao`; `OrdemServico.tipo` continua `TipoOS`, com os três valores.
 - **Tipo de Solicitação \* (primeiro campo):** `SeletorTipoSolicitacao` — dois cards em `grid sm:grid-cols-2` (`Maquinário` verde/`CirclePlus`, `Pequenos Reparos` laranja/`Hammer`), com `role="radiogroup"`. Trocar o tipo chama `trocarTipo`, que dá `reset` nos campos que não se aplicam mas **preserva `tipoDefeito` e `descricao`** (truncando a descrição quando o novo limite é menor) — quem já escreveu não perde o texto ao corrigir o tipo.
-- **A cor identifica o tipo só na faixa do cartão** (`APARENCIA_POR_TIPO`: gradiente da marca / azul / laranja). O **botão primário continua sempre no gradiente da marca**, como manda o design system — não colorir o botão por tipo.
+- **A cor identifica o tipo só na faixa do cartão** (`APARENCIA_POR_TIPO`, campo `cor`: `bg-marca-600` / `bg-orange-600`). O **botão primário continua sempre no verde da marca**, como manda o design system — não colorir o botão por tipo.
 - **Campos comuns aos três tipos:**
   - **Tipo de OS (Predial/Corretiva) NÃO é escolhido aqui (REGRA DE NEGÓCIO):** na prática o Solicitante não sabe distinguir os dois — ele relata o problema, não classifica o serviço. A classificação entra no fim do fluxo, por quem executou (ver itens 11 e 12). A `SolicitacaoOS` **não tem** `tipoDefeito`; quem tem é a `OrdemServico`.
   - **Solicitante / Setor:** somente leitura. O rótulo e a origem mudam: "Setor da Máquina" (derivado da máquina selecionada) em Maquinário, "Setor" (da sessão) em Pequenos Reparos. **Não são enviados** — o servidor os deriva.
@@ -158,7 +160,7 @@ Regras transversais que valem para **todos** os serviços. Ao criar um endpoint 
 - **Edição (`/cadastrar-maquina/:id`):** reaproveita a mesma tela; carrega a máquina (`servicoMaquinas.obterPorId`) e suas preventivas (`servicoPreventivas.listar({ maquinaId })`), preenchendo o formulário. Ao salvar, `PUT /maquinas/:id` **substitui** o conjunto de preventivas pelo enviado (não faz merge incremental).
 
 ### Modal / Tela de Nova Manutenção Preventiva (`ModalManutencaoPreventiva`)
-- **Cabeçalho:** gradiente verde com "PAINEL DO GESTOR" (letras miúdas) e "Nova Manutenção Preventiva" em destaque, com botão de fechar (X).
+- **Cabeçalho:** faixa verde sólida (`bg-marca-600`) com "PAINEL DO GESTOR" (letras miúdas) e "Nova Manutenção Preventiva" em destaque, com botão de fechar (X).
 - **Campos (Zod):**
   - **MÁQUINA \***: select da máquina vinculada (`maquinaId`).
   - **DESCRIÇÃO \***: `textarea` do procedimento ("Descreva o procedimento de manutenção...").
@@ -236,7 +238,7 @@ Regras transversais que valem para **todos** os serviços. Ao criar um endpoint 
 - **Botões:** `Cancelar` (neutro) e `Acionar` (azul, ícone `Truck`).
 
 ### Modal de Pausa de OS (`ModalPausarOrdemServico` - Técnico)
-- **Cabeçalho:** padrão dos demais modais — gradiente verde, "PAINEL DO TÉCNICO" em letras miúdas e "Pausar OS · #id" em destaque.
+- **Cabeçalho:** padrão dos demais modais — faixa de cor cheia (`bg-marca-600`; vermelha nos destrutivos, azul no de terceiro), "PAINEL DO TÉCNICO" em letras miúdas e "Pausar OS · #id" em destaque.
 - **Aviso:** deixa explícito que a pausa só afeta o relógio de horas do técnico — o tempo de máquina parada continua contando.
 - **Campo:** `Motivo da Pausa *` (`textarea`, Zod obrigatório, ex: "Aguardando peça de reposição do fornecedor.").
 - **Botões:** `Cancelar` (neutro) e `Pausar OS` (verde, com ícone).
@@ -284,6 +286,40 @@ Regras transversais que valem para **todos** os serviços. Ao criar um endpoint 
   - **Gestor** (aba `OS Finalizadas` do `PainelGestor`, item 6): as finalizadas **dentro do seu escopo** (restringido pelo servidor), agrupadas por Loja/Setor.
 - **`ModalDetalhesOS` (compartilhado, `/src/paginas/ModalDetalhesOS/`):** modal somente leitura reaproveitado pelas duas telas (a prop `contexto` troca o rótulo do cabeçalho — "Painel do Administrador" ou "Painel do Gestor") com máquina/item, loja, setor, Tipo de OS (Predial/Corretiva), solicitante, urgência, datas de **solicitação**/abertura/início/término (a de solicitação aparece porque é dela que parte Horas Parada — item 9), Horas Trabalhadas, Custo Hora do Técnico, Custo Manutenção, Custo Total e os textos de Defeito Constatado/Causa Raiz/Solução. "Técnico Responsável" aparece sempre; **"Empresa Terceirizada"** é um campo **adicional**, exibido só quando `empresaTerceirizadaNome` existe — terceirizar não tira a OS do Técnico. `BadgeTipoOS` identifica o tipo no cabeçalho. Cada card na listagem tem `Eye` (**Visualizar**) e `Printer` (**Imprimir**, abre o modal já disparando a impressão via prop `autoImprimir`).
 - **Impressão (atual: `@media print` no front):** o conteúdo do modal fica num contêiner com `id="area-impressao-os"`, e uma regra `@media print` global (`index.css`) esconde o resto da aplicação (`body * { visibility: hidden }`) e mostra só esse contêiner — os botões `Fechar`/`Imprimir` e o cabeçalho verde levam `print:hidden`. O endpoint de PDF do servidor já existe no contrato (`servicoOrdensServico.obterPdfImpressao` → `GET /ordens-servico/:id/impressao`, devolvendo Blob) mas **ainda não está ligado a nenhuma tela** — trocar a impressão local pelo PDF do back-end é o passo seguinte.
+
+## Repaginação visual (03/09/2026) — o sistema saiu do fundo escuro
+
+O front inteiro foi realinhado a um visual de referência (o painel do SGEPI), **mantendo o
+verde `marca` como cor de acento**. 71 arquivos, mais linhas removidas do que adicionadas.
+O resumo das decisões está em "Identidade Visual" acima; o que segue é o que dói se for
+desfeito por engano.
+
+- **A mudança de verdade foi de superfície, não de cor.** Antes: fundo `bg-slate-600` com
+  cartões brancos flutuando em sombra alta. Agora: fundo claro, cartões brancos delimitados
+  por linha fina de 1px. Toda classe que assumia fundo escuro (`text-slate-300`,
+  `bg-white/10`, `border-white/10`, títulos em `text-white`) foi convertida.
+- **A borda fina vem do token, não das telas.** `shadow-card`/`shadow-card-hover` ganharam
+  um anel de 1px como primeiro valor. Um arquivo mudou e 45 usos acompanharam. Se o peso
+  das superfícies precisar de ajuste, é em `tailwind.config.ts` — resista a pôr `border`
+  solto em cada card, que foi justamente o que se evitou.
+- ⚠️ **Estado ativo nunca é pílula branca.** Os filtros do Gestor e do Técnico marcavam o
+  ativo com `bg-white`, que sobre fundo claro não diferencia coisa alguma. Ativo é
+  `bg-marca-600` + texto branco, em aba, chip e filtro.
+- ⚠️ **Trocar fundo sem varrer a cor do texto quebra a tela.** O `CardEstatistica` da Home
+  era bloco escuro; escurecer o texto dele junto com o resto deixaria escuro sobre escuro.
+  Ao mexer em fundo, grepe `text-white`, `text-slate-200/300` e `bg-white/*` no arquivo.
+- **Badges são todos tingidos claros** (`bg-*-100` + `text-*-700` + `ring-*-600/15`), o
+  padrão que `BadgeStatus` já usava. `BadgeAfetaProducao` e `BadgeOrigemPreventiva`
+  deixaram o gradiente e entraram nesse mesmo formato.
+- **`componentes/Painel.tsx`** foi criado nessa passagem: seção com selo de ícone no
+  cabeçalho, variantes `padrao` (verde) e `edicao` (âmbar), para blocos dentro de um card.
+  **Ainda não é usado por nenhuma tela** — use-o ao montar formulários seccionados em vez
+  de remontar o cabeçalho na mão.
+- **Verificado no navegador** (build com `VITE_USE_MOCKS=true` + `vite preview`): login e
+  `PainelGestor` com cards, badges, filtros, select e barra superior. As telas de cadastro e
+  as do Administrador **não foram vistas em tela** nessa passagem — a sessão mock reconduzia
+  para o painel do Gestor a cada troca de perfil. Elas usam os mesmos componentes já
+  conferidos, mas isso é inferência, não verificação.
 
 ## Verificação pelo navegador (22/08/2026) — o que já foi provado e o que quebrou
 

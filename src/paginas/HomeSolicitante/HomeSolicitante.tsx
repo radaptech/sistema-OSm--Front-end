@@ -16,15 +16,15 @@ export function HomeSolicitante() {
   ]
 
   return (
-    <div className="flex min-h-svh flex-col bg-slate-600">
+    <div className="flex min-h-svh flex-col bg-slate-50">
       <CabecalhoTopo />
 
       <main className="flex flex-1 flex-col items-center justify-center gap-8 px-4 py-10">
         <div className="text-center">
-          <h1 className="font-display text-2xl font-bold text-white sm:text-3xl">
+          <h1 className="font-display text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
             O que deseja fazer?
           </h1>
-          <p className="mt-1 text-sm text-slate-300">
+          <p className="mt-1 text-sm text-slate-500">
             Selecione uma das opções abaixo para continuar.
           </p>
         </div>

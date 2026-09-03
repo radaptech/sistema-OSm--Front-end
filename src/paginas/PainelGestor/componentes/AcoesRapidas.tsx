@@ -14,7 +14,7 @@ export function AcoesRapidas({ aoAbrirFiltros, quantidadeFiltrosAtivos }: AcoesR
       <button
         type="button"
         onClick={() => navegar('/dashboard-gestor')}
-        className="flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-marca-800 shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card-hover hover:brightness-95"
+        className="flex h-[46px] items-center gap-2 rounded-xl border border-slate-200/60 bg-white px-5 text-sm font-bold text-slate-600 transition-colors duration-rapido hover:bg-slate-50 hover:text-slate-900"
       >
         <Gauge size={16} />
         Indicadores
@@ -23,7 +23,7 @@ export function AcoesRapidas({ aoAbrirFiltros, quantidadeFiltrosAtivos }: AcoesR
       <button
         type="button"
         onClick={aoAbrirFiltros}
-        className="relative flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-marca-800 shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card-hover hover:brightness-95"
+        className="relative flex h-[46px] items-center gap-2 rounded-xl border border-slate-200/60 bg-white px-5 text-sm font-bold text-slate-600 transition-colors duration-rapido hover:bg-slate-50 hover:text-slate-900"
       >
         <Filter size={16} />
         Filtrar OS

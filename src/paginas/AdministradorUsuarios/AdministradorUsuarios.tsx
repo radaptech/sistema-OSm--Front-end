@@ -67,7 +67,7 @@ export function AdministradorUsuarios() {
   }
 
   return (
-    <div className="flex min-h-svh flex-col bg-slate-600">
+    <div className="flex min-h-svh flex-col bg-slate-50">
       <CabecalhoSubpagina
         contexto="Painel do Administrador"
         titulo="Usuários"
@@ -116,7 +116,7 @@ export function AdministradorUsuarios() {
           <button
             type="button"
             onClick={() => navegar('/cadastrar-usuario')}
-            className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-marca-900 to-marca-500 px-4 py-2.5 font-display text-sm font-semibold text-white shadow-card transition-all duration-200 hover:shadow-card-hover hover:brightness-110 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-marca-500"
+            className="flex items-center gap-2 rounded-xl bg-marca-600 px-4 py-2.5 font-display text-sm font-semibold text-white shadow-card transition-all duration-200 hover:shadow-card-hover hover:bg-marca-800 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-marca-500"
           >
             <Plus size={16} />
             Novo Usuário
@@ -131,7 +131,7 @@ export function AdministradorUsuarios() {
           )}
 
           {!isLoading && usuarios.length === 0 && (
-            <div className="flex flex-col items-center gap-2 rounded-xl bg-white/10 py-12 text-slate-400 lg:col-span-2">
+            <div className="flex flex-col items-center gap-2 rounded-2xl border-2 border-dashed border-slate-200/60 bg-white py-12 text-slate-400 lg:col-span-2">
               <Users size={28} />
               <p className="text-sm">Nenhum usuário encontrado para esses filtros.</p>
             </div>
@@ -152,7 +152,7 @@ export function AdministradorUsuarios() {
               <div
                 key={usuario.id}
                 style={atrasoEntrada(indice)}
-                className="animate-surgir flex flex-col gap-3 rounded-xl bg-white p-4 shadow-card transition-shadow duration-200 hover:shadow-card-hover sm:flex-row sm:items-center sm:justify-between"
+                className="animate-surgir flex flex-col gap-3 rounded-2xl bg-white p-4 shadow-card transition-shadow duration-200 hover:shadow-card-hover sm:flex-row sm:items-center sm:justify-between"
               >
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">

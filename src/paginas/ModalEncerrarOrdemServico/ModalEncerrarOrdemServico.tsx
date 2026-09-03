@@ -80,7 +80,7 @@ export function ModalEncerrarOrdemServico({
   return createPortal(
     <div className={`${classeFundo} fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm`}>
       <div className={`${classeCartao} shadow-pop w-full max-w-md overflow-hidden rounded-2xl bg-white`}>
-        <div className="from-marca-900 to-marca-500 flex items-start justify-between bg-gradient-to-r px-6 py-4">
+        <div className="flex items-start justify-between bg-marca-600 px-6 py-4">
           <div>
             <p className="font-mono text-xs font-bold tracking-widest text-white/80 uppercase">
               Painel do Técnico
@@ -115,10 +115,10 @@ export function ModalEncerrarOrdemServico({
             <span className="text-marca-500 font-mono text-xs font-semibold tracking-wide uppercase">
               Término do Atendimento
             </span>
-            <p className="text-marca-800 rounded-lg bg-lime-100 px-3 py-2.5 font-mono text-sm">
+            <p className="rounded-xl border border-slate-200/60 bg-slate-50 px-4 py-2.5 text-slate-700 font-mono text-sm">
               {formatarDataHora(dataInicio)}
             </p>
-            <p className="text-marca-800 rounded-lg bg-lime-100 px-3 py-2.5 font-mono text-sm">
+            <p className="rounded-xl border border-slate-200/60 bg-slate-50 px-4 py-2.5 text-slate-700 font-mono text-sm">
               {formatarDataHora(agora)}
             </p>
           </div>
@@ -130,10 +130,10 @@ export function ModalEncerrarOrdemServico({
             <span className="text-marca-500 font-mono text-xs font-semibold tracking-wide uppercase">
               Horas Parada
             </span>
-            <p className="text-marca-800 rounded-lg bg-lime-100 px-3 py-2.5 font-mono text-sm">
+            <p className="rounded-xl border border-slate-200/60 bg-slate-50 px-4 py-2.5 text-slate-700 font-mono text-sm">
               {horasTrabalhadas}h
             </p>
-            <p className="text-marca-800 rounded-lg bg-lime-100 px-3 py-2.5 font-mono text-sm">
+            <p className="rounded-xl border border-slate-200/60 bg-slate-50 px-4 py-2.5 text-slate-700 font-mono text-sm">
               {horasParada !== undefined ? `${horasParada}h` : 'Não se aplica'}
             </p>
           </div>
@@ -168,7 +168,6 @@ export function ModalEncerrarOrdemServico({
             {exigirCustoHoraTecnico && (
               <CampoTexto
                 rotulo="Custo Hora Técnico (R$) *"
-                variante="claro"
                 type="number"
                 min={0}
                 step="0.01"
@@ -180,7 +179,6 @@ export function ModalEncerrarOrdemServico({
 
             <CampoTexto
               rotulo="Custo Manutenção (R$) *"
-              variante="claro"
               type="number"
               min={0}
               step="0.01"

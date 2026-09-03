@@ -56,7 +56,7 @@ export function AdministradorOSFinalizadas() {
   )
 
   return (
-    <div className="flex min-h-svh flex-col bg-slate-600">
+    <div className="flex min-h-svh flex-col bg-slate-50">
       <CabecalhoSubpagina
         contexto="Painel do Administrador"
         titulo="OS Finalizadas"
@@ -64,7 +64,7 @@ export function AdministradorOSFinalizadas() {
       />
 
       <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-4 px-4 py-6 sm:px-8 lg:max-w-6xl">
-        <p className="text-sm text-slate-300">
+        <p className="text-sm text-slate-500">
           Ordens de serviço concluídas e com todos os dados preenchidos, incluindo o custo de
           manutenção já lançado.
         </p>
@@ -104,7 +104,7 @@ export function AdministradorOSFinalizadas() {
           )}
 
           {!isLoading && ordensPaginadas.length === 0 && (
-            <div className="flex flex-col items-center gap-2 rounded-xl bg-white/10 py-12 text-slate-400 lg:col-span-2">
+            <div className="flex flex-col items-center gap-2 rounded-2xl border-2 border-dashed border-slate-200/60 bg-white py-12 text-slate-400 lg:col-span-2">
               <ClipboardCheck size={28} />
               <p className="text-sm">Nenhuma OS finalizada encontrada para esses filtros.</p>
             </div>
@@ -117,12 +117,12 @@ export function AdministradorOSFinalizadas() {
               <div
                 key={ordem.id}
                 style={atrasoEntrada(indice)}
-                className="animate-surgir flex flex-col gap-3 rounded-xl bg-white p-4 shadow-card transition-shadow duration-200 hover:shadow-card-hover sm:flex-row sm:items-start sm:justify-between"
+                className="animate-surgir flex flex-col gap-3 rounded-2xl bg-white p-4 shadow-card transition-shadow duration-200 hover:shadow-card-hover sm:flex-row sm:items-start sm:justify-between"
               >
                 <div className="min-w-0 flex-1">
                   {/* Uma linha só: sem flex-wrap o badge nunca cai para a linha de baixo. */}
                   <div className="flex items-center gap-2">
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-r from-marca-900 to-marca-500 font-mono text-sm font-bold text-white">
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-marca-600 font-mono text-sm font-bold text-white">
                       #{ordem.id}
                     </span>
                     <span className="truncate font-semibold text-slate-800">

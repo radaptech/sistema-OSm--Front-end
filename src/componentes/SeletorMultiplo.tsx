@@ -43,7 +43,7 @@ export function SeletorMultiplo<T extends string | number>({
             onClick={() => aoClicarOpcao(opcao.valor)}
             className={`rounded-full px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition-all duration-200 ${
               ativo
-                ? 'bg-gradient-to-r from-marca-900 to-marca-500 text-white shadow-card'
+                ? 'bg-marca-600 text-white shadow-sm shadow-marca-600/20'
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
             }`}
           >

@@ -73,7 +73,7 @@ export function CadastrarSetor() {
   const isPending = criando || atualizando
 
   return (
-    <div className="flex min-h-svh flex-col bg-slate-600">
+    <div className="flex min-h-svh flex-col bg-slate-50">
       <CabecalhoSubpagina
         contexto="Painel do Administrador"
         titulo={emEdicao ? 'Editar Setor' : 'Cadastrar Setor'}
@@ -81,7 +81,7 @@ export function CadastrarSetor() {
       />
 
       <main className="flex flex-1 justify-center px-4 py-8">
-        <div className="w-full max-w-2xl overflow-hidden rounded-2xl bg-white shadow-2xl">
+        <div className="w-full max-w-2xl overflow-hidden rounded-3xl border border-slate-200/60 bg-white shadow-sm">
           <form
             onSubmit={handleSubmit(aoEnviar)}
             noValidate
@@ -95,7 +95,6 @@ export function CadastrarSetor() {
             <div className="grid gap-5 sm:grid-cols-2">
               <CampoTexto
                 rotulo="Nome *"
-                variante="claro"
                 placeholder="Ex: Rotisseria"
                 mensagemErro={errors.nome?.message}
                 {...register('nome')}

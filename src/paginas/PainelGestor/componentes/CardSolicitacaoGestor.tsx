@@ -24,7 +24,7 @@ export function CardSolicitacaoGestor({
 
   return (
     <div
-      className={`shadow-card flex flex-col gap-3 rounded-xl bg-white p-4 ${
+      className={`shadow-card flex flex-col gap-3 rounded-2xl bg-white p-4 ${
         ehPreventiva ? 'bg-amber-50/70 ring-1 ring-amber-400/40 ring-inset' : ''
       }`}
     >
@@ -33,8 +33,8 @@ export function CardSolicitacaoGestor({
           <span
             className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg font-mono text-sm font-bold text-white ${
               ehPreventiva
-                ? 'bg-gradient-to-r from-amber-400 to-amber-500'
-                : 'from-marca-900 to-marca-500 bg-gradient-to-r'
+                ? 'bg-amber-500'
+                : 'bg-marca-600'
             }`}
           >
             #{solicitacao.id}

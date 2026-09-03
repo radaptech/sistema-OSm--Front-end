@@ -18,16 +18,16 @@ export function CarregandoRota() {
 
   if (!visivel) {
     // Mantém a altura da tela para o rodapé/fundo não saltarem enquanto o chunk chega.
-    return <div className="min-h-svh bg-slate-600" />
+    return <div className="min-h-svh bg-slate-50" />
   }
 
   return (
-    <div className="animate-fade-in flex min-h-svh flex-col items-center justify-center gap-4 bg-slate-600">
+    <div className="animate-fade-in flex min-h-svh flex-col items-center justify-center gap-4 bg-slate-50">
       <div className="flex w-full max-w-sm flex-col gap-3 px-6">
-        <span className="relative block h-2 w-full overflow-hidden rounded-full bg-white/10">
-          <span className="animate-varrer absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent" />
+        <span className="relative block h-2 w-full overflow-hidden rounded-full bg-slate-200">
+          <span className="animate-varrer absolute inset-0 bg-gradient-to-r from-transparent via-marca-500/60 to-transparent" />
         </span>
-        <p className="text-center font-mono text-[11px] font-semibold tracking-widest text-slate-300 uppercase">
+        <p className="text-center font-mono text-[11px] font-semibold tracking-widest text-slate-400 uppercase">
           Carregando tela...
         </p>
       </div>

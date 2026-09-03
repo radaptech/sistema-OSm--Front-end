@@ -56,7 +56,7 @@ export function ModalFiltrosOS({
   return createPortal(
     <div className={`${classeFundo} fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm`}>
       <div className={`${classeCartao} w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-pop`}>
-        <div className="flex items-start justify-between bg-gradient-to-r from-marca-900 to-marca-500 px-6 py-4">
+        <div className="flex items-start justify-between bg-marca-600 px-6 py-4">
           <div>
             <p className="font-mono text-xs font-bold tracking-widest text-white/80 uppercase">
               Painel do Gestor
@@ -91,7 +91,6 @@ export function ModalFiltrosOS({
           <div>
             <CampoTexto
               rotulo="Máquina"
-              variante="claro"
               list={ID_LISTA_MAQUINAS}
               placeholder="Digite ou escolha uma máquina..."
               icone={<Search size={16} className="text-marca-500" />}
@@ -109,14 +108,12 @@ export function ModalFiltrosOS({
             <div className="grid grid-cols-2 gap-4">
               <CampoTexto
                 rotulo="De"
-                variante="claro"
                 type="date"
                 value={rascunho.dataInicio}
                 onChange={(evento) => atualizarCampo('dataInicio', evento.target.value)}
               />
               <CampoTexto
                 rotulo="Até"
-                variante="claro"
                 type="date"
                 value={rascunho.dataFim}
                 onChange={(evento) => atualizarCampo('dataFim', evento.target.value)}
@@ -133,7 +130,6 @@ export function ModalFiltrosOS({
             <div className="grid grid-cols-2 gap-4">
               <CampoTexto
                 rotulo="Valor Mínimo (R$)"
-                variante="claro"
                 type="number"
                 min={0}
                 step="0.01"
@@ -143,7 +139,6 @@ export function ModalFiltrosOS({
               />
               <CampoTexto
                 rotulo="Valor Máximo (R$)"
-                variante="claro"
                 type="number"
                 min={0}
                 step="0.01"

@@ -64,7 +64,7 @@ export function ModalAbrirOrdemServico({
   return createPortal(
     <div className={`${classeFundo} fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm`}>
       <div className={`${classeCartao} w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-pop`}>
-        <div className="flex items-start justify-between bg-gradient-to-r from-marca-900 to-marca-500 px-6 py-4">
+        <div className="flex items-start justify-between bg-marca-600 px-6 py-4">
           <div>
             <p className="font-mono text-xs font-bold tracking-widest text-white/80 uppercase">
               Painel do Gestor
@@ -130,7 +130,7 @@ export function ModalAbrirOrdemServico({
             <span className="font-mono text-xs font-semibold tracking-wide text-marca-500 uppercase">
               Data/Hora
             </span>
-            <p className="rounded-lg bg-lime-100 px-3 py-2.5 font-mono text-sm text-marca-800">
+            <p className="rounded-xl border border-slate-200/60 bg-slate-50 px-4 py-2.5 text-slate-700 font-mono text-sm text-marca-800">
               {agora.toLocaleString('pt-BR')}
             </p>
           </div>

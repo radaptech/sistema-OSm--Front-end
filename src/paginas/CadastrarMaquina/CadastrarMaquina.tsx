@@ -165,7 +165,7 @@ export function CadastrarMaquina() {
   const isPending = criando || atualizando
 
   return (
-    <div className="flex min-h-svh flex-col bg-slate-600">
+    <div className="flex min-h-svh flex-col bg-slate-50">
       <CabecalhoSubpagina
         contexto="Painel do Administrador"
         titulo={emEdicao ? 'Editar Máquina' : 'Cadastrar Máquina'}
@@ -173,7 +173,7 @@ export function CadastrarMaquina() {
       />
 
       <main className="flex flex-1 justify-center px-4 py-8">
-        <div className="w-full max-w-2xl overflow-hidden rounded-2xl bg-white shadow-2xl">
+        <div className="w-full max-w-2xl overflow-hidden rounded-3xl border border-slate-200/60 bg-white shadow-sm">
           <form
             onSubmit={handleSubmit(aoEnviar)}
             noValidate
@@ -187,7 +187,6 @@ export function CadastrarMaquina() {
 
             <CampoTexto
               rotulo="Nome *"
-              variante="claro"
               placeholder="Ex: Pasteurizador 33"
               mensagemErro={errors.nome?.message}
               {...register('nome')}
@@ -196,14 +195,12 @@ export function CadastrarMaquina() {
             <div className="grid gap-5 sm:grid-cols-2">
               <CampoTexto
                 rotulo="Número do Patrimônio *"
-                variante="claro"
                 placeholder="Ex: 000123"
                 mensagemErro={errors.numeroPatrimonio?.message}
                 {...register('numeroPatrimonio')}
               />
               <CampoTexto
                 rotulo="Série *"
-                variante="claro"
                 placeholder="Ex: SN-4482910"
                 mensagemErro={errors.serie?.message}
                 {...register('serie')}
@@ -221,14 +218,12 @@ export function CadastrarMaquina() {
             <div className="grid gap-5 sm:grid-cols-2">
               <CampoTexto
                 rotulo="Marca"
-                variante="claro"
                 placeholder="Ex: Arsopi"
                 mensagemErro={errors.marca?.message}
                 {...register('marca')}
               />
               <CampoTexto
                 rotulo="Modelo"
-                variante="claro"
                 placeholder="Ex: X200-CNC"
                 mensagemErro={errors.modelo?.message}
                 {...register('modelo')}

@@ -47,7 +47,7 @@ export function ModalAcionarTerceiro({
   return createPortal(
     <div className={`${classeFundo} fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm`}>
       <div className={`${classeCartao} shadow-pop w-full max-w-md overflow-hidden rounded-2xl bg-white`}>
-        <div className="flex items-start justify-between bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-4">
+        <div className="flex items-start justify-between bg-blue-600 px-6 py-4">
           <div>
             <p className="font-mono text-xs font-bold tracking-widest text-white/80 uppercase">
               Painel do Técnico
@@ -116,7 +116,7 @@ export function ModalAcionarTerceiro({
             <div className="flex-1">
               <Botao
                 type="submit"
-                className="flex items-center justify-center gap-2 bg-gradient-to-r from-blue-500 to-blue-600"
+                className="flex items-center justify-center gap-2 bg-blue-600"
               >
                 <Truck size={16} />
                 Acionar

@@ -254,15 +254,15 @@ export function PainelGestor() {
   )
 
   return (
-    <div className="flex min-h-svh flex-col bg-slate-600">
+    <div className="flex min-h-svh flex-col bg-slate-50">
       <CabecalhoTopo />
 
       <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-5 px-4 py-6 sm:px-8">
         <div>
-          <h1 className="font-display text-xl font-bold text-white sm:text-2xl">
+          <h1 className="font-display text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">
             Painel do Gestor
           </h1>
-          <p className="mt-1 text-sm text-slate-300">
+          <p className="mt-1 text-sm text-slate-500">
             Acompanhe as solicitações, OS e manutenções preventivas dos seus
             setores.
           </p>
@@ -293,7 +293,7 @@ export function PainelGestor() {
         )}
 
         {escoposGestor.length === 0 && (
-          <div className="flex flex-col items-center gap-2 rounded-2xl bg-white/10 py-12 text-slate-300">
+          <div className="flex flex-col items-center gap-2 rounded-2xl border-2 border-dashed border-slate-200/60 bg-white py-12 text-slate-400">
             <Inbox size={28} className="text-slate-400" />
             <p className="text-sm">
               Nenhum setor/loja vinculado a este gestor.

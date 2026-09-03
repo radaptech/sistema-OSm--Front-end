@@ -7,18 +7,18 @@ export function PainelAdministrador() {
   const navegar = useNavigate()
 
   return (
-    <div className="flex min-h-svh flex-col bg-slate-600">
+    <div className="flex min-h-svh flex-col bg-slate-50">
       <CabecalhoTopo />
 
       <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 px-4 py-8 sm:px-8 lg:max-w-5xl">
         <div>
           <div className="mb-1 flex items-center gap-2">
-            <UserCog className="text-marca-300" size={20} />
-            <h1 className="font-display text-xl font-bold text-white sm:text-2xl">
+            <UserCog className="text-marca-600" size={20} />
+            <h1 className="font-display text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">
               Painel do Administrador
             </h1>
           </div>
-          <p className="text-sm text-slate-300">
+          <p className="text-sm text-slate-500">
             Acesso total ao tenant — gerencie usuários, lojas, setores e máquinas do
             sistema.
           </p>

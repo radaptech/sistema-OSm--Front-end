@@ -8,9 +8,9 @@ interface CardPreventivaProps {
 
 export function CardPreventiva({ preventiva }: CardPreventivaProps) {
   return (
-    <div className="flex items-start justify-between gap-3 rounded-xl bg-white p-4 shadow-card">
+    <div className="flex items-start justify-between gap-3 rounded-2xl bg-white p-4 shadow-card">
       <div className="flex items-start gap-3">
-        <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-r from-marca-900 to-marca-500 text-white">
+        <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-marca-600 text-white">
           <CalendarClock size={16} />
         </span>
         <div>

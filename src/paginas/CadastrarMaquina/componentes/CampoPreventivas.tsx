@@ -47,7 +47,7 @@ export function CampoPreventivas({ control, errors, nomeMaquina }: CampoPreventi
           className="flex items-start justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3"
         >
           <div className="flex items-start gap-3">
-            <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-r from-marca-900 to-marca-500 text-white">
+            <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-marca-600 text-white">
               <CalendarClock size={16} />
             </span>
             <div>
