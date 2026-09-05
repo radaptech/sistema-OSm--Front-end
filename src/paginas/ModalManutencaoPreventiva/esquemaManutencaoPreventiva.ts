@@ -2,6 +2,13 @@ import { z } from 'zod'
 
 export const esquemaManutencaoPreventiva = z.object({
   maquinaId: z.number().int().nonnegative(),
+  // Obrigatório: ao vencer, a preventiva abre a OS direto no nome deste técnico, sem
+  // passar pelo Gestor. O servidor recusa o cadastro sem ele, e também recusa técnico
+  // que foi desativado ou trocou de perfil.
+  tecnicoId: z
+    .number('Selecione o técnico responsável.')
+    .int()
+    .positive('Selecione o técnico responsável.'),
   descricao: z
     .string()
     .min(3, 'Descreva o procedimento de manutenção.')
