@@ -11,6 +11,7 @@ import {
   preventivas,
   setores,
   solicitacoes,
+  usuarios,
   type PreventivaInterna,
   type UsuarioInterno,
 } from './bancoMock'
@@ -73,10 +74,15 @@ export function preventivaEstaVencida(preventiva: PreventivaInterna): boolean {
   return preventiva.ativa && converterDataBackend(preventiva.proximaData).getTime() <= Date.now()
 }
 
-// Roda antes de qualquer listagem de solicitações/preventivas (fila do Gestor, resumo,
-// preventivas) — mesmo mecanismo do antigo gerarSolicitacoesPreventivasVencidas: para
-// cada preventiva ativa vencida sem uma solicitação Pendente já associada, abre uma
-// SolicitacaoOS com origem 'preventiva', sem solicitante (o job não tem "quem pediu").
+// Roda antes de qualquer listagem de solicitações/preventivas/OS. Espelha o job do
+// back-end: para cada preventiva ativa e vencida, abre a SolicitacaoOS com origem
+// 'preventiva' (sem solicitante — o job não tem "quem pediu") E a OrdemServico junto,
+// já atribuída ao técnico da preventiva.
+//
+// ⚠️ A preventiva NÃO passa pela fila do Gestor. A solicitação nasce 'Convertida' e a
+// OS nasce 'Aberta' com urgência Baixa: o trabalho já foi aprovado quando a máquina foi
+// cadastrada. É por isso que a guarda de duplicata olha a OS existente, e não uma
+// solicitação Pendente, que nunca chega a existir.
 export function sincronizarPreventivasVencidas(): void {
   for (const preventiva of preventivas) {
     if (!preventivaEstaVencida(preventiva)) {
@@ -85,9 +91,7 @@ export function sincronizarPreventivasVencidas(): void {
 
     const jaGerada = solicitacoes.some(
       (solicitacao) =>
-        solicitacao.origem === 'preventiva' &&
-        solicitacao.preventivaId === preventiva.id &&
-        solicitacao.status === 'Pendente',
+        solicitacao.origem === 'preventiva' && solicitacao.preventivaId === preventiva.id,
     )
 
     if (jaGerada) {
@@ -95,20 +99,25 @@ export function sincronizarPreventivasVencidas(): void {
     }
 
     const maquina = maquinas.find((item) => item.id === preventiva.maquinaId)
+    const tecnico = usuarios.find(
+      (item) => item.id === preventiva.tecnicoId && item.perfil === 'tecnico' && item.ativo,
+    )
 
-    if (!maquina) {
+    // Sem técnico válido o back-end reporta falha no cron; aqui não há para onde
+    // reportar, então a preventiva simplesmente não abre nada.
+    if (!maquina || !tecnico) {
       continue
     }
 
-    solicitacoes.push({
+    const solicitacao = {
       id: gerarId(solicitacoes),
-      tipo: 'maquinario',
+      tipo: 'maquinario' as const,
       maquinaId: maquina.id,
       maquinaNome: maquina.nome,
       maquinaCodigo: maquina.numeroPatrimonio ?? null,
       maquinaFotoUrl: maquina.fotoUrl,
       itemDescricao: null,
-      status: 'Pendente',
+      status: 'Convertida' as const,
       descricao: `Manutenção preventiva vencida: ${preventiva.descricao}`,
       solicitanteId: null,
       solicitanteNome: null,
@@ -118,9 +127,40 @@ export function sincronizarPreventivasVencidas(): void {
       lojaId: maquina.lojaId,
       lojaNome: maquina.lojaNome ?? '',
       impactos: [],
-      origem: 'preventiva',
+      origem: 'preventiva' as const,
       preventivaId: preventiva.id,
       anexos: [],
+    }
+    solicitacoes.push(solicitacao)
+
+    ordensServico.push({
+      id: gerarId(ordensServico),
+      solicitacaoId: solicitacao.id,
+      tipo: 'maquinario',
+      maquinaId: solicitacao.maquinaId,
+      maquinaNome: solicitacao.maquinaNome,
+      maquinaCodigo: solicitacao.maquinaCodigo,
+      itemDescricao: null,
+      descricao: solicitacao.descricao,
+      setorId: solicitacao.setorId,
+      setorNome: solicitacao.setorNome,
+      lojaId: solicitacao.lojaId,
+      lojaNome: solicitacao.lojaNome,
+      solicitanteNome: null,
+      // Trabalho planejado com data marcada: se fosse urgente não teria esperado o
+      // calendário.
+      urgencia: 'Baixa',
+      tecnicoId: tecnico.id,
+      tecnicoNome: tecnico.nome,
+      tecnicoArea: tecnico.area,
+      statusExecucao: 'Aberta',
+      finalizada: false,
+      // Sem Solicitante não há quem marque impacto, então o relógio de máquina parada
+      // não roda e a tela escreve "Não se aplica".
+      afetaProducao: false,
+      dataSolicitacao: solicitacao.criadoEm,
+      dataAbertura: agoraParaBackend(),
+      pausas: [],
     })
   }
 }

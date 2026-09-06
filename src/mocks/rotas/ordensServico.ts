@@ -15,6 +15,7 @@ import {
   calcularHorasTrabalhadas,
   construirEscoposGestor,
   gestorTemAcesso,
+  sincronizarPreventivasVencidas,
 } from '../regrasMock'
 import { atraso, gerarId, responderBlob, responderErro, responderJson, type Rota } from '../utilidadesMock'
 
@@ -34,6 +35,10 @@ export const rotasOrdensServico: Rota[] = [
     padrao: /^\/ordens-servico$/,
     async tratar({ query }) {
       await atraso()
+      // Preventiva vencida abre a OS direto, sem passar pelo Gestor: esta listagem
+      // passou a ser um dos lugares onde ela aparece primeiro, então sincroniza aqui
+      // também — antes bastava sincronizar nas rotas de solicitação e preventiva.
+      sincronizarPreventivasVencidas()
       const usuario = obterUsuarioSessao()
       if (!usuario) {
         return responderErro('Não autenticado.', 401)

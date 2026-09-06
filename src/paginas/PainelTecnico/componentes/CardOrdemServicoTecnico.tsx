@@ -95,11 +95,21 @@ export function CardOrdemServicoTecnico({
             Aberta em{' '}
             <span className="font-mono">
               {formatarDataHora(ordemServico.dataAbertura)}
-            </span>{' '}
-            · Solicitado por{' '}
-            <span className="font-medium text-slate-500">
-              {ordemServico.solicitanteNome}
             </span>
+            {/* OS de preventiva não tem solicitante: ela nasce de uma data no
+                calendário, não de alguém relatando um problema. Sem esta guarda o
+                card escrevia "Solicitado por" seguido de nada. */}
+            {ordemServico.solicitanteNome ? (
+              <>
+                {' '}
+                · Solicitado por{' '}
+                <span className="font-medium text-slate-500">
+                  {ordemServico.solicitanteNome}
+                </span>
+              </>
+            ) : (
+              <> · Manutenção preventiva agendada</>
+            )}
           </p>
         </div>
 

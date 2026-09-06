@@ -22,6 +22,7 @@ function gravarPreventivas(maquinaId: number, itens: NovaMaquinaPayload['prevent
     const nova: PreventivaInterna = {
       id: gerarId(preventivas),
       maquinaId,
+      tecnicoId: item.tecnicoId,
       descricao: item.descricao,
       intervaloDias: item.intervaloDias,
       proximaData: item.proximaData,

@@ -7,6 +7,7 @@ import { CampoTexto } from '../../componentes/CampoTexto'
 import { CampoSelecao } from '../../componentes/CampoSelecao'
 import { CampoTextoArea } from '../../componentes/CampoTextoArea'
 import { Alternador } from '../../componentes/Alternador'
+import { useTecnicos } from '../../hooks/useTecnicos'
 import type { PreventivaManutencao } from '../../tipos/maquina'
 import {
   esquemaManutencaoPreventiva,
@@ -18,14 +19,19 @@ interface ModalManutencaoPreventivaProps {
   aoFechar: () => void
   aoSalvar: (preventiva: PreventivaManutencao) => void
   maquinaFixa: { id: number; nome: string }
+  // Loja da máquina, para restringir o select de técnico a quem atende ela — mesmo
+  // critério do "Técnico Responsável" na abertura de OS pelo Gestor.
+  lojaId: number
 }
 
 export function ModalManutencaoPreventiva({
   aoFechar,
   aoSalvar,
   maquinaFixa,
+  lojaId,
 }: ModalManutencaoPreventivaProps) {
   const { fechar, classeFundo, classeCartao } = useSaidaAnimada(aoFechar)
+  const { data: tecnicos, isPending: carregandoTecnicos } = useTecnicos(lojaId || undefined)
 
   const {
     register,
@@ -36,6 +42,7 @@ export function ModalManutencaoPreventiva({
     resolver: zodResolver(esquemaManutencaoPreventiva),
     defaultValues: {
       maquinaId: maquinaFixa.id,
+      tecnicoId: undefined,
       descricao: '',
       intervaloDias: undefined,
       proximaData: '',
@@ -86,6 +93,30 @@ export function ModalManutencaoPreventiva({
           >
             <option value={maquinaFixa.id}>{maquinaFixa.nome}</option>
           </CampoSelecao>
+
+          {/* setValueAs e não valueAsNumber: a opção vazia viraria NaN, e o Zod
+              responderia a mensagem de tipo em vez de "selecione o técnico". */}
+          <CampoSelecao
+            rotulo="Técnico Responsável *"
+            mensagemErro={errors.tecnicoId?.message}
+            {...register('tecnicoId', {
+              setValueAs: (valor) => (valor === '' ? undefined : Number(valor)),
+            })}
+          >
+            <option value="">
+              {carregandoTecnicos ? 'Carregando técnicos...' : 'Selecione o técnico'}
+            </option>
+            {tecnicos?.map((tecnico) => (
+              <option key={tecnico.id} value={tecnico.id}>
+                {tecnico.nome} — {tecnico.area}
+              </option>
+            ))}
+          </CampoSelecao>
+
+          <p className="-mt-2 text-xs text-slate-500">
+            Quando esta preventiva vencer, a OS é aberta automaticamente no nome deste
+            técnico — ela não passa pela aprovação do Gestor.
+          </p>
 
           <CampoTextoArea
             rotulo="Descrição *"
