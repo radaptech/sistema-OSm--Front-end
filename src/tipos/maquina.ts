@@ -22,6 +22,10 @@ export interface Maquina {
 
 export interface PreventivaManutencao {
   maquinaId: number
+  // Quem recebe a OS quando esta preventiva vencer. A preventiva não passa mais pela fila
+  // do Gestor: ao vencer, o servidor abre a OS já atribuída a este técnico. Por isso o
+  // campo é obrigatório no cadastro — sem ele não há para quem abrir.
+  tecnicoId: number
   descricao: string
   intervaloDias: number
   proximaData: string
@@ -35,6 +39,10 @@ export interface PreventivaListada extends PreventivaManutencao {
   setorNome: string
   lojaId: number
   lojaNome?: string
+  // Denormalizado do servidor, no mesmo padrão de maquinaNome/setorNome/lojaNome. Opcional
+  // porque preventiva cadastrada antes de o técnico virar obrigatório volta sem ele — é na
+  // listagem que o Administrador vê quais ainda precisa corrigir.
+  tecnicoNome?: string
   // Calculado no servidor: a preventiva venceu e já gerou solicitação automática.
   vencida?: boolean
 }

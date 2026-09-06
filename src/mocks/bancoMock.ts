@@ -35,6 +35,9 @@ export interface UsuarioInterno {
 export interface PreventivaInterna {
   id: number
   maquinaId: number
+  // Técnico que recebe a OS quando a preventiva vence: ela não passa pela fila do
+  // Gestor, a OS nasce já atribuída (ver sincronizarPreventivasVencidas).
+  tecnicoId: number
   descricao: string
   intervaloDias: number
   proximaData: string
@@ -293,6 +296,7 @@ export const preventivas: PreventivaInterna[] = [
   {
     id: 1,
     maquinaId: 1,
+    tecnicoId: 3,
     descricao: 'Limpeza e verificação do sistema de gás e queimadores',
     intervaloDias: 30,
     proximaData: '01/08/2026',
@@ -301,6 +305,7 @@ export const preventivas: PreventivaInterna[] = [
   {
     id: 2,
     maquinaId: 1,
+    tecnicoId: 3,
     descricao: 'Verificação geral de segurança',
     intervaloDias: 90,
     proximaData: '01/11/2026',
@@ -309,6 +314,7 @@ export const preventivas: PreventivaInterna[] = [
   {
     id: 3,
     maquinaId: 2,
+    tecnicoId: 3,
     descricao: 'Lubrificação de engrenagens e correias',
     intervaloDias: 60,
     proximaData: '20/09/2026',
@@ -317,6 +323,7 @@ export const preventivas: PreventivaInterna[] = [
   {
     id: 4,
     maquinaId: 3,
+    tecnicoId: 3,
     descricao: 'Verificação do gás refrigerante e vedações',
     intervaloDias: 45,
     proximaData: '15/09/2026',
@@ -325,6 +332,7 @@ export const preventivas: PreventivaInterna[] = [
   {
     id: 5,
     maquinaId: 4,
+    tecnicoId: 3,
     descricao: 'Afiação e troca da lâmina de corte',
     intervaloDias: 30,
     proximaData: '25/08/2026',
@@ -333,6 +341,7 @@ export const preventivas: PreventivaInterna[] = [
   {
     id: 6,
     maquinaId: 6,
+    tecnicoId: 3,
     descricao: 'Limpeza do sistema de refrigeração',
     intervaloDias: 30,
     proximaData: '05/08/2026',
@@ -341,6 +350,7 @@ export const preventivas: PreventivaInterna[] = [
   {
     id: 7,
     maquinaId: 7,
+    tecnicoId: 3,
     descricao: 'Verificação do forno e calibração de temperatura',
     intervaloDias: 60,
     proximaData: '10/10/2026',

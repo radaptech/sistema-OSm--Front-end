@@ -86,6 +86,9 @@ export function CadastrarMaquina() {
       setorId: maquinaExistente.setorId,
       preventivas: preventivasExistentes.map((preventiva) => ({
         maquinaId: preventiva.maquinaId,
+        // Preventiva cadastrada antes de o técnico virar obrigatório volta sem ele: cai
+        // em 0, o Zod recusa e o Administrador é obrigado a escolher um ao salvar.
+        tecnicoId: preventiva.tecnicoId ?? 0,
         descricao: preventiva.descricao,
         intervaloDias: preventiva.intervaloDias,
         proximaData: converterDataBackendParaFormulario(preventiva.proximaData),
@@ -283,6 +286,7 @@ export function CadastrarMaquina() {
               control={control}
               errors={errors}
               nomeMaquina={nomeMaquina}
+              lojaId={lojaSelecionadaId}
             />
 
             <div className="mt-2 flex flex-col-reverse gap-3 sm:flex-row">

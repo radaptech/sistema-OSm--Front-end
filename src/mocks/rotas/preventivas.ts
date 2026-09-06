@@ -1,5 +1,5 @@
 import type { PreventivaListada, PreventivaManutencao } from '../../tipos/maquina'
-import { lojas, maquinas, preventivas, type PreventivaInterna } from '../bancoMock'
+import { lojas, maquinas, preventivas, usuarios, type PreventivaInterna } from '../bancoMock'
 import { preventivaEstaVencida, sincronizarPreventivasVencidas } from '../regrasMock'
 import { atraso, gerarId, responderErro, responderJson, type Rota } from '../utilidadesMock'
 
@@ -13,6 +13,8 @@ function paraPreventivaListada(preventiva: PreventivaInterna): PreventivaListada
   return {
     id: preventiva.id,
     maquinaId: preventiva.maquinaId,
+    tecnicoId: preventiva.tecnicoId,
+    tecnicoNome: usuarios.find((item) => item.id === preventiva.tecnicoId)?.nome,
     descricao: preventiva.descricao,
     intervaloDias: preventiva.intervaloDias,
     proximaData: preventiva.proximaData,
@@ -62,6 +64,7 @@ export const rotasPreventivas: Rota[] = [
       const nova: PreventivaInterna = {
         id: gerarId(preventivas),
         maquinaId: dados.maquinaId,
+        tecnicoId: dados.tecnicoId,
         descricao: dados.descricao,
         intervaloDias: dados.intervaloDias,
         proximaData: dados.proximaData,
@@ -84,6 +87,9 @@ export const rotasPreventivas: Rota[] = [
       }
 
       const dados = corpo as PreventivaManutencao
+      // tecnicoId ENTRA na edição, diferente de maquinaId: trocar quem atende a
+      // preventiva é o que a edição serve para fazer, e não desfaz as OS já abertas.
+      preventiva.tecnicoId = dados.tecnicoId
       preventiva.descricao = dados.descricao
       preventiva.intervaloDias = dados.intervaloDias
       preventiva.proximaData = dados.proximaData
