@@ -16,6 +16,7 @@ import { useIndicadoresMaquina } from '../../hooks/useIndicadoresMaquina'
 import { useLojas } from '../../hooks/useLojas'
 import { useSetores } from '../../hooks/useSetores'
 import { agruparPorEscopoGestor } from '../../utilitarios/acessoGestor'
+import { formatarHoras } from '../../utilitarios/formatarHoras'
 import { formatarMoeda } from '../../utilitarios/formatarMoeda'
 import type { Maquina } from '../../tipos/maquina'
 import { CORES_TIPO_DEFEITO } from './coresTipoDefeito'
@@ -52,7 +53,7 @@ export function DashboardGestor() {
     indicadores?.porTipoDefeito.map((item) => ({
       rotulo: item.tipoDefeito,
       valor: item.horasParada,
-      valorFormatado: `${item.horasParada}h`,
+      valorFormatado: formatarHoras(item.horasParada),
       cor: CORES_TIPO_DEFEITO[item.tipoDefeito],
     })) ?? []
 
@@ -155,17 +156,17 @@ export function DashboardGestor() {
                   <CardIndicador
                     Icone={Clock}
                     rotulo="Horas Parada"
-                    valor={`${indicadores.horasParadaTotal}h`}
+                    valor={formatarHoras(indicadores.horasParadaTotal)}
                   />
                   <CardIndicador
                     Icone={Timer}
                     rotulo="MTTR"
-                    valor={`${indicadores.mttrHoras}h`}
+                    valor={formatarHoras(indicadores.mttrHoras)}
                   />
                   <CardIndicador
                     Icone={Activity}
                     rotulo="MTBF"
-                    valor={`${indicadores.mtbfHoras}h`}
+                    valor={formatarHoras(indicadores.mtbfHoras)}
                   />
                   <CardIndicador
                     Icone={CircleDollarSign}
@@ -178,7 +179,7 @@ export function DashboardGestor() {
                   titulo="Paradas por Tipo de OS"
                   dados={segmentosRosca}
                   rotuloCentral="Total"
-                  valorCentral={`${indicadores.horasParadaTotal}h`}
+                  valorCentral={formatarHoras(indicadores.horasParadaTotal)}
                 />
 
                 <GraficoBarras

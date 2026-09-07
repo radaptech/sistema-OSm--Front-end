@@ -1,4 +1,13 @@
-import { Building2, Store, Tag, UserCog, Users, Wrench } from 'lucide-react'
+import {
+  Building2,
+  CircleDollarSign,
+  ClipboardCheck,
+  Store,
+  Tag,
+  UserCog,
+  Users,
+  Wrench,
+} from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { CabecalhoTopo } from '../../componentes/CabecalhoTopo'
 import { CardAcao } from '../../componentes/CardAcao'
@@ -25,12 +34,6 @@ export function PainelAdministrador() {
         </div>
 
         <div className="grid grid-cols-1 gap-3 lg:grid-cols-2 lg:gap-4 xl:grid-cols-3">
-          {/* ponytail: os cards "Custos Pendentes" e "OS Finalizadas" foram removidos
-              daqui porque chamam /ordens-servico, que ainda não existe no back — o
-              admin clicava e recebia toast de erro. As telas
-              (AdministradorCustosPendentes/AdministradorOSFinalizadas) e as rotas
-              em RotasPrincipais.tsx continuam prontas. Ao subir a OS, devolva os
-              dois cards: git revert do commit que os removeu. */}
           <CardAcao
             titulo="Usuários"
             descricao="Solicitantes, gestores e administradores"
@@ -61,6 +64,18 @@ export function PainelAdministrador() {
             descricao="Empresas parceiras para reparo de máquinas"
             Icone={Building2}
             aoClicar={() => navegar('/administrador/empresas-terceirizadas')}
+          />
+          <CardAcao
+            titulo="Custos Pendentes"
+            descricao="OS concluídas aguardando lançamento de custo"
+            Icone={CircleDollarSign}
+            aoClicar={() => navegar('/administrador/custos-pendentes')}
+          />
+          <CardAcao
+            titulo="OS Finalizadas"
+            descricao="Ordens de serviço encerradas e com custo lançado"
+            Icone={ClipboardCheck}
+            aoClicar={() => navegar('/administrador/os-finalizadas')}
           />
         </div>
       </main>

@@ -271,7 +271,7 @@ Regras transversais que valem para **todos** os serviços. Ao criar um endpoint 
 
 ### 12. Painel do Administrador (`PainelAdministrador` - 4º perfil)
 - **Perfil:** `administrador`, com acesso total ao tenant (sem escopo de Loja/Setor). Login redireciona para `/painel-administrador` (`perfis={['administrador']}`).
-- **Home do Painel:** cards de navegação (`CardAcao`) para `Usuários`, `Lojas`, `Setores`, `Máquinas` e `Empresas Terceirizadas`. `Custos Pendentes` e `OS Finalizadas` **estão fora da grade hoje** (dependem de `/ordens-servico`, que não existe no back — ver "Verificação pelo navegador" no fim deste arquivo); `Técnicos` nunca existiu como tela.
+- **Home do Painel:** cards de navegação (`CardAcao`) para `Usuários`, `Lojas`, `Setores`, `Máquinas`, `Empresas Terceirizadas`, `Custos Pendentes` e `OS Finalizadas` — os dois últimos voltaram à grade em 05/09/2026, quando o ciclo de vida da OS ficou completo no back (ver "Verificação pelo navegador" no fim deste arquivo); `Técnicos` nunca existiu como tela.
 - **CRUD Completo em cada entidade:** telas de listagem próprias (`AdministradorUsuarios`, `AdministradorLojas`, `AdministradorSetores`, `AdministradorTecnicos`, `AdministradorMaquinas`, `AdministradorEmpresasTerceirizadas`) com **barra de busca** (`CampoBusca`), **filtros** (por perfil/loja/setor conforme a entidade), **Editar** (ícone lápis → tela de cadastro em modo edição via `/:id`, ou `ModalEditarTecnico` no caso de Técnicos) e **Excluir** (ícone lixeira + `ModalConfirmarExclusao`). Mobile-First obrigatório: cada linha empilha em coluna (`flex-col`) até `sm`, virando linha (`sm:flex-row sm:justify-between`) a partir daí, com `min-w-0`/`truncate` para não estourar em telas estreitas.
 - **Empresas Terceirizadas:** entidade simples (`EmpresaTerceirizada`: `nome`, `especialidade?`, `telefone?`), sem vínculo de Loja/Setor — cadastrada aqui e consumida pelo **Técnico** no `ModalAcionarTerceiro` (item 9).
 - **Técnicos — leitura e escrita separadas:** `AdministradorTecnicos` **lê** de `useTecnicos` (`GET /tecnicos`) e **escreve** via `servicoUsuarios.atualizar`/`deletar` (`/usuarios`), porque Técnico é um usuário com perfil `'tecnico'` (ver item 7). O botão "Novo Técnico" leva para `/cadastrar-usuario`.
@@ -279,12 +279,13 @@ Regras transversais que valem para **todos** os serviços. Ao criar um endpoint 
   - **Servidor:** `AdministradorUsuarios` passa `busca`/`perfil`/`lojaId`/`pagina` para `GET /usuarios` e usa `resposta.dados` + `resposta.totalPaginas`.
   - **Cliente:** as demais listagens recebem array simples e paginam com `Array.slice` em blocos de **10** (`TAMANHO_PAGINA`), usando o componente compartilhado `Paginacao` (`/src/componentes/Paginacao.tsx`).
   - Em ambos os casos, a página volta para 1 quando busca/filtros mudam — ajuste feito **durante a renderização**, comparando uma chave dos filtros com o valor anterior, e não em `useEffect` (evita `setState` dentro de efeito).
-- **Custos Pendentes (`AdministradorCustosPendentes`)** — ⚠️ **tela pronta, sem entrada no Painel** enquanto `/ordens-servico` não existir: lista **toda** OS `Concluída` (`useOrdensServicoTodas({ status: ['Concluída'], busca, lojaId, tipo })`), com ou sem custo já lançado — busca, filtro por loja e `FiltroTipoOS` são resolvidos pelo servidor. Card e `ModalLancarCustoManutencao` mudam conforme o tipo:
+- **Custos Pendentes (`AdministradorCustosPendentes`)** — lista **toda** OS `Concluída` (`useOrdensServicoTodas({ status: ['Concluída'], busca, lojaId, tipo })`), com ou sem custo já lançado — busca, filtro por loja e `FiltroTipoOS` são resolvidos pelo servidor. Duas abas dentro da própria tela (`FiltroRevisaoCusto`, mesmo par de pílulas com contagem do `FiltroStatusSolicitacao` do Gestor, item 6): **Pendentes** (o que falta o Administrador olhar) e **Revisadas** (o que ele já editou). A OS troca de aba assim que `POST /custo` responde com sucesso — não some da tela, vira histórico.
+  - **A aba sai de `ordem.custo.revisadoEm`, resolvido no servidor.** `POST /ordens-servico/:id/custo` grava `os_custo.custo_revisado_em` (migration `000009` do back) e `GET /ordens-servico` devolve o campo — toda passagem do Administrador pelo endpoint conta como conferência. Vale para todos os Administradores, em qualquer aparelho (antes era `localStorage`, valia só num navegador).
   - **Maquinário:** card mostra "Encerrada em" (`dataFim`), **Custo Hora do Técnico** e **Custo de Manutenção** (`—` quando vazios). O modal abre com **Horas Trabalhadas** (somente leitura) e os campos **Custo Hora Técnico (R$)** e **Custo de Manutenção (R$) \*** (obrigatório), já pré-preenchidos pelo Técnico no encerramento (item 11) — o Administrador só edita para corrigir.
   - **Reparo:** sem **Custo Hora Técnico** (só o Custo de Manutenção), com um aviso explicando — mesma regra do encerramento (item 11).
   - **Executada por terceiro:** também sem Custo Hora Técnico, e o modal exibe um aviso com o nome da empresa lembrando de conferir o Custo de Manutenção contra a **nota fiscal** dela. É o único tipo com os campos de nota: **Número da Nota Fiscal**, **Série** e **Descrição do Serviço** (até 300 caracteres, o que a empresa fez conforme a NF) — todos opcionais, guardados em `ordem.custo` (`numeroNotaFiscal`, `serieNotaFiscal`, `descricaoServicoTerceiro`). Os textos de defeito/causa/solução **não** aparecem aqui: a OS passou pelo Técnico como qualquer outra e já chega com eles preenchidos.
   - **Ao salvar:** `servicoOrdensServico.lancarCustoManutencao` → `POST /ordens-servico/:id/custo` (`LancamentoCustoManutencaoPayload`) envia `custoManutencao` (obrigatório), `custoHoraTecnico` (opcional) e os três campos de nota fiscal (opcionais). Não há mais ramo de esquema por tipo: `criarEsquemaLancarCustoManutencao(ehTerceiros)` virou o esquema único `esquemaLancarCustoManutencao`, e o que muda por tipo é só quais campos a tela renderiza.
-- **OS Finalizadas (`AdministradorOSFinalizadas`):** ver item 13 — mesma situação: tela pronta, card fora do Painel até a OS existir.
+- **OS Finalizadas (`AdministradorOSFinalizadas`):** ver item 13.
 
 ### 13. OS Finalizadas e Impressão de OS (Administrador + Gestor)
 - **Regra de Negócio — o que conta como "finalizada":** a OS passou por **todas as etapas com sucesso**: o Técnico encerrou o atendimento (item 11) **e** o custo de manutenção foi lançado (item 12). **Essa regra é resolvida no servidor e chega pronta na flag `ordem.finalizada`** — nenhuma tela recalcula. É o complemento exato de "Custos Pendentes".
@@ -358,16 +359,23 @@ estão corrigidos — não reintroduza.
 - **Card de máquina mostra `numeroPatrimonio`, não `maquina.id`**: é por ele que a busca da
   mesma tela filtra, e é o número que existe na etiqueta.
 
-**Resolvido (23/08/2026):** os cards "Custos Pendentes" e "OS Finalizadas" do
-`PainelAdministrador` chamavam `/ordens-servico`, que não existe no back — o admin clicava
-e recebia toast de erro. **Os dois cards foram removidos da Home do Painel**; as telas
+**Resolvido (23/08/2026 → devolvido em 05/09/2026):** os cards "Custos Pendentes" e "OS
+Finalizadas" tinham sido removidos da Home do Painel porque chamavam `/ordens-servico`,
+que não existia no back (o admin clicava e recebia toast de erro) — as telas
 (`AdministradorCustosPendentes`, `AdministradorOSFinalizadas`) e as rotas em
-`RotasPrincipais.tsx` continuam intactas, só o ponto de entrada saiu. Para devolvê-los
-quando a OS subir: `git revert` do commit que os removeu (há um comentário `ponytail:` na
-grade de cards do arquivo apontando para ele). **Não recrie os cards na mão** — o revert
-traz também os imports de ícone (`CircleDollarSign`/`ClipboardCheck`), que precisaram sair
-junto porque `noUnusedLocals` está ligado no `tsconfig.app.json` e import órfão quebra o
-`tsc`.
+`RotasPrincipais.tsx` continuaram intactas o tempo todo, só o ponto de entrada tinha saído.
+Voltaram quando o back-end ganhou o ciclo de vida completo da Ordem de Serviço
+(`iniciar`/`pausar`/`retomar`/`acionar-terceiro`/`encerrar`/`custo` —
+`radaptech/sistema-OSm--Back-end`, `docs/fluxo-de-negocio.md`), em especial
+`POST /ordens-servico/:id/custo`, que é quem os dois cards precisavam pra funcionar de
+verdade.
+
+Verificado contra a API real (não mock, não `go test`): tenant `smoke`, login como
+Administrador, `GET /ordens-servico?status=Concluída` achando uma OS de terceiros com
+custo já lançado pelo Técnico, `POST /custo` corrigindo o valor e anexando nota fiscal —
+resposta 200, `lancadoPorNome` trocando de dono, e a linha conferida direto no Postgres
+(`select ... from os_custo`). As travas também testadas ao vivo: `custoHoraTecnico` numa
+OS de terceiros devolve 400, OS inexistente 404, sem sessão 401.
 
 **Não existe `AdministradorTecnicos`** (nem pasta, nem card, nem rota), apesar de o item 12
 descrever a tela. `GET /tecnicos` já existe no back e hoje só alimenta o

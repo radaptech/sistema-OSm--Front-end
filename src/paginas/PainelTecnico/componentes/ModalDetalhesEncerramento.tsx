@@ -4,6 +4,7 @@ import { Botao } from '../../../componentes/Botao'
 import { BadgeStatusExecucao } from '../../../componentes/BadgeStatusExecucao'
 import { calcularHoras } from '../../../utilitarios/calcularHoras'
 import { formatarDataHora } from '../../../utilitarios/formatarData'
+import { formatarHoras } from '../../../utilitarios/formatarHoras'
 import { formatarMoeda } from '../../../utilitarios/formatarMoeda'
 import type { OrdemServico } from '../../../tipos/ordemServico'
 import { useSaidaAnimada } from '../../../hooks/useSaidaAnimada'
@@ -96,12 +97,12 @@ export function ModalDetalhesEncerramento({
               </span>
               <p className="font-mono text-slate-700">
                 {ordemServico.horasTrabalhadas !== undefined
-                  ? `${ordemServico.horasTrabalhadas}h`
+                  ? formatarHoras(ordemServico.horasTrabalhadas)
                   : '—'}
               </p>
               <p className="font-mono text-slate-700">
                 {horasParada !== undefined
-                  ? `${horasParada}h`
+                  ? formatarHoras(horasParada)
                   : 'Não se aplica'}
               </p>
             </div>

@@ -2,6 +2,7 @@ import { BadgeStatusExecucao } from '../../../componentes/BadgeStatusExecucao'
 import { BadgeTipoOS } from '../../../componentes/BadgeTipoOS'
 import { BadgeUrgencia } from '../../../componentes/BadgeUrgencia'
 import { calcularHoras } from '../../../utilitarios/calcularHoras'
+import { formatarHoras } from '../../../utilitarios/formatarHoras'
 import { agoraParaBackend } from '../../../utilitarios/dataBackend'
 import { obterNomeAlvo } from '../../../utilitarios/alvoOS'
 import { formatarDataHora } from '../../../utilitarios/formatarData'
@@ -55,7 +56,7 @@ export function CardOSEmExecucao({ ordemServico }: CardOSEmExecucaoProps) {
             {ordemServico.dataInicio &&
               ` · Iniciada em ${formatarDataHora(ordemServico.dataInicio)}`}
             {' · '}
-            {horasDesdeInicio}h desde o início
+            {formatarHoras(horasDesdeInicio)} desde o início
           </p>
         </div>
       </div>
