@@ -340,6 +340,7 @@ com foto (multipart → R2 → URL assinada renderizando no `<img>`), preventiva
 empresa terceirizada. Tudo passou. Os bugs abaixo foram achados **nessa passagem** e já
 estão corrigidos — não reintroduza.
 
+- ⚠️ **Dropdown dependente: trocar o "pai" tem que zerar o "filho".** Nos pares Loja → Setor, mudar a loja deixava o `filtroSetor` com o id de um setor da loja ANTERIOR. Esse id não casa com nenhuma das novas `<option>`, então o `select` renderiza **em branco** enquanto o filtro continua ativo — a lista volta vazia e nada na tela explica por quê. Corrigido em `AdministradorMaquinas` e `AdministradorOSFinalizadas` com um `aoMudarLoja` que faz `setFiltroSetor('')` junto. **Sempre no `onChange` do pai, nunca num `useEffect` sobre ele**: o efeito rodaria também na montagem e apagaria uma seleção legítima (é o mesmo motivo do comentário em `CadastrarMaquina`, que já resolvia assim com `setValue('setorId', 0)`). Vale para qualquer par futuro, não só Loja/Setor.
 - ⚠️ **`PortaoSessao` precisa esperar o espelhamento no estado, não só a query.** O
   `entrar(sessao)` roda num `useEffect`, ou seja, DEPOIS da primeira renderização dos
   filhos — que acontecia com `autenticado = false`, e a `RotaProtegida` redirecionava antes
