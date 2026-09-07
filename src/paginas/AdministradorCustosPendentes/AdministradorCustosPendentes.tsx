@@ -81,8 +81,9 @@ export function AdministradorCustosPendentes() {
         <p className="text-sm text-slate-500">
           Toda OS chega com Custo Hora do Técnico e Custo de Manutenção
           preenchidos pelo próprio Técnico no encerramento — edite aqui só se
-          precisar corrigir algo. Nas OS executadas por empresa terceirizada,
-          confira o Custo de Manutenção contra a nota fiscal da empresa.
+          precisar corrigir algo. Confira o Custo de Manutenção contra a nota
+          fiscal que o embasa (a fatura da empresa terceirizada, a nota da peça
+          ou do material) e registre o número dela aqui.
         </p>
 
         <FiltroRevisaoCusto
@@ -195,7 +196,12 @@ export function AdministradorCustosPendentes() {
                       </span>
                     </p>
                   </div>
-                  {ordem.tipo === 'terceiros' && (
+                  {/* Nota fiscal vale em qualquer tipo (peça de maquinário, material de
+                      reparo), mas o "ainda não informada" em âmbar é só para terceiros: lá
+                      a fatura da empresa é o que embasa o custo e a falta é uma pendência.
+                      Nos outros tipos pode simplesmente não ter havido compra — a linha
+                      some em vez de virar alarme falso em toda OS. */}
+                  {(ordem.custo?.numeroNotaFiscal || ordem.tipo === 'terceiros') && (
                     <p className="mt-1 text-xs text-slate-400">
                       Nota Fiscal{' '}
                       {ordem.custo?.numeroNotaFiscal ? (
