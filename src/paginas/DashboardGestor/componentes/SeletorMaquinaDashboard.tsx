@@ -14,12 +14,12 @@ export function SeletorMaquinaDashboard({
   aoSelecionar,
 }: SeletorMaquinaDashboardProps) {
   return (
-    <div className="flex flex-col gap-4 rounded-xl bg-white/5 p-4">
+    <div className="flex flex-col gap-4 rounded-2xl border border-slate-200/60 bg-slate-50/50 p-4">
       {grupos.map((grupo) => (
         <div key={grupo.loja.id} className="flex flex-col gap-2">
           <div className="flex items-center gap-2">
-            <Store size={14} className="text-emerald-300" />
-            <h2 className="font-display text-xs font-bold tracking-wide text-white uppercase">
+            <Store size={14} className="text-marca-600" />
+            <h2 className="font-display text-xs font-bold tracking-widest text-slate-800 uppercase">
               {grupo.loja.nome}
             </h2>
           </div>
@@ -31,8 +31,8 @@ export function SeletorMaquinaDashboard({
             >
               {subgrupo.setorNome && (
                 <div className="flex items-center gap-1.5">
-                  <Tag size={11} className="text-slate-300" />
-                  <h3 className="text-[11px] font-semibold text-slate-300 uppercase">
+                  <Tag size={11} className="text-slate-400" />
+                  <h3 className="text-[11px] font-semibold text-slate-500 uppercase">
                     {subgrupo.setorNome}
                   </h3>
                 </div>
@@ -54,8 +54,8 @@ export function SeletorMaquinaDashboard({
                         onClick={() => aoSelecionar(maquina)}
                         className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition-all duration-200 ${
                           selecionada
-                            ? 'bg-gradient-to-r from-marca-900 to-marca-500 text-white shadow-card'
-                            : 'bg-slate-700 text-slate-200 hover:bg-slate-600'
+                            ? 'bg-marca-600 text-white shadow-sm shadow-marca-600/20'
+                            : 'border border-slate-200/60 bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-slate-900'
                         }`}
                       >
                         <Wrench size={12} />

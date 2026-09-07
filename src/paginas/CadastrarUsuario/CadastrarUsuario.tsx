@@ -98,7 +98,7 @@ export function CadastrarUsuario() {
   const isPending = criando || atualizando
 
   return (
-    <div className="flex min-h-svh flex-col bg-slate-600">
+    <div className="flex min-h-svh flex-col bg-slate-50">
       <CabecalhoSubpagina
         contexto="Painel do Administrador"
         titulo={emEdicao ? 'Editar Usuário' : 'Cadastrar Usuário'}
@@ -106,7 +106,7 @@ export function CadastrarUsuario() {
       />
 
       <main className="flex flex-1 justify-center px-4 py-8">
-        <div className="w-full max-w-2xl overflow-hidden rounded-2xl bg-white shadow-2xl">
+        <div className="w-full max-w-2xl overflow-hidden rounded-3xl border border-slate-200/60 bg-white shadow-sm">
           <form
             onSubmit={handleSubmit(aoEnviar)}
             noValidate
@@ -131,14 +131,12 @@ export function CadastrarUsuario() {
             <div className="grid gap-5 sm:grid-cols-2">
               <CampoTexto
                 rotulo="Nome *"
-                variante="claro"
                 placeholder="Nome completo"
                 mensagemErro={errors.nome?.message}
                 {...register('nome')}
               />
               <CampoTexto
                 rotulo="Telefone"
-                variante="claro"
                 placeholder="(00) 00000-0000"
                 mensagemErro={errors.telefone?.message}
                 {...register('telefone')}
@@ -148,7 +146,6 @@ export function CadastrarUsuario() {
             <div className="grid gap-5 sm:grid-cols-2">
               <CampoTexto
                 rotulo="E-mail *"
-                variante="claro"
                 type="email"
                 placeholder="usuario@empresa.com"
                 mensagemErro={errors.email?.message}
@@ -156,7 +153,6 @@ export function CadastrarUsuario() {
               />
               <CampoTexto
                 rotulo="Senha *"
-                variante="claro"
                 type="password"
                 placeholder="Senha de acesso"
                 mensagemErro={errors.senha?.message}

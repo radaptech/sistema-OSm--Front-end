@@ -20,10 +20,10 @@ export function CardOSFinalizada({
     (ordemServico.custo?.custoHoraTecnico ?? 0) + (ordemServico.custo?.custoManutencao ?? 0)
 
   return (
-    <div className="flex flex-col gap-3 rounded-xl bg-white p-4 shadow-card sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-3 rounded-2xl bg-white p-4 shadow-card sm:flex-row sm:items-center sm:justify-between">
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-r from-marca-900 to-marca-500 font-mono text-sm font-bold text-white">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-marca-600 font-mono text-sm font-bold text-white">
             #{ordemServico.id}
           </span>
           <span className="truncate font-semibold text-slate-800">

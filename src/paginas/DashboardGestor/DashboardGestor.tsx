@@ -65,7 +65,7 @@ export function DashboardGestor() {
     })) ?? []
 
   return (
-    <div className="flex min-h-svh flex-col bg-slate-600">
+    <div className="flex min-h-svh flex-col bg-slate-50">
       <CabecalhoSubpagina
         contexto="Painel do Gestor"
         titulo="Painel de Indicadores"
@@ -74,10 +74,10 @@ export function DashboardGestor() {
 
       <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-5 px-4 py-6 sm:px-8">
         <div>
-          <h1 className="font-display text-xl font-bold text-white sm:text-2xl">
+          <h1 className="font-display text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">
             Indicadores de Máquinas
           </h1>
-          <p className="mt-1 text-sm text-slate-300">
+          <p className="mt-1 text-sm text-slate-500">
             Selecione uma máquina para ver Horas Parada, MTTR, MTBF e Custo
             Total.
           </p>
@@ -100,7 +100,7 @@ export function DashboardGestor() {
         )}
 
         {!carregandoMaquinas && grupos.length === 0 && (
-          <div className="flex flex-col items-center gap-2 rounded-2xl bg-white/10 py-12 text-slate-300">
+          <div className="flex flex-col items-center gap-2 rounded-2xl border-2 border-dashed border-slate-200/60 bg-white py-12 text-slate-400">
             <PackageSearch size={28} className="text-slate-400" />
             <p className="text-sm">Nenhuma máquina disponível nos seus setores/lojas.</p>
           </div>
@@ -116,9 +116,9 @@ export function DashboardGestor() {
 
         {maquinaSelecionada && (
           <div className="flex flex-col gap-4">
-            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 border-b border-white/10 pb-2">
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 border-b border-slate-200/60 pb-2">
               <Wrench size={16} className="shrink-0 text-emerald-300" />
-              <h2 className="min-w-0 font-display text-sm font-bold break-words text-white">
+              <h2 className="min-w-0 font-display text-sm font-bold break-words text-slate-800">
                 {maquinaSelecionada.nome}
               </h2>
               <span className="shrink-0 font-mono text-xs text-slate-400">

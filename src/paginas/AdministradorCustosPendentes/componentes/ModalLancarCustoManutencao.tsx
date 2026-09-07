@@ -55,7 +55,7 @@ export function ModalLancarCustoManutencao({
   return createPortal(
     <div className={`${classeFundo} fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm`}>
       <div className={`${classeCartao} shadow-pop w-full max-w-md overflow-hidden rounded-2xl bg-white`}>
-        <div className="from-marca-900 to-marca-500 flex items-start justify-between bg-gradient-to-r px-6 py-4">
+        <div className="flex items-start justify-between bg-marca-600 px-6 py-4">
           <div>
             <p className="font-mono text-xs font-bold tracking-widest text-white/80 uppercase">
               Painel do Administrador
@@ -136,7 +136,6 @@ export function ModalLancarCustoManutencao({
             {mostrarCustoHoraTecnico && (
               <CampoTexto
                 rotulo="Custo Hora Técnico (R$)"
-                variante="claro"
                 type="number"
                 min={0}
                 step="0.01"
@@ -148,7 +147,6 @@ export function ModalLancarCustoManutencao({
 
             <CampoTexto
               rotulo="Custo Manutenção (R$) *"
-              variante="claro"
               type="number"
               min={0}
               step="0.01"
@@ -163,7 +161,6 @@ export function ModalLancarCustoManutencao({
               <div className="grid grid-cols-2 gap-4">
                 <CampoTexto
                   rotulo="Número da Nota Fiscal"
-                  variante="claro"
                   placeholder="Ex: 12345"
                   mensagemErro={errors.numeroNotaFiscal?.message}
                   {...register('numeroNotaFiscal')}
@@ -171,7 +168,6 @@ export function ModalLancarCustoManutencao({
 
                 <CampoTexto
                   rotulo="Série"
-                  variante="claro"
                   placeholder="Ex: 1"
                   mensagemErro={errors.serieNotaFiscal?.message}
                   {...register('serieNotaFiscal')}

@@ -70,15 +70,15 @@ export function AdministradorCustosPendentes() {
   }
 
   return (
-    <div className="flex min-h-svh flex-col bg-slate-600">
+    <div className="flex min-h-svh flex-col bg-slate-50">
       <CabecalhoSubpagina
         contexto="Painel do Administrador"
         titulo="Custos Pendentes"
         Icone={CircleDollarSign}
       />
 
-      <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-4 px-4 py-6 sm:px-8 lg:max-w-6xl">
-        <p className="text-sm text-slate-300">
+      <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-4 px-4 py-6 sm:px-8 lg:max-w-6xl 2xl:max-w-[88rem]">
+        <p className="text-sm text-slate-500">
           Toda OS chega com Custo Hora do Técnico e Custo de Manutenção
           preenchidos pelo próprio Técnico no encerramento — edite aqui só se
           precisar corrigir algo. Nas OS executadas por empresa terceirizada,
@@ -124,7 +124,7 @@ export function AdministradorCustosPendentes() {
         {/* Sem items-start os cards da mesma linha esticam para a altura do mais alto —
             os que têm menos informação (sem Nota Fiscal, sem Custo Hora) param de deixar
             um degrau na grade. */}
-        <div className="flex flex-1 flex-col gap-3 lg:grid lg:grid-cols-2 lg:content-start lg:gap-4">
+        <div className="flex flex-1 flex-col gap-3 lg:grid lg:grid-cols-2 2xl:grid-cols-3 lg:content-start lg:gap-4">
           {isLoading && (
             <EsqueletoLista quantidade={4}>
               <EsqueletoCardOS />
@@ -132,7 +132,7 @@ export function AdministradorCustosPendentes() {
           )}
 
           {!isLoading && ordensConcluidas.length === 0 && (
-            <div className="flex flex-col items-center gap-2 rounded-xl bg-white/10 py-12 text-slate-400 lg:col-span-2">
+            <div className="flex flex-col items-center gap-2 rounded-2xl border-2 border-dashed border-slate-200/60 bg-white py-12 text-slate-400 lg:col-span-2">
               <CircleDollarSign size={28} />
               <p className="text-sm">
                 {aba === 'pendentes'
@@ -149,13 +149,13 @@ export function AdministradorCustosPendentes() {
               <div
                 key={ordem.id}
                 style={atrasoEntrada(indice)}
-                className="animate-surgir shadow-card hover:shadow-card-hover flex flex-col gap-3 rounded-xl bg-white p-4 transition-shadow duration-200 sm:flex-row sm:items-start sm:justify-between"
+                className="animate-surgir shadow-card hover:shadow-card-hover flex flex-col gap-3 rounded-2xl bg-white p-4 transition-shadow duration-200 sm:flex-row sm:items-start sm:justify-between"
               >
                 <div className="min-w-0 flex-1">
                   {/* Uma linha só: sem flex-wrap o badge nunca cai para a linha de baixo,
                       então todo card tem a mesma altura de cabeçalho e a coluna alinha. */}
                   <div className="flex items-center gap-2">
-                    <span className="from-marca-900 to-marca-500 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-r font-mono text-sm font-bold text-white">
+                    <span className="bg-marca-600 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg font-mono text-sm font-bold text-white">
                       #{ordem.id}
                     </span>
                     <span className="truncate font-semibold text-slate-800">
@@ -213,7 +213,7 @@ export function AdministradorCustosPendentes() {
                 <button
                   type="button"
                   onClick={() => setOrdemParaLancarCusto(ordem)}
-                  className="from-marca-900 to-marca-500 font-display shadow-card hover:shadow-card-hover focus:ring-marca-500 flex shrink-0 items-center justify-center gap-2 rounded-xl bg-gradient-to-r px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-white transition-all duration-200 hover:brightness-110 focus:ring-2 focus:outline-none active:scale-[0.98]"
+                  className="bg-marca-600 font-display shadow-card hover:shadow-card-hover focus:ring-marca-500 flex shrink-0 items-center justify-center gap-2 rounded-xl bg-gradient-to-r px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-white transition-all duration-200 hover:bg-marca-800 focus:ring-2 focus:outline-none active:scale-[0.98]"
                 >
                   <CircleDollarSign size={14} />
                   Editar Custos

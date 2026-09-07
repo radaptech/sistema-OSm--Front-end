@@ -2,6 +2,7 @@ import { ArrowLeft, Bell, LogOut } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { useSair } from '../hooks/useSair'
+import { AlternadorTema } from './AlternadorTema'
 
 interface CabecalhoPaginaProps {
   titulo: string
@@ -16,41 +17,44 @@ export function CabecalhoPagina({ titulo }: CabecalhoPaginaProps) {
   }
 
   return (
-    <header className="relative isolate overflow-hidden bg-gradient-to-r from-marca-900 to-marca-500 px-4 py-3 shadow-card sm:px-8">
-      <div className="bg-grade-industrial bg-grade pointer-events-none absolute inset-0 opacity-20" />
-      <div className="relative flex items-center justify-between">
-        <div className="flex items-center gap-3">
+    <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/80 shadow-sm backdrop-blur-lg">
+      <div className="flex w-full items-center justify-between px-4 py-3 sm:px-8">
+        <div className="flex items-center gap-2.5">
           <button
             type="button"
             aria-label="Voltar"
             onClick={() => navegar(-1)}
-            className="text-white/90 transition hover:-translate-x-0.5 hover:text-white"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
           >
             <ArrowLeft size={20} />
           </button>
           <div>
-            <p className="font-mono text-xs font-bold tracking-widest text-white uppercase">
+            <p className="text-marca-600 font-mono text-[10px] font-bold tracking-widest uppercase">
               Solicitação OS
             </p>
-            <p className="text-sm text-white/90">{titulo}</p>
+            <p className="font-display text-base font-bold text-slate-800">
+              {titulo}
+            </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-1">
+          <AlternadorTema />
+
           <button
             type="button"
             aria-label="Notificações"
             onClick={aoClicarNotificacoes}
-            className="relative text-white/90 transition hover:scale-110 hover:text-white"
+            className="relative flex h-10 w-10 items-center justify-center rounded-xl text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
           >
             <Bell size={20} />
-            <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-white" />
+            <span className="bg-marca-500 absolute top-2 right-2 h-2 w-2 rounded-full" />
           </button>
           <button
             type="button"
             aria-label="Sair"
             onClick={aoSair}
-            className="text-white/90 transition hover:scale-110 hover:text-white"
+            className="flex h-10 w-10 items-center justify-center rounded-xl text-slate-400 transition-colors hover:bg-red-50 hover:text-red-500"
           >
             <LogOut size={20} />
           </button>

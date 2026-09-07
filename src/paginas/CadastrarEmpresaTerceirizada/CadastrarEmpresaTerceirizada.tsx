@@ -74,7 +74,7 @@ export function CadastrarEmpresaTerceirizada() {
   const isPending = criando || atualizando
 
   return (
-    <div className="flex min-h-svh flex-col bg-slate-600">
+    <div className="flex min-h-svh flex-col bg-slate-50">
       <CabecalhoSubpagina
         contexto="Painel do Administrador"
         titulo={emEdicao ? 'Editar Empresa Terceirizada' : 'Cadastrar Empresa Terceirizada'}
@@ -82,7 +82,7 @@ export function CadastrarEmpresaTerceirizada() {
       />
 
       <main className="flex flex-1 justify-center px-4 py-8">
-        <div className="w-full max-w-2xl overflow-hidden rounded-2xl bg-white shadow-2xl">
+        <div className="w-full max-w-2xl overflow-hidden rounded-3xl border border-slate-200/60 bg-white shadow-sm">
           <form
             onSubmit={handleSubmit(aoEnviar)}
             noValidate
@@ -90,7 +90,6 @@ export function CadastrarEmpresaTerceirizada() {
           >
             <CampoTexto
               rotulo="Nome *"
-              variante="claro"
               placeholder="Ex: Balanças Cooprata Assistência Técnica"
               mensagemErro={errors.nome?.message}
               {...register('nome')}
@@ -99,14 +98,12 @@ export function CadastrarEmpresaTerceirizada() {
             <div className="grid gap-5 sm:grid-cols-2">
               <CampoTexto
                 rotulo="Especialidade"
-                variante="claro"
                 placeholder="Ex: Balanças e instrumentos de pesagem"
                 mensagemErro={errors.especialidade?.message}
                 {...register('especialidade')}
               />
               <CampoTexto
                 rotulo="Telefone"
-                variante="claro"
                 placeholder="Ex: (11) 4002-8922"
                 mensagemErro={errors.telefone?.message}
                 {...register('telefone')}

@@ -63,8 +63,8 @@ export function ResumoLojasTecnico({
         onClick={() => aoSelecionarLoja(null)}
         className={`rounded-full px-3.5 py-2 text-xs font-semibold whitespace-nowrap transition-all duration-200 ${
           lojaSelecionada === null
-            ? 'bg-white text-slate-800 shadow-card'
-            : 'bg-white/10 text-slate-300 hover:bg-white/20'
+            ? 'bg-marca-600 text-white shadow-sm shadow-marca-600/20'
+            : 'border border-slate-200/60 bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-slate-900'
         }`}
       >
         Todas as lojas
@@ -80,8 +80,8 @@ export function ResumoLojasTecnico({
             onClick={() => aoSelecionarLoja(ativa ? null : resumo.lojaId)}
             className={`flex items-center gap-1.5 rounded-full px-3.5 py-2 text-xs font-semibold whitespace-nowrap transition-all duration-200 ${
               ativa
-                ? 'bg-white text-slate-800 shadow-card'
-                : 'bg-white/10 text-slate-300 hover:bg-white/20'
+                ? 'bg-marca-600 text-white shadow-sm shadow-marca-600/20'
+                : 'border border-slate-200/60 bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-slate-900'
             }`}
           >
             <Store size={13} />

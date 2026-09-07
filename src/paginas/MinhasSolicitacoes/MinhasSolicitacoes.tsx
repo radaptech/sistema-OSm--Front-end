@@ -39,7 +39,7 @@ export function MinhasSolicitacoes() {
   const solicitacoes = data?.dados ?? []
 
   return (
-    <div className="flex min-h-svh flex-col bg-slate-600">
+    <div className="flex min-h-svh flex-col bg-slate-50">
       <CabecalhoPagina titulo="Minhas Solicitações" />
 
       <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-4 px-4 py-6 sm:px-8">
@@ -51,7 +51,7 @@ export function MinhasSolicitacoes() {
         />
 
         {!isLoading && !isError && (
-          <p className="text-sm text-slate-300">
+          <p className="text-sm text-slate-500">
             {data?.total ?? 0} solicitação(ões) encontrada(s)
           </p>
         )}
@@ -68,13 +68,13 @@ export function MinhasSolicitacoes() {
           )}
 
           {isError && (
-            <p className="rounded-xl bg-white/10 py-10 text-center text-sm text-slate-200">
+            <p className="rounded-2xl border-2 border-dashed border-slate-200/60 bg-white py-10 text-center text-sm text-slate-400">
               Não foi possível carregar as solicitações.
             </p>
           )}
 
           {!isLoading && !isError && solicitacoes.length === 0 && (
-            <div className="flex flex-col items-center gap-2 rounded-xl bg-white/10 py-12 text-slate-400">
+            <div className="flex flex-col items-center gap-2 rounded-2xl border-2 border-dashed border-slate-200/60 bg-white py-12 text-slate-400">
               {busca || filtro !== 'Todos' ? (
                 <SearchX size={28} />
               ) : (

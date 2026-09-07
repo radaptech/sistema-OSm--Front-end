@@ -36,7 +36,7 @@ export function GraficoBarras({ titulo, dados }: GraficoBarrasProps) {
 
               <div className="flex h-full w-full items-end">
                 <div
-                  className="w-full rounded-t-[4px] transition group-hover:brightness-110"
+                  className="w-full rounded-t-[4px] transition group-hover:bg-marca-800"
                   style={{
                     height: `${alturaPercentual}%`,
                     backgroundColor: COR_BARRA,
