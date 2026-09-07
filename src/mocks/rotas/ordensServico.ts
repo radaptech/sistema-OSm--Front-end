@@ -74,6 +74,11 @@ export const rotasOrdensServico: Rota[] = [
         lista = lista.filter((ordem) => ordem.lojaId === Number(lojaId))
       }
 
+      const setorId = query.get('setorId')
+      if (setorId) {
+        lista = lista.filter((ordem) => ordem.setorId === Number(setorId))
+      }
+
       const tecnicoId = query.get('tecnicoId')
       if (tecnicoId) {
         lista = lista.filter((ordem) => ordem.tecnicoId === Number(tecnicoId))
