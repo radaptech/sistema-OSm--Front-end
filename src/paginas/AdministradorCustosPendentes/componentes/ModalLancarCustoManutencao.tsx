@@ -7,6 +7,7 @@ import { CampoTexto } from '../../../componentes/CampoTexto'
 import { CampoTextoArea } from '../../../componentes/CampoTextoArea'
 import { obterNomeAlvo } from '../../../utilitarios/alvoOS'
 import { formatarDataHora } from '../../../utilitarios/formatarData'
+import { formatarHoras } from '../../../utilitarios/formatarHoras'
 import type { OrdemServico } from '../../../tipos/ordemServico'
 import {
   esquemaLancarCustoManutencao,
@@ -101,7 +102,7 @@ export function ModalLancarCustoManutencao({
               </p>
               <p className="font-mono text-slate-700">
                 {ordemServico.horasTrabalhadas !== undefined
-                  ? `${ordemServico.horasTrabalhadas}h`
+                  ? formatarHoras(ordemServico.horasTrabalhadas)
                   : '—'}
               </p>
             </div>
