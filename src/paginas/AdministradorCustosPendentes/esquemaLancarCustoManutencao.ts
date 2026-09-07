@@ -13,8 +13,9 @@ export const esquemaLancarCustoManutencao = z.object({
     .number('Informe o custo de manutenção.')
     .nonnegative('O custo não pode ser negativo.')
     .max(999999, 'Informe um valor de até R$ 999.999.'),
-  // Só fazem sentido em OS de terceiros: dados da nota fiscal da empresa, para o
-  // Administrador registrar o que embasou o Custo de Manutenção lançado.
+  // Nota fiscal vale em qualquer tipo de OS: é o documento que embasa o Custo de
+  // Manutenção lançado — a fatura da empresa em terceiros, a nota da peça em maquinário,
+  // a do material em reparo. Opcional em todos (nem toda OS teve compra).
   numeroNotaFiscal: z
     .string()
     .max(20, 'Informe até 20 caracteres.')

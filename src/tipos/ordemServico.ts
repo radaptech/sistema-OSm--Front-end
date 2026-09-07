@@ -143,10 +143,14 @@ export interface CustoOrdemServico {
   custoHoraTecnico: number | null
   custoManutencao: number
   custoTotal: number
-  // Preenchidos pelo Administrador só em OS de terceiros (ver AcionamentoTerceiroPayload),
-  // para auditoria do valor lançado em `custoManutencao` contra a nota fiscal da empresa.
+  // Preenchidos pelo Administrador para auditoria do valor lançado em `custoManutencao`
+  // contra o documento que o embasa. Valem em qualquer tipo de OS (fatura da empresa em
+  // terceiros, nota da peça em maquinário, do material em reparo) — ausentes quando não
+  // houve compra.
   numeroNotaFiscal?: string
   serieNotaFiscal?: string
+  // Esta, sim, só em terceiros: conta o que a EMPRESA EXTERNA fez. Nos outros tipos quem
+  // fez foi o Técnico, e isso mora em `encerramento.solucao`.
   descricaoServicoTerceiro?: string
   lancadoPorNome: string
   lancadoEm: string

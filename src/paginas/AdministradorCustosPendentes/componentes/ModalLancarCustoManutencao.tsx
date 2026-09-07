@@ -156,33 +156,38 @@ export function ModalLancarCustoManutencao({
             />
           </div>
 
+          {/* Nota fiscal em TODO tipo (migration 000010 do back): maquinário troca peça
+              comprada com nota, reparo consome material com nota. Opcional em todos —
+              quem não teve compra deixa em branco. */}
+          <div className="grid grid-cols-2 gap-4">
+            <CampoTexto
+              rotulo="Número da Nota Fiscal"
+              placeholder="Ex: 12345"
+              mensagemErro={errors.numeroNotaFiscal?.message}
+              {...register('numeroNotaFiscal')}
+            />
+
+            <CampoTexto
+              rotulo="Série"
+              placeholder="Ex: 1"
+              mensagemErro={errors.serieNotaFiscal?.message}
+              {...register('serieNotaFiscal')}
+            />
+          </div>
+
+          {/* A descrição continua só em terceiros: ela conta o que a EMPRESA EXTERNA fez.
+              Nos outros tipos quem fez foi o Técnico, e isso já está no encerramento
+              (defeito/causa/solução) — repetir aqui seria pedir o mesmo texto duas vezes.
+              O back recusa este campo fora de terceiros (ck_custo_por_tipo). */}
           {ehTerceiros && (
-            <>
-              <div className="grid grid-cols-2 gap-4">
-                <CampoTexto
-                  rotulo="Número da Nota Fiscal"
-                  placeholder="Ex: 12345"
-                  mensagemErro={errors.numeroNotaFiscal?.message}
-                  {...register('numeroNotaFiscal')}
-                />
-
-                <CampoTexto
-                  rotulo="Série"
-                  placeholder="Ex: 1"
-                  mensagemErro={errors.serieNotaFiscal?.message}
-                  {...register('serieNotaFiscal')}
-                />
-              </div>
-
-              <CampoTextoArea
-                rotulo="Descrição do Serviço"
-                rows={3}
-                maxLength={300}
-                placeholder="Descreva o que foi feito pela empresa terceirizada, conforme a nota fiscal..."
-                mensagemErro={errors.descricaoServicoTerceiro?.message}
-                {...register('descricaoServicoTerceiro')}
-              />
-            </>
+            <CampoTextoArea
+              rotulo="Descrição do Serviço"
+              rows={3}
+              maxLength={300}
+              placeholder="Descreva o que foi feito pela empresa terceirizada, conforme a nota fiscal..."
+              mensagemErro={errors.descricaoServicoTerceiro?.message}
+              {...register('descricaoServicoTerceiro')}
+            />
           )}
 
           <div className="mt-1 flex gap-3">
