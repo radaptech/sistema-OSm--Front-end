@@ -143,10 +143,14 @@ export interface CustoOrdemServico {
   custoHoraTecnico: number | null
   custoManutencao: number
   custoTotal: number
+  // Declaração do Técnico no encerramento: houve compra com nota ou foi só mão de obra?
+  // É ela que faz os dois campos abaixo aparecerem na tela do Administrador — sem ela,
+  // "OS que não gera nota" e "nota ainda não preenchida" seriam a mesma coisa.
+  temNotaFiscal: boolean
   // Preenchidos pelo Administrador para auditoria do valor lançado em `custoManutencao`
   // contra o documento que o embasa. Valem em qualquer tipo de OS (fatura da empresa em
-  // terceiros, nota da peça em maquinário, do material em reparo) — ausentes quando não
-  // houve compra.
+  // terceiros, nota da peça em maquinário, do material em reparo) — só existem quando
+  // `temNotaFiscal` é true.
   numeroNotaFiscal?: string
   serieNotaFiscal?: string
   // Esta, sim, só em terceiros: conta o que a EMPRESA EXTERNA fez. Nos outros tipos quem
@@ -234,12 +238,20 @@ export interface EncerramentoOrdemServicoPayload {
   // (Pequenos Reparos não cobram hora técnica, só o Custo de Manutenção).
   custoHoraTecnico?: number
   custoManutencao: number
+  // Declaração do Técnico: houve compra com nota (peça, material, fatura da empresa) ou
+  // foi só mão de obra? Decide se o Administrador verá os campos de Número/Série depois.
+  // O número em si não vem daqui — quem preenche é ele, em Custos Pendentes.
+  temNotaFiscal: boolean
 }
 
 export interface LancamentoCustoManutencaoPayload {
   ordemServicoId: number
   custoManutencao: number
   custoHoraTecnico?: number
+  // Repetido aqui porque o Administrador pode corrigir a declaração do Técnico: sem isso,
+  // um Técnico que esqueceu de marcar deixaria a OS sem onde lançar a nota que ele tem
+  // na mão. Desmarcar limpa número e série no servidor.
+  temNotaFiscal: boolean
   numeroNotaFiscal?: string
   serieNotaFiscal?: string
   descricaoServicoTerceiro?: string

@@ -960,6 +960,7 @@ export const ordensServico: OrdemServico[] = [
       encerradoPorNome: 'Roberto Alves',
     },
     custo: {
+      temNotaFiscal: false,
       custoHoraTecnico: 45,
       custoManutencao: 180,
       custoTotal: 225,
@@ -1117,6 +1118,7 @@ export const ordensServico: OrdemServico[] = [
       encerradoPorNome: 'Roberto Alves',
     },
     custo: {
+      temNotaFiscal: true,
       // Terceirizada: não há Custo Hora do Técnico a lançar, só a fatura da empresa.
       custoHoraTecnico: null,
       custoManutencao: 350,
@@ -1282,6 +1284,7 @@ export const ordensServico: OrdemServico[] = [
       encerradoPorNome: 'Roberto Alves',
     },
     custo: {
+      temNotaFiscal: false,
       custoHoraTecnico: 45,
       custoManutencao: 220,
       custoTotal: 265,
@@ -1335,6 +1338,7 @@ export const ordensServico: OrdemServico[] = [
       encerradoPorNome: 'Fernanda Costa',
     },
     custo: {
+      temNotaFiscal: true,
       custoHoraTecnico: null,
       custoManutencao: 280,
       custoTotal: 280,
@@ -1456,6 +1460,7 @@ export const ordensServico: OrdemServico[] = [
       encerradoPorNome: 'Roberto Alves',
     },
     custo: {
+      temNotaFiscal: false,
       custoHoraTecnico: 40,
       custoManutencao: 95,
       custoTotal: 135,
@@ -1499,6 +1504,7 @@ export const ordensServico: OrdemServico[] = [
       encerradoPorNome: 'Fernanda Costa',
     },
     custo: {
+      temNotaFiscal: false,
       // Pequeno Reparo: não há Custo Hora do Técnico a lançar, só o Custo de Manutenção.
       custoHoraTecnico: null,
       custoManutencao: 20,
@@ -1544,6 +1550,7 @@ export const ordensServico: OrdemServico[] = [
       encerradoPorNome: 'Roberto Alves',
     },
     custo: {
+      temNotaFiscal: false,
       custoHoraTecnico: 45,
       custoManutencao: 150,
       custoTotal: 195,
@@ -1679,6 +1686,7 @@ export const ordensServico: OrdemServico[] = [
       encerradoPorNome: 'Roberto Alves',
     },
     custo: {
+      temNotaFiscal: false,
       // Pequeno Reparo: não há Custo Hora do Técnico a lançar, só o Custo de Manutenção.
       custoHoraTecnico: null,
       custoManutencao: 15,

@@ -1,7 +1,8 @@
 import { createPortal } from 'react-dom'
-import { useForm } from 'react-hook-form'
+import { Controller, useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { CheckCircle2, XCircle } from 'lucide-react'
+import { Alternador } from '../../../componentes/Alternador'
 import { Botao } from '../../../componentes/Botao'
 import { CampoTexto } from '../../../componentes/CampoTexto'
 import { CampoTextoArea } from '../../../componentes/CampoTextoArea'
@@ -34,6 +35,7 @@ export function ModalLancarCustoManutencao({
 
   const {
     register,
+    control,
     handleSubmit,
     formState: { errors },
   } = useForm<DadosLancarCustoManutencao>({
@@ -41,14 +43,26 @@ export function ModalLancarCustoManutencao({
     defaultValues: {
       custoHoraTecnico: ordemServico.custo?.custoHoraTecnico ?? undefined,
       custoManutencao: ordemServico.custo?.custoManutencao,
+      temNotaFiscal: ordemServico.custo?.temNotaFiscal ?? false,
       numeroNotaFiscal: ordemServico.custo?.numeroNotaFiscal ?? '',
       serieNotaFiscal: ordemServico.custo?.serieNotaFiscal ?? '',
       descricaoServicoTerceiro: ordemServico.custo?.descricaoServicoTerceiro ?? '',
     },
   })
 
+  // Reage ao alternador na hora: os campos de nota aparecem/somem sem esperar submit.
+  // useWatch, e não watch(), porque só ele é memoizável (react-hooks/incompatible-library).
+  const temNotaFiscal = useWatch({ control, name: 'temNotaFiscal' })
+
+  // Os campos de NF desmontam quando o alternador desliga, mas o React Hook Form guarda
+  // o valor digitado: sem limpar aqui, desmarcar e salvar mandaria número/série junto de
+  // temNotaFiscal:false e o servidor recusaria (ck_custo_nota_fiscal, 400).
   function aoSalvarFormulario(dados: DadosLancarCustoManutencao) {
-    aoSalvar(dados)
+    aoSalvar(
+      dados.temNotaFiscal
+        ? dados
+        : { ...dados, numeroNotaFiscal: undefined, serieNotaFiscal: undefined },
+    )
     fechar()
   }
 
@@ -156,24 +170,44 @@ export function ModalLancarCustoManutencao({
             />
           </div>
 
-          {/* Nota fiscal em TODO tipo (migration 000010 do back): maquinário troca peça
-              comprada com nota, reparo consome material com nota. Opcional em todos —
-              quem não teve compra deixa em branco. */}
-          <div className="grid grid-cols-2 gap-4">
-            <CampoTexto
-              rotulo="Número da Nota Fiscal"
-              placeholder="Ex: 12345"
-              mensagemErro={errors.numeroNotaFiscal?.message}
-              {...register('numeroNotaFiscal')}
-            />
+          {/* Quem declara é o Técnico, no encerramento — este alternador é o conserto
+              para quando ele esquece: sem ele, uma OS marcada como "sem nota" ficaria sem
+              lugar nenhum para lançar o documento que o Administrador tem na mão.
+              Desmarcar apaga número e série no servidor (ck_custo_nota_fiscal). */}
+          <Controller
+            control={control}
+            name="temNotaFiscal"
+            render={({ field }) => (
+              <Alternador
+                id={field.name}
+                rotulo="Teve nota fiscal?"
+                descricao="Declarado pelo Técnico no encerramento — corrija aqui se estiver errado."
+                marcado={field.value}
+                aoAlternar={field.onChange}
+              />
+            )}
+          />
 
-            <CampoTexto
-              rotulo="Série"
-              placeholder="Ex: 1"
-              mensagemErro={errors.serieNotaFiscal?.message}
-              {...register('serieNotaFiscal')}
-            />
-          </div>
+          {/* Nota fiscal vale em qualquer tipo (migration 000010), mas os campos só
+              aparecem quando alguém declarou que houve nota: uma OS de mão de obra pura
+              não deve pedir um documento que não existe. */}
+          {temNotaFiscal && (
+            <div className="grid grid-cols-2 gap-4">
+              <CampoTexto
+                rotulo="Número da Nota Fiscal"
+                placeholder="Ex: 12345"
+                mensagemErro={errors.numeroNotaFiscal?.message}
+                {...register('numeroNotaFiscal')}
+              />
+
+              <CampoTexto
+                rotulo="Série"
+                placeholder="Ex: 1"
+                mensagemErro={errors.serieNotaFiscal?.message}
+                {...register('serieNotaFiscal')}
+              />
+            </div>
+          )}
 
           {/* A descrição continua só em terceiros: ela conta o que a EMPRESA EXTERNA fez.
               Nos outros tipos quem fez foi o Técnico, e isso já está no encerramento
