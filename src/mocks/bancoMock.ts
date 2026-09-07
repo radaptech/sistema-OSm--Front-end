@@ -965,6 +965,7 @@ export const ordensServico: OrdemServico[] = [
       custoTotal: 225,
       lancadoPorNome: 'Roberto Alves',
       lancadoEm: '20/07/2026 13:05:00',
+      revisadoEm: null,
     },
   },
   {
@@ -1125,6 +1126,7 @@ export const ordensServico: OrdemServico[] = [
       descricaoServicoTerceiro: 'Recarga de gás refrigerante e mão de obra especializada, executadas pela RefriService Manutenções.',
       lancadoPorNome: 'Roberto Alves',
       lancadoEm: '11/07/2026 15:05:00',
+      revisadoEm: '15/07/2026 09:20:00',
     },
   },
   {
@@ -1285,6 +1287,7 @@ export const ordensServico: OrdemServico[] = [
       custoTotal: 265,
       lancadoPorNome: 'Roberto Alves',
       lancadoEm: '29/07/2026 12:35:00',
+      revisadoEm: null,
     },
   },
   {
@@ -1340,6 +1343,7 @@ export const ordensServico: OrdemServico[] = [
       descricaoServicoTerceiro: 'Troca da mangueira de dreno e limpeza do sistema de ar-condicionado.',
       lancadoPorNome: 'Fernanda Costa',
       lancadoEm: '23/07/2026 10:05:00',
+      revisadoEm: '24/07/2026 14:10:00',
     },
   },
   {
@@ -1457,6 +1461,7 @@ export const ordensServico: OrdemServico[] = [
       custoTotal: 135,
       lancadoPorNome: 'Roberto Alves',
       lancadoEm: '05/07/2026 12:35:00',
+      revisadoEm: null,
     },
   },
   {
@@ -1500,6 +1505,7 @@ export const ordensServico: OrdemServico[] = [
       custoTotal: 20,
       lancadoPorNome: 'Fernanda Costa',
       lancadoEm: '12/06/2026 11:35:00',
+      revisadoEm: null,
     },
   },
   {
@@ -1543,6 +1549,7 @@ export const ordensServico: OrdemServico[] = [
       custoTotal: 195,
       lancadoPorNome: 'Roberto Alves',
       lancadoEm: '20/06/2026 11:05:00',
+      revisadoEm: null,
     },
   },
   {
@@ -1678,6 +1685,7 @@ export const ordensServico: OrdemServico[] = [
       custoTotal: 15,
       lancadoPorNome: 'Roberto Alves',
       lancadoEm: '25/06/2026 09:35:00',
+      revisadoEm: null,
     },
   },
 ]

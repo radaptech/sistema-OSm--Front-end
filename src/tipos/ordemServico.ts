@@ -150,6 +150,10 @@ export interface CustoOrdemServico {
   descricaoServicoTerceiro?: string
   lancadoPorNome: string
   lancadoEm: string
+  // null até algum Administrador conferir o custo em Custos Pendentes; vira data
+  // no primeiro POST /ordens-servico/:id/custo. É o que separa a pílula
+  // "Pendentes" da "Revisadas" — e agora vale para todos, não só neste navegador.
+  revisadoEm: string | null
 }
 
 export interface EncerramentoOrdemServico {
