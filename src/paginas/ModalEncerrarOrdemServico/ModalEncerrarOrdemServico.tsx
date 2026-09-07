@@ -7,6 +7,7 @@ import { CampoSelecao } from '../../componentes/CampoSelecao'
 import { CampoTexto } from '../../componentes/CampoTexto'
 import { CampoTextoArea } from '../../componentes/CampoTextoArea'
 import { calcularHoras } from '../../utilitarios/calcularHoras'
+import { formatarHoras } from '../../utilitarios/formatarHoras'
 import { agoraParaBackend } from '../../utilitarios/dataBackend'
 import { formatarDataHora } from '../../utilitarios/formatarData'
 import { tiposDefeito, type OrdemServico } from '../../tipos/ordemServico'
@@ -131,10 +132,10 @@ export function ModalEncerrarOrdemServico({
               Horas Parada
             </span>
             <p className="text-marca-800 rounded-lg bg-lime-100 px-3 py-2.5 font-mono text-sm">
-              {horasTrabalhadas}h
+              {formatarHoras(horasTrabalhadas)}
             </p>
             <p className="text-marca-800 rounded-lg bg-lime-100 px-3 py-2.5 font-mono text-sm">
-              {horasParada !== undefined ? `${horasParada}h` : 'Não se aplica'}
+              {horasParada !== undefined ? formatarHoras(horasParada) : 'Não se aplica'}
             </p>
           </div>
 

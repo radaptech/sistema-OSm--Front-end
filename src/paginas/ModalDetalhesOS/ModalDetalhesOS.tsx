@@ -7,6 +7,7 @@ import { BadgeTipoOS } from '../../componentes/BadgeTipoOS'
 import { BadgeUrgencia } from '../../componentes/BadgeUrgencia'
 import { obterNomeAlvo, obterCodigoAlvo } from '../../utilitarios/alvoOS'
 import { formatarDataHora } from '../../utilitarios/formatarData'
+import { formatarHoras } from '../../utilitarios/formatarHoras'
 import { formatarMoeda } from '../../utilitarios/formatarMoeda'
 import type { OrdemServico } from '../../tipos/ordemServico'
 import { useSaidaAnimada } from '../../hooks/useSaidaAnimada'
@@ -191,7 +192,7 @@ export function ModalDetalhesOS({
                 <p className="text-xs text-slate-400">Horas Trabalhadas</p>
                 <p className="font-mono font-semibold text-slate-700">
                   {ordemServico.horasTrabalhadas !== undefined
-                    ? `${ordemServico.horasTrabalhadas}h`
+                    ? formatarHoras(ordemServico.horasTrabalhadas)
                     : '—'}
                 </p>
               </div>
@@ -199,7 +200,7 @@ export function ModalDetalhesOS({
                 <p className="text-xs text-slate-400">Horas Parada</p>
                 <p className="font-mono font-semibold text-slate-700">
                   {horasParada !== undefined
-                    ? `${horasParada}h`
+                    ? formatarHoras(horasParada)
                     : ordemServico.afetaProducao
                       ? '—'
                       : 'Não se aplica'}
