@@ -1,7 +1,8 @@
 import { createPortal } from 'react-dom'
-import { useForm } from 'react-hook-form'
+import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { CheckCircle2, XCircle } from 'lucide-react'
+import { Alternador } from '../../componentes/Alternador'
 import { Botao } from '../../componentes/Botao'
 import { CampoSelecao } from '../../componentes/CampoSelecao'
 import { CampoTexto } from '../../componentes/CampoTexto'
@@ -54,6 +55,7 @@ export function ModalEncerrarOrdemServico({
 
   const {
     register,
+    control,
     handleSubmit,
     formState: { errors },
   } = useForm<DadosEncerrarOrdemServico>({
@@ -65,6 +67,9 @@ export function ModalEncerrarOrdemServico({
       solucao: '',
       custoHoraTecnico: undefined,
       custoManutencao: undefined,
+      // Padrão "não teve": serviço só de mão de obra é o caso comum, e marcar nota que
+      // não existe faria o Administrador cobrar um documento inexistente.
+      temNotaFiscal: false,
     },
   })
 
@@ -188,6 +193,24 @@ export function ModalEncerrarOrdemServico({
               {...register('custoManutencao', { valueAsNumber: true })}
             />
           </div>
+
+          {/* Você é quem sabe: só o Técnico que executou viu se houve compra. A resposta
+              decide se o Administrador verá os campos de Número/Série da nota em Custos
+              Pendentes — se ficar desmarcado, ele só confere os valores. Zero custo é
+              válido nos campos acima (garantia, serviço sem peça) e não implica nada aqui. */}
+          <Controller
+            control={control}
+            name="temNotaFiscal"
+            render={({ field }) => (
+              <Alternador
+                id={field.name}
+                rotulo="Teve nota fiscal?"
+                descricao="Marque se a OS gerou nota (peça, material ou serviço de terceiro). O número fica com o Administrador."
+                marcado={field.value}
+                aoAlternar={field.onChange}
+              />
+            )}
+          />
 
           <CampoSelecao
             rotulo="Tipo de OS *"

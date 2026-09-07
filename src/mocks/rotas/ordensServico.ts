@@ -262,6 +262,8 @@ export const rotasOrdensServico: Rota[] = [
         custoTotal: (dados.custoHoraTecnico ?? 0) + dados.custoManutencao,
         lancadoPorNome: usuario.nome,
         lancadoEm: dataFim,
+        // Declaração do próprio Técnico, no corpo do encerramento.
+        temNotaFiscal: dados.temNotaFiscal,
         // Técnico acabou de lançar no encerramento — nenhum Administrador conferiu ainda.
         revisadoEm: null,
       }
@@ -293,11 +295,18 @@ export const rotasOrdensServico: Rota[] = [
         custoHoraTecnico,
         custoManutencao: dados.custoManutencao,
         custoTotal: (custoHoraTecnico ?? 0) + dados.custoManutencao,
-        numeroNotaFiscal: dados.numeroNotaFiscal || ordem.custo?.numeroNotaFiscal,
-        serieNotaFiscal: dados.serieNotaFiscal || ordem.custo?.serieNotaFiscal,
+        // Desmarcar a nota limpa número e série, como faz ck_custo_nota_fiscal no back.
+        numeroNotaFiscal: dados.temNotaFiscal
+          ? dados.numeroNotaFiscal || ordem.custo?.numeroNotaFiscal
+          : undefined,
+        serieNotaFiscal: dados.temNotaFiscal
+          ? dados.serieNotaFiscal || ordem.custo?.serieNotaFiscal
+          : undefined,
         descricaoServicoTerceiro: dados.descricaoServicoTerceiro || ordem.custo?.descricaoServicoTerceiro,
         lancadoPorNome: usuario.nome,
         lancadoEm: agoraParaBackend(),
+        // O Administrador pode corrigir a declaração do Técnico.
+        temNotaFiscal: dados.temNotaFiscal,
         // Passagem do Administrador por aqui É a conferência — move a OS para "Revisadas".
         revisadoEm: agoraParaBackend(),
       }

@@ -35,6 +35,11 @@ export function criarEsquemaEncerrarOrdemServico(exigirCustoHoraTecnico: boolean
       ? custoHoraTecnicoObrigatorio
       : custoHoraTecnicoObrigatorio.optional(),
     custoManutencao,
+    // Quem executou é quem sabe se houve compra com nota (peça, material, fatura da
+    // empresa) ou se foi só mão de obra. É esta resposta que decide se o Administrador
+    // verá os campos de Número/Série em Custos Pendentes — sem ela, "não gera nota" e
+    // "nota ainda não preenchida" seriam a mesma coisa na tela dele.
+    temNotaFiscal: z.boolean(),
   })
 }
 

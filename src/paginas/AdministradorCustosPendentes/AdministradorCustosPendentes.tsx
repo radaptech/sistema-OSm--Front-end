@@ -196,12 +196,11 @@ export function AdministradorCustosPendentes() {
                       </span>
                     </p>
                   </div>
-                  {/* Nota fiscal vale em qualquer tipo (peça de maquinário, material de
-                      reparo), mas o "ainda não informada" em âmbar é só para terceiros: lá
-                      a fatura da empresa é o que embasa o custo e a falta é uma pendência.
-                      Nos outros tipos pode simplesmente não ter havido compra — a linha
-                      some em vez de virar alarme falso em toda OS. */}
-                  {(ordem.custo?.numeroNotaFiscal || ordem.tipo === 'terceiros') && (
+                  {/* A linha só existe quando o Técnico declarou nota no encerramento —
+                      OS de mão de obra pura não tem o que informar. Com a declaração, o
+                      âmbar deixa de ser alarme falso e vira pendência de verdade: alguém
+                      disse que há um documento e ele ainda não foi registrado. */}
+                  {ordem.custo?.temNotaFiscal && (
                     <p className="mt-1 text-xs text-slate-400">
                       Nota Fiscal{' '}
                       {ordem.custo?.numeroNotaFiscal ? (
