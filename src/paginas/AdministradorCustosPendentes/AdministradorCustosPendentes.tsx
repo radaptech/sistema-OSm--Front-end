@@ -18,6 +18,8 @@ import { formatarMoeda } from '../../utilitarios/formatarMoeda'
 import type { OrdemServico, TipoOS } from '../../tipos/ordemServico'
 import { ModalLancarCustoManutencao } from './componentes/ModalLancarCustoManutencao'
 import type { DadosLancarCustoManutencao } from './esquemaLancarCustoManutencao'
+import { FiltroRevisaoCusto } from './componentes/FiltroRevisaoCusto'
+import type { AbaRevisaoCusto } from './componentes/FiltroRevisaoCusto'
 
 export function AdministradorCustosPendentes() {
   const queryClient = useQueryClient()
@@ -26,6 +28,7 @@ export function AdministradorCustosPendentes() {
   const [filtroTipo, setFiltroTipo] = useState<TipoOS | ''>('')
   const [ordemParaLancarCusto, setOrdemParaLancarCusto] =
     useState<OrdemServico | null>(null)
+  const [aba, setAba] = useState<AbaRevisaoCusto>('pendentes')
 
   // Toda OS Concluída, com ou sem custo lançado: o Técnico já grava os dois custos no
   // encerramento e o Administrador só corrige se quiser — inclusive nas OS que foram
@@ -46,8 +49,13 @@ export function AdministradorCustosPendentes() {
 
   // Lista TODA OS Concluída (não só as com custoManutencao ainda vazio): o Técnico já
   // grava os dois custos no encerramento (item 11 do CLAUDE.md), então eles chegam aqui
-  // pré-preenchidos e o Administrador só edita se precisar conferir contra a nota.
-  const ordensConcluidas = ordensServico
+  // pré-preenchidos e o Administrador só edita se precisar conferir contra a nota. A
+  // aba sai de custo.revisadoEm, gravado pelo servidor no POST /custo: "Pendentes" é o
+  // que ninguém conferiu ainda, "Revisadas" é o histórico do que já foi conferido —
+  // por qualquer Administrador, em qualquer aparelho.
+  const ordensPendentes = ordensServico.filter((os) => os.custo?.revisadoEm == null)
+  const ordensRevisadas = ordensServico.filter((os) => os.custo?.revisadoEm != null)
+  const ordensConcluidas = aba === 'pendentes' ? ordensPendentes : ordensRevisadas
 
   async function aoSalvarCusto(dados: DadosLancarCustoManutencao) {
     if (!ordemParaLancarCusto) {
@@ -55,6 +63,8 @@ export function AdministradorCustosPendentes() {
     }
 
     await lancarCusto({ ordemServicoId: ordemParaLancarCusto.id, ...dados })
+    // Sem marcar nada aqui: o POST /custo grava custo.revisadoEm no servidor e o
+    // onSuccess da mutation invalida a lista — a OS reaparece já em "Revisadas".
     toast.success(`Custos atualizados para a OS #${ordemParaLancarCusto.id}.`)
     setOrdemParaLancarCusto(null)
   }
@@ -74,6 +84,15 @@ export function AdministradorCustosPendentes() {
           precisar corrigir algo. Nas OS executadas por empresa terceirizada,
           confira o Custo de Manutenção contra a nota fiscal da empresa.
         </p>
+
+        <FiltroRevisaoCusto
+          valor={aba}
+          aoMudar={setAba}
+          contagens={{
+            pendentes: ordensPendentes.length,
+            revisadas: ordensRevisadas.length,
+          }}
+        />
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <CampoBusca
@@ -116,7 +135,9 @@ export function AdministradorCustosPendentes() {
             <div className="flex flex-col items-center gap-2 rounded-xl bg-white/10 py-12 text-slate-400 lg:col-span-2">
               <CircleDollarSign size={28} />
               <p className="text-sm">
-                Nenhuma OS concluída encontrada para esses filtros.
+                {aba === 'pendentes'
+                  ? 'Nenhuma OS concluída encontrada para esses filtros.'
+                  : 'Nenhuma OS revisada ainda.'}
               </p>
             </div>
           )}

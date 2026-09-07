@@ -262,6 +262,8 @@ export const rotasOrdensServico: Rota[] = [
         custoTotal: (dados.custoHoraTecnico ?? 0) + dados.custoManutencao,
         lancadoPorNome: usuario.nome,
         lancadoEm: dataFim,
+        // Técnico acabou de lançar no encerramento — nenhum Administrador conferiu ainda.
+        revisadoEm: null,
       }
       ordem.finalizada = calcularFinalizada(ordem)
 
@@ -296,6 +298,8 @@ export const rotasOrdensServico: Rota[] = [
         descricaoServicoTerceiro: dados.descricaoServicoTerceiro || ordem.custo?.descricaoServicoTerceiro,
         lancadoPorNome: usuario.nome,
         lancadoEm: agoraParaBackend(),
+        // Passagem do Administrador por aqui É a conferência — move a OS para "Revisadas".
+        revisadoEm: agoraParaBackend(),
       }
       ordem.finalizada = calcularFinalizada(ordem)
 
