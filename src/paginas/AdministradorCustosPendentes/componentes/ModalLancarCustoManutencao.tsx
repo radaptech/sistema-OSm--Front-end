@@ -4,14 +4,15 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { CheckCircle2, XCircle } from 'lucide-react'
 import { Alternador } from '../../../componentes/Alternador'
 import { Botao } from '../../../componentes/Botao'
-import { CampoTexto } from '../../../componentes/CampoTexto'
+import { CampoItensCusto } from '../../../componentes/CampoItensCusto'
+import { CampoNotasFiscais } from '../../../componentes/CampoNotasFiscais'
 import { CampoTextoArea } from '../../../componentes/CampoTextoArea'
 import { obterNomeAlvo } from '../../../utilitarios/alvoOS'
 import { formatarDataHora } from '../../../utilitarios/formatarData'
 import { formatarHoras } from '../../../utilitarios/formatarHoras'
 import type { OrdemServico } from '../../../tipos/ordemServico'
 import {
-  esquemaLancarCustoManutencao,
+  criarEsquemaLancarCustoManutencao,
   type DadosLancarCustoManutencao,
 } from '../esquemaLancarCustoManutencao'
 import { useSaidaAnimada } from '../../../hooks/useSaidaAnimada'
@@ -39,13 +40,29 @@ export function ModalLancarCustoManutencao({
     handleSubmit,
     formState: { errors },
   } = useForm<DadosLancarCustoManutencao>({
-    resolver: zodResolver(esquemaLancarCustoManutencao),
+    resolver: zodResolver(criarEsquemaLancarCustoManutencao(mostrarCustoHoraTecnico)),
     defaultValues: {
-      custoHoraTecnico: ordemServico.custo?.custoHoraTecnico ?? undefined,
-      custoManutencao: ordemServico.custo?.custoManutencao,
+      // Pré-preenchido com o que o Técnico lançou: o Administrador CONFERE contra a nota,
+      // então ele precisa ver a discriminação dele, não uma tela em branco.
+      //
+      // O fallback de uma linha vazia cobre a OS anterior à migration 000012 que não
+      // passou pelo backfill: sem ele o modal abriria sem nenhuma linha e sem botão óbvio
+      // do que fazer. `?? 0` no valor porque a lista do servidor sempre traz número.
+      itens: ordemServico.custo?.itens.length
+        ? ordemServico.custo.itens.map((item) => ({
+            descricao: item.descricao,
+            custoManutencao: item.custoManutencao,
+            // null no contrato (a tarefa não cobrou hora, ou o tipo da OS proíbe) vira
+            // undefined no formulário: o campo tem que nascer VAZIO, não com zero.
+            custoHoraTecnico: item.custoHoraTecnico ?? undefined,
+          }))
+        : [{ descricao: '', custoManutencao: undefined, custoHoraTecnico: undefined }],
       temNotaFiscal: ordemServico.custo?.temNotaFiscal ?? false,
-      numeroNotaFiscal: ordemServico.custo?.numeroNotaFiscal ?? '',
-      serieNotaFiscal: ordemServico.custo?.serieNotaFiscal ?? '',
+      notasFiscais:
+        ordemServico.custo?.notasFiscais.map((nota) => ({
+          numero: nota.numero,
+          serie: nota.serie ?? '',
+        })) ?? [],
       descricaoServicoTerceiro: ordemServico.custo?.descricaoServicoTerceiro ?? '',
     },
   })
@@ -54,15 +71,11 @@ export function ModalLancarCustoManutencao({
   // useWatch, e não watch(), porque só ele é memoizável (react-hooks/incompatible-library).
   const temNotaFiscal = useWatch({ control, name: 'temNotaFiscal' })
 
-  // Os campos de NF desmontam quando o alternador desliga, mas o React Hook Form guarda
-  // o valor digitado: sem limpar aqui, desmarcar e salvar mandaria número/série junto de
-  // temNotaFiscal:false e o servidor recusaria (ck_custo_nota_fiscal, 400).
+  // A lista de notas desmonta quando o alternador desliga, mas o React Hook Form guarda o
+  // que foi digitado: sem esvaziar aqui, desmarcar e salvar mandaria as notas junto de
+  // temNotaFiscal:false e o servidor recusaria (trg_nota_fiscal_declarada, 400).
   function aoSalvarFormulario(dados: DadosLancarCustoManutencao) {
-    aoSalvar(
-      dados.temNotaFiscal
-        ? dados
-        : { ...dados, numeroNotaFiscal: undefined, serieNotaFiscal: undefined },
-    )
+    aoSalvar(dados.temNotaFiscal ? dados : { ...dados, notasFiscais: [] })
     fechar()
   }
 
@@ -91,13 +104,17 @@ export function ModalLancarCustoManutencao({
           </button>
         </div>
 
+        {/* O corpo rola por dentro e o cabeçalho verde fica fixo, mesmo tratamento do
+            modal de encerramento. Sem o teto de altura o cartão crescia junto com as duas
+            listas e passava da tela: até a migration 000012 aqui só havia dois campos
+            numéricos, então nada obrigava a limitar. */}
         <form
           onSubmit={(evento) => {
             evento.stopPropagation()
             handleSubmit(aoSalvarFormulario)(evento)
           }}
           noValidate
-          className="flex flex-col gap-5 p-6"
+          className="flex max-h-[75vh] flex-col gap-5 overflow-y-auto p-6 pb-0"
         >
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
@@ -140,35 +157,23 @@ export function ModalLancarCustoManutencao({
             </p>
           )}
 
-          {/* items-end: se um rótulo quebrar em duas linhas, os inputs continuam
-              alinhados pela base em vez de um descer sozinho. */}
-          <div
-            className={`grid items-end gap-4 ${
-              mostrarCustoHoraTecnico ? 'grid-cols-2' : 'grid-cols-1'
-            }`}
-          >
-            {mostrarCustoHoraTecnico && (
-              <CampoTexto
-                rotulo="Custo Hora Técnico (R$)"
-                type="number"
-                min={0}
-                step="0.01"
-                placeholder="Ex: 80.00"
-                mensagemErro={errors.custoHoraTecnico?.message}
-                {...register('custoHoraTecnico', { valueAsNumber: true })}
+          <Controller
+            control={control}
+            name="itens"
+            render={({ field }) => (
+              <CampoItensCusto
+                itens={field.value}
+                aoMudar={field.onChange}
+                permitirHoraTecnica={mostrarCustoHoraTecnico}
+                erro={errors.itens?.message ?? errors.itens?.root?.message}
+                errosPorItem={field.value.map((_, indice) => ({
+                  descricao: errors.itens?.[indice]?.descricao?.message,
+                  custoManutencao: errors.itens?.[indice]?.custoManutencao?.message,
+                  custoHoraTecnico: errors.itens?.[indice]?.custoHoraTecnico?.message,
+                }))}
               />
             )}
-
-            <CampoTexto
-              rotulo="Custo Manutenção (R$) *"
-              type="number"
-              min={0}
-              step="0.01"
-              placeholder="Ex: 120.00"
-              mensagemErro={errors.custoManutencao?.message}
-              {...register('custoManutencao', { valueAsNumber: true })}
-            />
-          </div>
+          />
 
           {/* Quem declara é o Técnico, no encerramento — este alternador é o conserto
               para quando ele esquece: sem ele, uma OS marcada como "sem nota" ficaria sem
@@ -188,25 +193,26 @@ export function ModalLancarCustoManutencao({
             )}
           />
 
-          {/* Nota fiscal vale em qualquer tipo (migration 000010), mas os campos só
-              aparecem quando alguém declarou que houve nota: uma OS de mão de obra pura
-              não deve pedir um documento que não existe. */}
+          {/* Nota fiscal vale em qualquer tipo (migration 000010), mas a lista só aparece
+              quando alguém declarou que houve nota: uma OS de mão de obra pura não deve
+              pedir um documento que não existe. São várias porque duas peças compradas em
+              lojas diferentes geram dois documentos (migration 000012). */}
           {temNotaFiscal && (
-            <div className="grid grid-cols-2 gap-4">
-              <CampoTexto
-                rotulo="Número da Nota Fiscal"
-                placeholder="Ex: 12345"
-                mensagemErro={errors.numeroNotaFiscal?.message}
-                {...register('numeroNotaFiscal')}
-              />
-
-              <CampoTexto
-                rotulo="Série"
-                placeholder="Ex: 1"
-                mensagemErro={errors.serieNotaFiscal?.message}
-                {...register('serieNotaFiscal')}
-              />
-            </div>
+            <Controller
+              control={control}
+              name="notasFiscais"
+              render={({ field }) => (
+                <CampoNotasFiscais
+                  notas={field.value}
+                  aoMudar={field.onChange}
+                  erro={errors.notasFiscais?.message ?? errors.notasFiscais?.root?.message}
+                  errosPorNota={field.value.map((_, indice) => ({
+                    numero: errors.notasFiscais?.[indice]?.numero?.message,
+                    serie: errors.notasFiscais?.[indice]?.serie?.message,
+                  }))}
+                />
+              )}
+            />
           )}
 
           {/* A descrição continua só em terceiros: ela conta o que a EMPRESA EXTERNA fez.
@@ -224,7 +230,11 @@ export function ModalLancarCustoManutencao({
             />
           )}
 
-          <div className="mt-1 flex gap-3">
+          {/* Grudado no rodapé da área que rola: com várias linhas de custo o par
+              Cancelar/Salvar saía da dobra e a ação principal do modal virava uma
+              caçada. Os negativos cancelam o padding do <form> para a faixa branca
+              cobrir a largura toda, senão o conteúdo aparece por baixo nas bordas. */}
+          <div className="sticky bottom-0 -mx-6 mt-1 flex gap-3 border-t border-slate-100 bg-white px-6 pt-4 pb-6">
             <div className="flex-1">
               <Botao type="button" variante="secundario" onClick={fechar}>
                 Cancelar

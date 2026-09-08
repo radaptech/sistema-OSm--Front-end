@@ -15,7 +15,10 @@ import {
   calcularHorasTrabalhadas,
   construirEscoposGestor,
   gestorTemAcesso,
+  materializarItens,
+  materializarNotas,
   sincronizarPreventivasVencidas,
+  somarItensDeCusto,
 } from '../regrasMock'
 import { atraso, gerarId, responderBlob, responderErro, responderJson, type Rota } from '../utilidadesMock'
 
@@ -261,14 +264,17 @@ export const rotasOrdensServico: Rota[] = [
         solucao: dados.solucao,
         encerradoPorNome: usuario.nome,
       }
+      // Mesma regra do servidor: os agregados são a SOMA dos itens recebidos, nunca um
+      // total vindo do cliente (o payload nem carrega um).
       ordem.custo = {
-        custoHoraTecnico: dados.custoHoraTecnico ?? null,
-        custoManutencao: dados.custoManutencao,
-        custoTotal: (dados.custoHoraTecnico ?? 0) + dados.custoManutencao,
+        ...somarItensDeCusto(dados.itens),
+        itens: materializarItens(dados.itens),
         lancadoPorNome: usuario.nome,
         lancadoEm: dataFim,
-        // Declaração do próprio Técnico, no corpo do encerramento.
+        // Declaração do próprio Técnico, no corpo do encerramento. As notas em si ficam
+        // com o Administrador, então a lista nasce vazia mesmo com a declaração marcada.
         temNotaFiscal: dados.temNotaFiscal,
+        notasFiscais: [],
         // Técnico acabou de lançar no encerramento — nenhum Administrador conferiu ainda.
         revisadoEm: null,
       }
@@ -294,19 +300,13 @@ export const rotasOrdensServico: Rota[] = [
       }
 
       const dados = corpo as Omit<LancamentoCustoManutencaoPayload, 'ordemServicoId'>
-      const custoHoraTecnico = dados.custoHoraTecnico ?? ordem.custo?.custoHoraTecnico ?? null
 
       ordem.custo = {
-        custoHoraTecnico,
-        custoManutencao: dados.custoManutencao,
-        custoTotal: (custoHoraTecnico ?? 0) + dados.custoManutencao,
-        // Desmarcar a nota limpa número e série, como faz ck_custo_nota_fiscal no back.
-        numeroNotaFiscal: dados.temNotaFiscal
-          ? dados.numeroNotaFiscal || ordem.custo?.numeroNotaFiscal
-          : undefined,
-        serieNotaFiscal: dados.temNotaFiscal
-          ? dados.serieNotaFiscal || ordem.custo?.serieNotaFiscal
-          : undefined,
+        // Substituição do conjunto, não merge: a tela manda a lista inteira já corrigida.
+        ...somarItensDeCusto(dados.itens),
+        itens: materializarItens(dados.itens),
+        // Desmarcar a declaração apaga as notas, como faz gravarNotasFiscais no back.
+        notasFiscais: dados.temNotaFiscal ? materializarNotas(dados.notasFiscais) : [],
         descricaoServicoTerceiro: dados.descricaoServicoTerceiro || ordem.custo?.descricaoServicoTerceiro,
         lancadoPorNome: usuario.nome,
         lancadoEm: agoraParaBackend(),

@@ -202,11 +202,12 @@ export function AdministradorCustosPendentes() {
                       disse que há um documento e ele ainda não foi registrado. */}
                   {ordem.custo?.temNotaFiscal && (
                     <p className="mt-1 text-xs text-slate-400">
-                      Nota Fiscal{' '}
-                      {ordem.custo?.numeroNotaFiscal ? (
+                      {ordem.custo.notasFiscais.length > 1 ? 'Notas Fiscais' : 'Nota Fiscal'}{' '}
+                      {ordem.custo.notasFiscais.length > 0 ? (
                         <span className="font-mono font-semibold text-slate-600">
-                          {ordem.custo.numeroNotaFiscal}
-                          {ordem.custo.serieNotaFiscal ? ` / série ${ordem.custo.serieNotaFiscal}` : ''}
+                          {ordem.custo.notasFiscais
+                            .map((nota) => (nota.serie ? `${nota.numero} / série ${nota.serie}` : nota.numero))
+                            .join(' · ')}
                         </span>
                       ) : (
                         <span className="font-semibold text-amber-600">ainda não informada</span>

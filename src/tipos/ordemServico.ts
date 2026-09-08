@@ -23,6 +23,7 @@ export const tiposDefeito = ['Predial', 'Corretiva'] as const
 
 export type TipoDefeito = (typeof tiposDefeito)[number]
 
+
 // Marcador único e opcional. Marcá-lo é o que liga o relógio de máquina parada da OS
 // (ver `afetaProducao` em OrdemServico): sem ele, a máquina continua operando e a OS não
 // acumula tempo de parada.
@@ -139,20 +140,51 @@ export interface PausaOrdemServico {
   statusAnterior: StatusRetomavel
 }
 
+// Uma TAREFA da OS: o que foi feito, com o material que consumiu e a mão de obra que
+// cobrou. As duas grandezas na mesma linha, e não uma linha por valor com uma categoria:
+// duas peças trocadas são duas tarefas, não duas mãos de obra.
+//
+// `custoHoraTecnico` é null em duas situações, e as duas são legítimas: fora de
+// 'maquinario' a coluna é proibida, e dentro dele a tarefa pode não ter cobrado hora.
+export interface ItemCustoOS {
+  id: number
+  descricao: string
+  custoManutencao: number
+  custoHoraTecnico: number | null
+}
+
+// Um documento registrado pelo Administrador na conferência. Sem campo de valor de
+// propósito: o valor já está nos itens, e duas fontes para a mesma grandeza só criam a
+// pergunta de qual está certa no dia em que discordarem.
+export interface NotaFiscalOS {
+  id: number
+  numero: string
+  // Nota de consumidor costuma não ter série.
+  serie?: string
+}
+
 export interface CustoOrdemServico {
+  // Somas dos itens de cada categoria, calculadas NO SERVIDOR. O front nunca as envia e
+  // nunca as recalcula: elas são o que `os_custo` guarda, e divergir delas aqui esconderia
+  // uma divergência real do banco em vez de deixá-la aparecer.
   custoHoraTecnico: number | null
   custoManutencao: number
   custoTotal: number
+  // A discriminação por trás dos totais acima, uma linha por tarefa: "trocar o rolamento,
+  // 180 de peça e 50 de mão de obra" em vez de um "420" que ninguém consegue conferir
+  // contra nota nenhuma. Sempre presente (o servidor devolve lista vazia, nunca null),
+  // podendo vir vazia em OS anterior à migration 000012.
+  itens: ItemCustoOS[]
   // Declaração do Técnico no encerramento: houve compra com nota ou foi só mão de obra?
-  // É ela que faz os dois campos abaixo aparecerem na tela do Administrador — sem ela,
+  // É ela que faz a lista abaixo aparecer na tela do Administrador — sem ela,
   // "OS que não gera nota" e "nota ainda não preenchida" seriam a mesma coisa.
   temNotaFiscal: boolean
-  // Preenchidos pelo Administrador para auditoria do valor lançado em `custoManutencao`
-  // contra o documento que o embasa. Valem em qualquer tipo de OS (fatura da empresa em
-  // terceiros, nota da peça em maquinário, do material em reparo) — só existem quando
-  // `temNotaFiscal` é true.
-  numeroNotaFiscal?: string
-  serieNotaFiscal?: string
+  // Registradas pelo Administrador para auditoria do valor lançado contra os documentos
+  // que o embasam. Valem em qualquer tipo de OS (fatura da empresa em terceiros, nota da
+  // peça em maquinário, do material em reparo). São VÁRIAS porque duas peças compradas em
+  // lojas diferentes geram dois documentos. Lista vazia com `temNotaFiscal` true é estado
+  // legítimo e frequente: é a própria fila de conferência.
+  notasFiscais: NotaFiscalOS[]
   // Esta, sim, só em terceiros: conta o que a EMPRESA EXTERNA fez. Nos outros tipos quem
   // fez foi o Técnico, e isso mora em `encerramento.solucao`.
   descricaoServicoTerceiro?: string
@@ -233,27 +265,40 @@ export interface EncerramentoOrdemServicoPayload {
   defeitoConstatado: string
   causaRaiz: string
   solucao: string
-  // Só existe para tipo === 'maquinario'. Ausente em 'terceiros' (quem trabalhou foi a
-  // empresa externa, não o Técnico — ver AcionamentoTerceiroPayload) e em 'reparo'
-  // (Pequenos Reparos não cobram hora técnica, só o Custo de Manutenção).
-  custoHoraTecnico?: number
-  custoManutencao: number
+  // A lista inteira de tarefas, com pelo menos uma. O servidor soma e grava os totais;
+  // nenhum total viaja daqui. `custoHoraTecnico` só é aceito em tipo === 'maquinario': em
+  // 'terceiros' quem trabalhou foi a empresa externa e em 'reparo' o serviço não cobra
+  // hora técnica.
+  itens: ItemCustoPayload[]
   // Declaração do Técnico: houve compra com nota (peça, material, fatura da empresa) ou
-  // foi só mão de obra? Decide se o Administrador verá os campos de Número/Série depois.
+  // foi só mão de obra? Decide se o Administrador verá a lista de notas depois.
   // O número em si não vem daqui — quem preenche é ele, em Custos Pendentes.
   temNotaFiscal: boolean
 }
 
+export interface ItemCustoPayload {
+  descricao: string
+  custoManutencao: number
+  // Omitido quando a tarefa não cobrou mão de obra, e sempre omitido fora de maquinário.
+  custoHoraTecnico?: number
+}
+
+export interface NotaFiscalPayload {
+  numero: string
+  // String vazia quando o Administrador não preenche; o servidor converte em ausência.
+  serie?: string
+}
+
 export interface LancamentoCustoManutencaoPayload {
   ordemServicoId: number
-  custoManutencao: number
-  custoHoraTecnico?: number
+  // A lista inteira de tarefas, corrigida. É SUBSTITUIÇÃO, não patch: o modal abre
+  // pré-preenchido com o que o Técnico lançou, então o que volta é o conjunto completo.
+  itens: ItemCustoPayload[]
   // Repetido aqui porque o Administrador pode corrigir a declaração do Técnico: sem isso,
   // um Técnico que esqueceu de marcar deixaria a OS sem onde lançar a nota que ele tem
-  // na mão. Desmarcar limpa número e série no servidor.
+  // na mão. Desmarcar apaga as notas no servidor.
   temNotaFiscal: boolean
-  numeroNotaFiscal?: string
-  serieNotaFiscal?: string
+  notasFiscais: NotaFiscalPayload[]
   descricaoServicoTerceiro?: string
 }
 

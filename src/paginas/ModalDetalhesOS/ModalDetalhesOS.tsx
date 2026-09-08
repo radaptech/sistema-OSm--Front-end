@@ -221,19 +221,51 @@ export function ModalDetalhesOS({
                 </p>
               </div>
             </div>
+            {/* A discriminação por trás dos dois totais acima. Some quando a OS é
+                anterior à migration 000012 e não tem itens: os totais continuam certos,
+                só não há de que eles são feitos. */}
+            {custo && custo.itens.length > 0 && (
+              <div className="mt-3 border-t border-slate-200 pt-3">
+                <p className="text-xs text-slate-400">Composição do Custo</p>
+                <ul className="mt-1 flex flex-col gap-1">
+                  {custo.itens.map((item) => (
+                    <li key={item.id} className="flex items-baseline justify-between gap-3 text-sm">
+                      <span className="min-w-0 truncate text-slate-700">{item.descricao}</span>
+                      {/* Os dois valores da tarefa, sempre nessa ordem. A hora só aparece
+                          quando existe: fora de maquinário a coluna é proibida, e dentro
+                          dele a tarefa pode não ter cobrado mão de obra. */}
+                      <span className="font-mono whitespace-nowrap text-slate-700">
+                        <span className="font-semibold">{formatarMoeda(item.custoManutencao)}</span>
+                        {item.custoHoraTecnico !== null && (
+                          <span className="ml-2 text-xs text-slate-400">
+                            + {formatarMoeda(item.custoHoraTecnico)} de hora
+                          </span>
+                        )}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
             <div className="mt-3 border-t border-slate-200 pt-3">
               <p className="text-xs text-slate-400">Custo Total</p>
               <p className="text-marca-800 font-mono text-lg font-bold">
                 {custo ? formatarMoeda(custo.custoTotal) : '—'}
               </p>
             </div>
-            {custo?.numeroNotaFiscal && (
+            {custo && custo.notasFiscais.length > 0 && (
               <div className="mt-3 border-t border-slate-200 pt-3">
-                <p className="text-xs text-slate-400">Nota Fiscal</p>
-                <p className="text-sm font-semibold text-slate-700">
-                  {custo.numeroNotaFiscal}
-                  {custo.serieNotaFiscal ? ` / série ${custo.serieNotaFiscal}` : ''}
+                <p className="text-xs text-slate-400">
+                  {custo.notasFiscais.length > 1 ? 'Notas Fiscais' : 'Nota Fiscal'}
                 </p>
+                <ul className="mt-1 flex flex-col gap-0.5">
+                  {custo.notasFiscais.map((nota) => (
+                    <li key={nota.id} className="font-mono text-sm font-semibold text-slate-700">
+                      {nota.numero}
+                      {nota.serie ? ` / série ${nota.serie}` : ''}
+                    </li>
+                  ))}
+                </ul>
               </div>
             )}
             {custo?.descricaoServicoTerceiro && (
