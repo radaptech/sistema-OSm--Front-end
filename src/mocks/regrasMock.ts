@@ -2,7 +2,16 @@
 // de acesso, ciclo de vida da OS, preventivas vencidas e indicadores de máquina.
 import { agoraParaBackend, converterDataBackend } from '../utilitarios/dataBackend'
 import { tiposDefeito } from '../tipos/ordemServico'
-import type { OrdemServico, PausaOrdemServico, TipoDefeito } from '../tipos/ordemServico'
+import type {
+  CustoOrdemServico,
+  ItemCustoOS,
+  ItemCustoPayload,
+  NotaFiscalOS,
+  NotaFiscalPayload,
+  OrdemServico,
+  PausaOrdemServico,
+  TipoDefeito,
+} from '../tipos/ordemServico'
 import type { EscopoAcessoGestor, SessaoUsuario } from '../tipos/autenticacao'
 import type { IndicadoresMaquina } from '../tipos/indicadorMaquina'
 import {
@@ -195,6 +204,54 @@ export function calcularHorasParada(dataSolicitacao: string, dataFim: string): n
 
 export function calcularFinalizada(ordem: Pick<OrdemServico, 'statusExecucao' | 'custo'>): boolean {
   return ordem.statusExecucao === 'Concluída' && ordem.custo !== undefined
+}
+
+// Os dois agregados de os_custo são a SOMA dos itens, calculada por quem grava — o
+// servidor nunca aceita um total do cliente, e o payload nem carrega um. Replicado aqui
+// para o modo mock não inventar uma segunda regra de soma.
+//
+// custoHoraTecnico fica null quando não há item da categoria: é o que ck_custo_por_tipo
+// exige fora de maquinário, e o que faz a tela escrever "—" em vez de "R$ 0,00".
+export function somarItensDeCusto(
+  itens: ItemCustoPayload[],
+): Pick<CustoOrdemServico, 'custoManutencao' | 'custoHoraTecnico' | 'custoTotal'> {
+  const custoManutencao = itens.reduce((soma, item) => soma + item.custoManutencao, 0)
+  const totalHoraTecnica = itens.reduce((soma, item) => soma + (item.custoHoraTecnico ?? 0), 0)
+  // Nenhuma tarefa com hora lançada é diferente de "não se aplica": em maquinário a coluna
+  // existe e vale zero (conserto sem mão de obra cobrada), fora dele ela é proibida. Quem
+  // sabe o tipo da OS é quem chama, então o sinal aqui é a AUSÊNCIA do campo em todas as
+  // tarefas — o mesmo que o servidor faz com `Invalid`.
+  const algumaTemHora = itens.some((item) => item.custoHoraTecnico !== undefined)
+  const custoHoraTecnico = algumaTemHora ? totalHoraTecnica : null
+
+  return {
+    custoManutencao,
+    custoHoraTecnico,
+    custoTotal: custoManutencao + totalHoraTecnica,
+  }
+}
+
+// O id de cada linha nasce no banco; aqui é um contador de módulo, que basta porque o
+// "banco" mock reseta a cada reload da página. Só serve de `key` nas listas do React.
+let proximoIdItemCusto = 1
+let proximoIdNotaFiscal = 1
+
+export function materializarItens(itens: ItemCustoPayload[]): ItemCustoOS[] {
+  return itens.map((item) => ({
+    id: proximoIdItemCusto++,
+    descricao: item.descricao.trim(),
+    custoManutencao: item.custoManutencao,
+    custoHoraTecnico: item.custoHoraTecnico ?? null,
+  }))
+}
+
+export function materializarNotas(notas: NotaFiscalPayload[]): NotaFiscalOS[] {
+  return notas.map((nota) => ({
+    id: proximoIdNotaFiscal++,
+    numero: nota.numero.trim(),
+    // Série vazia vira ausência, como faz o NULLIF de CriarNotaFiscal no back.
+    serie: nota.serie?.trim() || undefined,
+  }))
 }
 
 function ordenarChaveMes(mes: string): number {

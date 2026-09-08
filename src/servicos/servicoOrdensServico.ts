@@ -14,6 +14,9 @@ export interface ParametrosListagemOrdensServico {
   finalizada?: boolean
   tipo?: TipoOS
   lojaId?: number
+  // Recorta pelo setor da solicitação de origem (a OS não tem setor próprio). Como todo
+  // filtro do cliente, só estreita: setor fora do escopo do usuário devolve lista vazia.
+  setorId?: number
   tecnicoId?: number
   busca?: string
   pagina?: number

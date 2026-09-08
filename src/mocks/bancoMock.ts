@@ -960,12 +960,18 @@ export const ordensServico: OrdemServico[] = [
       encerradoPorNome: 'Roberto Alves',
     },
     custo: {
+      temNotaFiscal: false,
       custoHoraTecnico: 45,
       custoManutencao: 180,
       custoTotal: 225,
       lancadoPorNome: 'Roberto Alves',
       lancadoEm: '20/07/2026 13:05:00',
       revisadoEm: null,
+      // Uma linha por TAREFA, com os dois valores dela (migration 000012).
+      itens: [
+        { id: 11, descricao: 'Serviço executado', custoManutencao: 180, custoHoraTecnico: 45 },
+      ],
+      notasFiscais: [],
     },
   },
   {
@@ -1117,16 +1123,20 @@ export const ordensServico: OrdemServico[] = [
       encerradoPorNome: 'Roberto Alves',
     },
     custo: {
+      temNotaFiscal: true,
       // Terceirizada: não há Custo Hora do Técnico a lançar, só a fatura da empresa.
       custoHoraTecnico: null,
       custoManutencao: 350,
       custoTotal: 350,
-      numeroNotaFiscal: '48213',
-      serieNotaFiscal: '1',
       descricaoServicoTerceiro: 'Recarga de gás refrigerante e mão de obra especializada, executadas pela RefriService Manutenções.',
       lancadoPorNome: 'Roberto Alves',
       lancadoEm: '11/07/2026 15:05:00',
       revisadoEm: '15/07/2026 09:20:00',
+      // Uma linha por TAREFA, com os dois valores dela (migration 000012).
+      itens: [
+        { id: 21, descricao: 'Serviço executado', custoManutencao: 350, custoHoraTecnico: null },
+      ],
+      notasFiscais: [{ id: 21, numero: '48213', serie: '1' }],
     },
   },
   {
@@ -1282,12 +1292,18 @@ export const ordensServico: OrdemServico[] = [
       encerradoPorNome: 'Roberto Alves',
     },
     custo: {
+      temNotaFiscal: false,
       custoHoraTecnico: 45,
       custoManutencao: 220,
       custoTotal: 265,
       lancadoPorNome: 'Roberto Alves',
       lancadoEm: '29/07/2026 12:35:00',
       revisadoEm: null,
+      // Uma linha por TAREFA, com os dois valores dela (migration 000012).
+      itens: [
+        { id: 31, descricao: 'Serviço executado', custoManutencao: 220, custoHoraTecnico: 45 },
+      ],
+      notasFiscais: [],
     },
   },
   {
@@ -1335,15 +1351,19 @@ export const ordensServico: OrdemServico[] = [
       encerradoPorNome: 'Fernanda Costa',
     },
     custo: {
+      temNotaFiscal: true,
       custoHoraTecnico: null,
       custoManutencao: 280,
       custoTotal: 280,
-      numeroNotaFiscal: '77410',
-      serieNotaFiscal: '1',
       descricaoServicoTerceiro: 'Troca da mangueira de dreno e limpeza do sistema de ar-condicionado.',
       lancadoPorNome: 'Fernanda Costa',
       lancadoEm: '23/07/2026 10:05:00',
       revisadoEm: '24/07/2026 14:10:00',
+      // Uma linha por TAREFA, com os dois valores dela (migration 000012).
+      itens: [
+        { id: 41, descricao: 'Serviço executado', custoManutencao: 280, custoHoraTecnico: null },
+      ],
+      notasFiscais: [{ id: 41, numero: '77410', serie: '1' }],
     },
   },
   {
@@ -1456,12 +1476,18 @@ export const ordensServico: OrdemServico[] = [
       encerradoPorNome: 'Roberto Alves',
     },
     custo: {
+      temNotaFiscal: false,
       custoHoraTecnico: 40,
       custoManutencao: 95,
       custoTotal: 135,
       lancadoPorNome: 'Roberto Alves',
       lancadoEm: '05/07/2026 12:35:00',
       revisadoEm: null,
+      // Uma linha por TAREFA, com os dois valores dela (migration 000012).
+      itens: [
+        { id: 51, descricao: 'Serviço executado', custoManutencao: 95, custoHoraTecnico: 40 },
+      ],
+      notasFiscais: [],
     },
   },
   {
@@ -1499,6 +1525,7 @@ export const ordensServico: OrdemServico[] = [
       encerradoPorNome: 'Fernanda Costa',
     },
     custo: {
+      temNotaFiscal: false,
       // Pequeno Reparo: não há Custo Hora do Técnico a lançar, só o Custo de Manutenção.
       custoHoraTecnico: null,
       custoManutencao: 20,
@@ -1506,6 +1533,11 @@ export const ordensServico: OrdemServico[] = [
       lancadoPorNome: 'Fernanda Costa',
       lancadoEm: '12/06/2026 11:35:00',
       revisadoEm: null,
+      // Uma linha por TAREFA, com os dois valores dela (migration 000012).
+      itens: [
+        { id: 61, descricao: 'Serviço executado', custoManutencao: 20, custoHoraTecnico: null },
+      ],
+      notasFiscais: [],
     },
   },
   {
@@ -1544,12 +1576,18 @@ export const ordensServico: OrdemServico[] = [
       encerradoPorNome: 'Roberto Alves',
     },
     custo: {
+      temNotaFiscal: false,
       custoHoraTecnico: 45,
       custoManutencao: 150,
       custoTotal: 195,
       lancadoPorNome: 'Roberto Alves',
       lancadoEm: '20/06/2026 11:05:00',
       revisadoEm: null,
+      // Uma linha por TAREFA, com os dois valores dela (migration 000012).
+      itens: [
+        { id: 71, descricao: 'Serviço executado', custoManutencao: 150, custoHoraTecnico: 45 },
+      ],
+      notasFiscais: [],
     },
   },
   {
@@ -1679,6 +1717,7 @@ export const ordensServico: OrdemServico[] = [
       encerradoPorNome: 'Roberto Alves',
     },
     custo: {
+      temNotaFiscal: false,
       // Pequeno Reparo: não há Custo Hora do Técnico a lançar, só o Custo de Manutenção.
       custoHoraTecnico: null,
       custoManutencao: 15,
@@ -1686,6 +1725,11 @@ export const ordensServico: OrdemServico[] = [
       lancadoPorNome: 'Roberto Alves',
       lancadoEm: '25/06/2026 09:35:00',
       revisadoEm: null,
+      // Uma linha por TAREFA, com os dois valores dela (migration 000012).
+      itens: [
+        { id: 81, descricao: 'Serviço executado', custoManutencao: 15, custoHoraTecnico: null },
+      ],
+      notasFiscais: [],
     },
   },
 ]

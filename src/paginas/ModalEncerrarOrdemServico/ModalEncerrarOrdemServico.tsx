@@ -1,10 +1,11 @@
 import { createPortal } from 'react-dom'
-import { useForm } from 'react-hook-form'
+import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { CheckCircle2, XCircle } from 'lucide-react'
+import { Alternador } from '../../componentes/Alternador'
 import { Botao } from '../../componentes/Botao'
+import { CampoItensCusto } from '../../componentes/CampoItensCusto'
 import { CampoSelecao } from '../../componentes/CampoSelecao'
-import { CampoTexto } from '../../componentes/CampoTexto'
 import { CampoTextoArea } from '../../componentes/CampoTextoArea'
 import { calcularHoras } from '../../utilitarios/calcularHoras'
 import { formatarHoras } from '../../utilitarios/formatarHoras'
@@ -54,6 +55,7 @@ export function ModalEncerrarOrdemServico({
 
   const {
     register,
+    control,
     handleSubmit,
     formState: { errors },
   } = useForm<DadosEncerrarOrdemServico>({
@@ -63,8 +65,14 @@ export function ModalEncerrarOrdemServico({
       defeitoConstatado: '',
       causaRaiz: '',
       solucao: '',
-      custoHoraTecnico: undefined,
-      custoManutencao: undefined,
+      // Uma linha em branco já no ar: a OS que o Técnico está encerrando teve algum
+      // custo (mesmo que zero, em garantia), então abrir com a lista vazia obrigaria um
+      // clique a mais em 100% dos casos. Uma só, e não duas: a linha já carrega os dois
+      // valores, então não há um segundo "tipo de custo" para pré-criar.
+      itens: [{ descricao: '', custoManutencao: undefined, custoHoraTecnico: undefined }],
+      // Padrão "não teve": serviço só de mão de obra é o caso comum, e marcar nota que
+      // não existe faria o Administrador cobrar um documento inexistente.
+      temNotaFiscal: false,
     },
   })
 
@@ -107,7 +115,7 @@ export function ModalEncerrarOrdemServico({
             handleSubmit(aoSalvarFormulario)(evento)
           }}
           noValidate
-          className="flex max-h-[75vh] flex-col gap-5 overflow-y-auto p-6"
+          className="flex max-h-[75vh] flex-col gap-5 overflow-y-auto p-6 pb-0"
         >
           <div className="grid grid-cols-2 gap-x-4 gap-y-1">
             <span className="text-marca-500 font-mono text-xs font-semibold tracking-wide uppercase">
@@ -159,35 +167,43 @@ export function ModalEncerrarOrdemServico({
             </p>
           )}
 
-          {/* items-end: se um rótulo quebrar em duas linhas, os inputs continuam
-              alinhados pela base em vez de um descer sozinho. */}
-          <div
-            className={`grid items-end gap-4 ${
-              exigirCustoHoraTecnico ? 'grid-cols-2' : 'grid-cols-1'
-            }`}
-          >
-            {exigirCustoHoraTecnico && (
-              <CampoTexto
-                rotulo="Custo Hora Técnico (R$) *"
-                type="number"
-                min={0}
-                step="0.01"
-                placeholder="Ex: 80.00"
-                mensagemErro={errors.custoHoraTecnico?.message}
-                {...register('custoHoraTecnico', { valueAsNumber: true })}
+          <Controller
+            control={control}
+            name="itens"
+            render={({ field }) => (
+              <CampoItensCusto
+                itens={field.value}
+                aoMudar={field.onChange}
+                permitirHoraTecnica={exigirCustoHoraTecnico}
+                // A mensagem do array inteiro (lista vazia, falta manutenção, hora técnica
+                // fora de maquinário) vive na raiz; as de cada linha vêm indexadas.
+                erro={errors.itens?.message ?? errors.itens?.root?.message}
+                errosPorItem={field.value.map((_, indice) => ({
+                  descricao: errors.itens?.[indice]?.descricao?.message,
+                  custoManutencao: errors.itens?.[indice]?.custoManutencao?.message,
+                  custoHoraTecnico: errors.itens?.[indice]?.custoHoraTecnico?.message,
+                }))}
               />
             )}
+          />
 
-            <CampoTexto
-              rotulo="Custo Manutenção (R$) *"
-              type="number"
-              min={0}
-              step="0.01"
-              placeholder="Ex: 120.00"
-              mensagemErro={errors.custoManutencao?.message}
-              {...register('custoManutencao', { valueAsNumber: true })}
-            />
-          </div>
+          {/* Você é quem sabe: só o Técnico que executou viu se houve compra. A resposta
+              decide se o Administrador verá os campos de Número/Série da nota em Custos
+              Pendentes — se ficar desmarcado, ele só confere os valores. Zero custo é
+              válido nos campos acima (garantia, serviço sem peça) e não implica nada aqui. */}
+          <Controller
+            control={control}
+            name="temNotaFiscal"
+            render={({ field }) => (
+              <Alternador
+                id={field.name}
+                rotulo="Teve nota fiscal?"
+                descricao="Marque se a OS gerou nota (peça, material ou serviço de terceiro). O número fica com o Administrador."
+                marcado={field.value}
+                aoAlternar={field.onChange}
+              />
+            )}
+          />
 
           <CampoSelecao
             rotulo="Tipo de OS *"
@@ -231,7 +247,11 @@ export function ModalEncerrarOrdemServico({
             {...register('solucao')}
           />
 
-          <div className="mt-1 flex gap-3">
+          {/* Grudado no rodapé da área que rola: com várias linhas de custo o par
+              Cancelar/Salvar saía da dobra e a ação principal do modal virava uma
+              caçada. Os negativos cancelam o padding do <form> para a faixa branca
+              cobrir a largura toda, senão o conteúdo aparece por baixo nas bordas. */}
+          <div className="sticky bottom-0 -mx-6 mt-1 flex gap-3 border-t border-slate-100 bg-white px-6 pt-4 pb-6">
             <div className="flex-1">
               <Botao type="button" variante="secundario" onClick={fechar}>
                 Cancelar

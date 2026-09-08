@@ -81,8 +81,9 @@ export function AdministradorCustosPendentes() {
         <p className="text-sm text-slate-500">
           Toda OS chega com Custo Hora do Técnico e Custo de Manutenção
           preenchidos pelo próprio Técnico no encerramento — edite aqui só se
-          precisar corrigir algo. Nas OS executadas por empresa terceirizada,
-          confira o Custo de Manutenção contra a nota fiscal da empresa.
+          precisar corrigir algo. Confira o Custo de Manutenção contra a nota
+          fiscal que o embasa (a fatura da empresa terceirizada, a nota da peça
+          ou do material) e registre o número dela aqui.
         </p>
 
         <FiltroRevisaoCusto
@@ -195,13 +196,18 @@ export function AdministradorCustosPendentes() {
                       </span>
                     </p>
                   </div>
-                  {ordem.tipo === 'terceiros' && (
+                  {/* A linha só existe quando o Técnico declarou nota no encerramento —
+                      OS de mão de obra pura não tem o que informar. Com a declaração, o
+                      âmbar deixa de ser alarme falso e vira pendência de verdade: alguém
+                      disse que há um documento e ele ainda não foi registrado. */}
+                  {ordem.custo?.temNotaFiscal && (
                     <p className="mt-1 text-xs text-slate-400">
-                      Nota Fiscal{' '}
-                      {ordem.custo?.numeroNotaFiscal ? (
+                      {ordem.custo.notasFiscais.length > 1 ? 'Notas Fiscais' : 'Nota Fiscal'}{' '}
+                      {ordem.custo.notasFiscais.length > 0 ? (
                         <span className="font-mono font-semibold text-slate-600">
-                          {ordem.custo.numeroNotaFiscal}
-                          {ordem.custo.serieNotaFiscal ? ` / série ${ordem.custo.serieNotaFiscal}` : ''}
+                          {ordem.custo.notasFiscais
+                            .map((nota) => (nota.serie ? `${nota.numero} / série ${nota.serie}` : nota.numero))
+                            .join(' · ')}
                         </span>
                       ) : (
                         <span className="font-semibold text-amber-600">ainda não informada</span>

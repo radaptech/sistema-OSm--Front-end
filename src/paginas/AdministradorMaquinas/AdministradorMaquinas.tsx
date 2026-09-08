@@ -36,6 +36,16 @@ export function AdministradorMaquinas() {
   // Setor é cadastrado por loja: filtrar por loja restringe também a lista de setores.
   const { data: setores = [] } = useSetores(filtroLoja ? Number(filtroLoja) : undefined)
 
+  // Trocar de loja invalida o setor escolhido — ele é da loja anterior. Sem zerar, o
+  // filtro continua mandando aquele setorId: o select fica em branco (o id não casa com
+  // nenhuma das novas options) e a lista vem vazia, sem nada na tela explicando por quê.
+  // No onChange, e não num efeito sobre filtroLoja, pelo mesmo motivo de CadastrarMaquina:
+  // efeito rodaria também na montagem e apagaria uma seleção legítima.
+  function aoMudarLoja(novaLoja: string) {
+    setFiltroLoja(novaLoja)
+    setFiltroSetor('')
+  }
+
   const { mutateAsync: excluir, isPending: excluindo } = useMutation({
     mutationFn: servicoMaquinas.deletar,
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['maquinas'] }),
@@ -87,7 +97,7 @@ export function AdministradorMaquinas() {
             <CampoSelecao
               rotulo="Loja"
               value={filtroLoja}
-              onChange={(evento) => setFiltroLoja(evento.target.value)}
+              onChange={(evento) => aoMudarLoja(evento.target.value)}
             >
               <option value="">Todas as lojas</option>
               {lojas.map((loja) => (
