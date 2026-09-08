@@ -9,8 +9,13 @@ export interface EscopoAcessoGestor {
   setoresIds: number[] | 'todos'
 }
 
+// ⚠️ Sem `perfil`, e a ausência é deliberada. O campo existiu até aqui e o servidor o
+// comparava com o perfil do usuário, devolvendo "credenciais inválidas" quando não batia —
+// ou seja, ele nunca autorizou nada: quem manda é sempre a linha do banco, e é de lá que
+// saem o token e a `SessaoUsuario` abaixo. O efeito prático era transformar "cliquei na
+// aba errada" em "e-mail ou senha inválidos", uma mensagem que não tinha como explicar o
+// erro real.
 export interface CredenciaisLogin {
-  perfil: PerfilLogin
   email: string
   senha: string
 }

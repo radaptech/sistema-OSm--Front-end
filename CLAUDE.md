@@ -88,7 +88,7 @@ Regras transversais que valem para **todos** os serviços. Ao criar um endpoint 
 - **Paginação (`RespostaPaginada<T>`, `/src/tipos/paginacao.ts`):** `{ dados, pagina, totalPaginas, total }`. Usada nos endpoints paginados **no servidor** (`GET /usuarios`, `GET /solicitacoes/minhas`). Os demais endpoints devolvem array simples e a tela pagina client-side com o componente `Paginacao` (10 por página) — ver item 12.
 - **O servidor é a fonte da verdade dos fatos:** instante de criação/abertura/encerramento, autoria (`solicitanteId`, `lancadoPorNome`, `encerradoPorNome`), horas calculadas (`horasTrabalhadas`/`horasParada`), escopo de acesso e a flag `finalizada` são **derivados no servidor**. O front nunca envia esses campos; quando exibe um "Data/Hora" antes de salvar, é apenas confirmação visual do instante local.
 - **Endpoints por domínio:**
-  - `servicoAutenticacao` → `POST /autenticacao/login`, `GET /autenticacao/sessao`, `POST /autenticacao/logout`
+  - `servicoAutenticacao` → `POST /autenticacao/login` (só e-mail e senha — ver item 1), `GET /autenticacao/sessao`, `POST /autenticacao/logout`
   - `servicoEmpresas` → `GET /empresas`
   - `servicoLojas` → CRUD em `/lojas`
   - `servicoSetores` → CRUD em `/setores` (`?lojaId=`)
@@ -110,7 +110,7 @@ Regras transversais que valem para **todos** os serviços. Ao criar um endpoint 
 - **Card Central:** fundo branco, `rounded-3xl`, padding generoso, largura fixa elegante (`max-w-md`), `shadow-2xl shadow-marca-950/40` e entrada `animate-pop-in`.
 - **Cabeçalho do Card:** ícone `Wrench` num selo tingido claro (`bg-marca-100 text-marca-600`, `rounded-2xl`), título "Solicitação OS" em `font-display`, subtítulo "LOGIN DE ACESSO" em `font-mono`, caixa alta, `text-xs`, `text-slate-400`.
 - **Labels dos Campos:** "PERFIL", "LOGIN", "SENHA DE ACESSO" no rótulo padrão do sistema (`text-[10px] font-bold tracking-widest uppercase text-slate-500`).
-- **Seletor de Perfil (Tabs):** `SeletorPerfil` compartilhado com `CadastrarUsuario` (item 7), 4 abas com ícones Lucide (`User` Solicitante, `Wrench` Técnico, `ShieldCheck` Gestor, `UserCog` Administrador). Aba ativa com fundo verde sólido e texto branco; inativas transparentes sobre o trilho `bg-slate-50` com borda fina. **Layout fixo em grade 2×2 (`grid grid-cols-2`), não por breakpoint de viewport:** o seletor sempre vive dentro de um card estreito (`max-w-md`), então o espaço disponível não cresce com a tela — uma tentativa anterior de virar linha única a partir de `sm` (`sm:flex`) cortava o texto das abas em monitores largos, porque `sm` reage à largura da *viewport*, não à do *card* (~448px sempre). A grade 2×2 resolve em qualquer tamanho.
+- **NÃO há seletor de perfil (REGRA DE NEGÓCIO — o login pede e-mail e senha, e mais nada).** Ele existiu como 4 abas aqui e foi **removido**: o servidor comparava o perfil escolhido com o do usuário e devolvia "credenciais inválidas" quando não batia, ou seja, nunca autorizou nada — quem manda no token e na `SessaoUsuario` é sempre a linha do banco. O efeito prático era transformar "cliquei na aba errada" em "e-mail ou senha inválidos", a mensagem genérica de propósito, que não tinha como explicar o erro real. `CredenciaisLogin` perdeu o campo `perfil` junto, e `model.Login` no back também. **Não recrie o seletor aqui.** O componente `SeletorPerfil` continua existindo e é usado em `CadastrarUsuario` (item 7), onde a escolha decide de verdade o que o usuário será.
 - **Campos de Input:** `CampoTexto` no estilo único do sistema (46px, branco, borda fina). **`CampoTexto`/`CampoSelecao`/`CampoTextoArea` não têm mais prop `variante`** — as variantes `padrao` e `claro` foram removidas quando todas as chamadas convergiram para o mesmo estilo. Ícone de visibilidade da senha em verde.
 - **Link Auxiliar:** "Esqueci minha senha" à direita, fonte pequena, verde.
 - **Botão Principal:** "Entrar" em verde sólido da marca, texto branco, `rounded-xl`, 46px.
@@ -270,7 +270,6 @@ Regras transversais que valem para **todos** os serviços. Ao criar um endpoint 
     - ⚠️ **Maquinário NÃO exige hora técnica.** A regra existia quando o custo era um campo escalar obrigatório; com uma linha por tarefa ela obrigava a inventar uma tarefa só para carregar a mão de obra. Sem hora lançada o servidor grava zero.
     - O rodapé soma ao vivo: **Manutenção**, **Hora do Técnico** e **Custo Total** em maquinário, só o total nos outros tipos (repetir o mesmo número duas vezes é ruído). **Os totais nunca são enviados** — o servidor soma o que gravou, e o payload não carrega total nenhum.
   - **Teve nota fiscal?** (REGRA DE NEGÓCIO — quem declara é quem executou): alternador (`Alternador` via `Controller`), `temNotaFiscal`, **padrão desmarcado**. Só o Técnico que foi até a máquina sabe se houve compra com nota (peça, material, fatura da empresa) ou se foi só mão de obra. É essa declaração que faz a **lista de notas fiscais** aparecer para o Administrador em Custos Pendentes (item 12) — os números em si **não** são pedidos aqui, quem registra é ele. Sem esse campo, "OS que não gera nota" e "nota ainda não preenchida" seriam indistinguíveis na tela do Administrador. Coluna `os_custo.tem_nota_fiscal` (migration `000011`).
-  - **Teve nota fiscal?** (REGRA DE NEGÓCIO — quem declara é quem executou): alternador (`Alternador` via `Controller`), `temNotaFiscal`, **padrão desmarcado**. Só o Técnico que foi até a máquina sabe se houve compra com nota (peça, material, fatura da empresa) ou se foi só mão de obra. É essa declaração que faz a **lista de notas fiscais** aparecer para o Administrador em Custos Pendentes (item 12) — os números em si **não** são pedidos aqui, quem registra é ele. Sem esse campo, "OS que não gera nota" e "nota ainda não preenchida" seriam indistinguíveis na tela do Administrador. Coluna `os_custo.tem_nota_fiscal` (migration `000011`).
   - **Defeito Constatado \***, **Causa Raiz \*** e **Solução \***: `textarea` de 10 a 500 caracteres cada.
 - **Botões:** `Cancelar` (neutro) e `Encerrar OS` (verde, com ícone).
 - **Ao salvar:** `servicoOrdensServico.encerrar` → `POST /ordens-servico/:id/encerrar` (`EncerramentoOrdemServicoPayload`). Os textos ficam em `ordem.encerramento` (junto com `encerradoPorNome`) e os valores em `ordem.custo`, disponíveis depois no `ModalDetalhesEncerramento` (aba `OS Concluídas`) e no `ModalDetalhesOS` (item 13).
@@ -339,6 +338,28 @@ desfeito por engano.
   as do Administrador **não foram vistas em tela** nessa passagem — a sessão mock reconduzia
   para o painel do Gestor a cada troca de perfil. Elas usam os mesmos componentes já
   conferidos, mas isso é inferência, não verificação.
+
+## Verificação pelo navegador (07/09/2026) — custo por tarefa e login sem perfil
+
+Percorrido em modo mock (`VITE_USE_MOCKS=true`), nas duas telas que escrevem custo e no login.
+
+- **Encerramento (Técnico):** lançadas três tarefas na mesma OS de maquinário, o total somou
+  ao vivo, e a OS encerrou. Depois o caso que motivou a mudança de forma: duas peças
+  (`rolamento` e `serra fita`) **sem nenhuma hora técnica** — antes o formulário bloqueava
+  com "OS de maquinário exige ao menos um custo de hora do técnico"; agora encerra.
+- **Custos Pendentes (Administrador):** o modal abre com a itemização do Técnico
+  pré-preenchida, o alternador de nota revela a lista, e duas notas (uma com série, outra
+  sem) persistiram — o card passou a exibir as duas e a OS trocou para a pílula "Revisadas".
+- **Login:** sem o seletor, `tecnico@demo.com` cai em `/painel-tecnico` e
+  `administrador@demo.com` em `/painel-administrador`, os dois só com e-mail e senha. Senha
+  errada devolve "E-mail ou senha inválidos", sem citar perfil.
+- ⚠️ **Achado que só apareceu na tela:** o modal do Administrador não tinha teto de altura
+  (até aqui cabiam dois campos numéricos ali) e o cartão passava da tela com as duas listas.
+  Corrigido com `max-h-[75vh]` + rodapé `sticky` nos dois modais — ver item 12.
+- ⚠️ **Achado que só apareceu rodando a API de verdade:** nota repetida devolvia **500**. O
+  service já devolvia `ErrDadoDuplicado` e o teste de integração passava; faltava o `case`
+  no `switch` do controller, porque até a `000011` essa rota era um `UPDATE` 1:1 e não tinha
+  como colidir. O teste de integração para no service e nunca atravessa o controller.
 
 ## Verificação pelo navegador (22/08/2026) — o que já foi provado e o que quebrou
 

@@ -11,16 +11,17 @@ export const rotasAutenticacao: Rota[] = [
       await atraso()
       const credenciais = corpo as CredenciaisLogin
 
+      // Sem comparar perfil: ele saiu do corpo do login (ver CredenciaisLogin). Quem diz
+      // o perfil é o próprio usuário encontrado, e é ele que vai para a sessão abaixo.
       const usuario = usuarios.find(
         (item) =>
           item.ativo &&
-          item.perfil === credenciais.perfil &&
           item.email.toLowerCase() === credenciais.email?.toLowerCase() &&
           item.senha === credenciais.senha,
       )
 
       if (!usuario) {
-        return responderErro('E-mail, senha ou perfil inválidos.', 401)
+        return responderErro('E-mail ou senha inválidos.', 401)
       }
 
       definirIdSessao(usuario.id)
