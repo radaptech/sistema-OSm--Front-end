@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useForm, useWatch } from 'react-hook-form'
+import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Eye, EyeOff, Wrench } from 'lucide-react'
 import { toast } from 'react-toastify'
@@ -7,7 +7,6 @@ import { useNavigate } from 'react-router-dom'
 import { Botao } from '../../componentes/Botao'
 import { AlternadorTema } from '../../componentes/AlternadorTema'
 import { CampoTexto } from '../../componentes/CampoTexto'
-import { SeletorPerfil } from '../../componentes/SeletorPerfil'
 import { useEstadoAutenticacao } from '../../estado/estadoAutenticacao'
 import { servicoAutenticacao } from '../../servicos/servicoAutenticacao'
 import { ROTA_POR_PERFIL } from '../../rotas/rotaPorPerfil'
@@ -21,18 +20,15 @@ export function TelaLogin() {
   const {
     register,
     handleSubmit,
-    control,
-    setValue,
     formState: { errors, isSubmitting },
   } = useForm<DadosLogin>({
     resolver: zodResolver(esquemaLogin),
-    defaultValues: { perfil: 'solicitante', email: '', senha: '' },
+    defaultValues: { email: '', senha: '' },
   })
 
-  const perfilSelecionado = useWatch({ control, name: 'perfil' })
-
-  // O escopo de acesso (loja/setor do solicitante, escopos do gestor, tecnicoId) vem no
-  // payload de login — o front não deriva nada disso.
+  // O perfil e o escopo de acesso (loja/setor do solicitante, escopos do gestor,
+  // tecnicoId) vêm no payload de login — o front não deriva nem escolhe nada disso, e é
+  // `sessao.perfil` que decide para onde navegar logo abaixo.
   async function aoEnviar(dados: DadosLogin) {
     const sessao = await servicoAutenticacao.entrar(dados)
 
@@ -67,20 +63,10 @@ export function TelaLogin() {
             </p>
           </div>
 
-          <div className="mt-6 flex flex-col gap-1.5">
-            <span className="text-[10px] font-bold tracking-widest text-slate-500 uppercase">
-              Perfil
-            </span>
-            <SeletorPerfil
-              perfilSelecionado={perfilSelecionado}
-              aoSelecionar={(perfil) => setValue('perfil', perfil)}
-            />
-          </div>
-
           <form
             onSubmit={handleSubmit(aoEnviar)}
             noValidate
-            className="mt-5 flex flex-col gap-4"
+            className="mt-6 flex flex-col gap-4"
           >
             <CampoTexto
               rotulo="Login"
