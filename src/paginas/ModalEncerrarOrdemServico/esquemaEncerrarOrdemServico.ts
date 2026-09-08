@@ -1,15 +1,6 @@
 import { z } from 'zod'
+import { criarEsquemaItensCusto } from '../../componentes/esquemaCustoOS'
 import { tiposDefeito } from '../../tipos/ordemServico'
-
-const custoManutencao = z
-  .number('Informe o custo de manutenção.')
-  .nonnegative('O custo não pode ser negativo.')
-  .max(999999, 'Informe um valor de até R$ 999.999.')
-
-const custoHoraTecnicoObrigatorio = z
-  .number('Informe o custo hora do técnico.')
-  .nonnegative('O custo não pode ser negativo.')
-  .max(999999, 'Informe um valor de até R$ 999.999.')
 
 // Só "Maquinário" cobra Custo Hora Técnico. Em 'terceiros' (ver AcionamentoTerceiroPayload)
 // quem executou foi a empresa externa, não o Técnico; em 'reparo' o serviço é pequeno
@@ -31,10 +22,10 @@ export function criarEsquemaEncerrarOrdemServico(exigirCustoHoraTecnico: boolean
       .string()
       .min(10, 'Descreva a solução aplicada.')
       .max(500, 'A descrição deve ter no máximo 500 caracteres.'),
-    custoHoraTecnico: exigirCustoHoraTecnico
-      ? custoHoraTecnicoObrigatorio
-      : custoHoraTecnicoObrigatorio.optional(),
-    custoManutencao,
+    // Lista, e não dois campos: uma OS pode ter trocado o rolamento E a fita, e somar
+    // as duas de cabeça antes de digitar era o que o Técnico fazia até aqui. O servidor
+    // soma e grava os totais; nenhum total sai daqui.
+    itens: criarEsquemaItensCusto(exigirCustoHoraTecnico),
     // Quem executou é quem sabe se houve compra com nota (peça, material, fatura da
     // empresa) ou se foi só mão de obra. É esta resposta que decide se o Administrador
     // verá os campos de Número/Série em Custos Pendentes — sem ela, "não gera nota" e
