@@ -1,5 +1,10 @@
 import { api } from './api'
-import type { CredenciaisLogin, SessaoUsuario } from '../tipos/autenticacao'
+import type {
+  CredenciaisLogin,
+  RedefinicaoSenha,
+  SessaoUsuario,
+  SolicitacaoRecuperacaoSenha,
+} from '../tipos/autenticacao'
 
 export const servicoAutenticacao = {
   // O JWT volta em cookie HttpOnly; o corpo traz o escopo de acesso do usuário.
@@ -11,4 +16,10 @@ export const servicoAutenticacao = {
   obterSessao: () => api.get<SessaoUsuario>('/autenticacao/sessao'),
 
   sair: () => api.post<void>('/autenticacao/logout'),
+
+  solicitarRecuperacaoSenha: (dados: SolicitacaoRecuperacaoSenha) =>
+    api.post<{ message: string }>('/autenticacao/esqueci-senha', dados),
+
+  redefinirSenha: (dados: RedefinicaoSenha) =>
+    api.post<{ message: string }>('/autenticacao/redefinir-senha', dados),
 }
