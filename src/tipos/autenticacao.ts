@@ -1,4 +1,9 @@
-export const perfisLogin = ['solicitante', 'tecnico', 'gestor', 'administrador'] as const
+export const perfisLogin = [
+  'solicitante',
+  'tecnico',
+  'gestor',
+  'administrador',
+] as const
 
 export type PerfilLogin = (typeof perfisLogin)[number]
 
@@ -37,3 +42,13 @@ export interface SessaoUsuario {
   tecnicoId: number | null
 }
 
+// Corpo de POST /autenticacao/esqueci-senha. A resposta é a mesma exista o e-mail ou não.
+export interface SolicitacaoRecuperacaoSenha {
+  email: string
+}
+
+// Corpo de POST /autenticacao/redefinir-senha — o token chega pelo link do e-mail (?token=).
+export interface RedefinicaoSenha {
+  token: string
+  senha: string
+}

@@ -10,6 +10,16 @@ import { RotaPublica } from './RotaPublica'
 // é a primeira tela de todo mundo, e adiar o carregamento dele só atrasaria o começo.
 import { TelaLogin } from '../paginas/TelaLogin/TelaLogin'
 
+const EsqueciSenha = lazy(() =>
+  import('../paginas/EsqueciSenha/EsqueciSenha').then((m) => ({
+    default: m.EsqueciSenha,
+  })),
+)
+const RedefinirSenha = lazy(() =>
+  import('../paginas/RedefinirSenha/RedefinirSenha').then((m) => ({
+    default: m.RedefinirSenha,
+  })),
+)
 const HomeSolicitante = lazy(() =>
   import('../paginas/HomeSolicitante/HomeSolicitante').then((m) => ({
     default: m.HomeSolicitante,
@@ -46,9 +56,11 @@ const PainelAdministrador = lazy(() =>
   })),
 )
 const AdministradorUsuarios = lazy(() =>
-  import('../paginas/AdministradorUsuarios/AdministradorUsuarios').then((m) => ({
-    default: m.AdministradorUsuarios,
-  })),
+  import('../paginas/AdministradorUsuarios/AdministradorUsuarios').then(
+    (m) => ({
+      default: m.AdministradorUsuarios,
+    }),
+  ),
 )
 const AdministradorLojas = lazy(() =>
   import('../paginas/AdministradorLojas/AdministradorLojas').then((m) => ({
@@ -61,9 +73,11 @@ const AdministradorSetores = lazy(() =>
   })),
 )
 const AdministradorMaquinas = lazy(() =>
-  import('../paginas/AdministradorMaquinas/AdministradorMaquinas').then((m) => ({
-    default: m.AdministradorMaquinas,
-  })),
+  import('../paginas/AdministradorMaquinas/AdministradorMaquinas').then(
+    (m) => ({
+      default: m.AdministradorMaquinas,
+    }),
+  ),
 )
 const AdministradorCustosPendentes = lazy(() =>
   import('../paginas/AdministradorCustosPendentes/AdministradorCustosPendentes').then(
@@ -71,14 +85,16 @@ const AdministradorCustosPendentes = lazy(() =>
   ),
 )
 const AdministradorOSFinalizadas = lazy(() =>
-  import('../paginas/AdministradorOSFinalizadas/AdministradorOSFinalizadas').then((m) => ({
-    default: m.AdministradorOSFinalizadas,
-  })),
+  import('../paginas/AdministradorOSFinalizadas/AdministradorOSFinalizadas').then(
+    (m) => ({
+      default: m.AdministradorOSFinalizadas,
+    }),
+  ),
 )
 const AdministradorEmpresasTerceirizadas = lazy(() =>
-  import(
-    '../paginas/AdministradorEmpresasTerceirizadas/AdministradorEmpresasTerceirizadas'
-  ).then((m) => ({ default: m.AdministradorEmpresasTerceirizadas })),
+  import('../paginas/AdministradorEmpresasTerceirizadas/AdministradorEmpresasTerceirizadas').then(
+    (m) => ({ default: m.AdministradorEmpresasTerceirizadas }),
+  ),
 )
 const CadastrarUsuario = lazy(() =>
   import('../paginas/CadastrarUsuario/CadastrarUsuario').then((m) => ({
@@ -112,7 +128,11 @@ export function RotasPrincipais() {
       <Routes>
         <Route element={<RotaPublica />}>
           <Route path="/login" element={<TelaLogin />} />
+          <Route path="/esqueci-senha" element={<EsqueciSenha />} />
         </Route>
+
+        {/* Fora da RotaPublica: quem está logado e abre o link do e-mail tem que conseguir trocar a senha, não ser jogado pro painel. */}
+        <Route path="/redefinir-senha" element={<RedefinirSenha />} />
 
         <Route element={<RotaProtegida perfis={['solicitante']} />}>
           <Route path="/home-solicitante" element={<HomeSolicitante />} />
@@ -123,7 +143,9 @@ export function RotasPrincipais() {
               redirecionando com o tipo já selecionado, para não quebrar link salvo. */}
           <Route
             path="/nova-solicitacao-os"
-            element={<Navigate to="/nova-solicitacao?tipo=maquinario" replace />}
+            element={
+              <Navigate to="/nova-solicitacao?tipo=maquinario" replace />
+            }
           />
           <Route
             path="/nova-solicitacao-reparo"
@@ -147,7 +169,10 @@ export function RotasPrincipais() {
         </Route>
 
         <Route element={<RotaProtegida perfis={['administrador']} />}>
-          <Route path="/painel-administrador" element={<PainelAdministrador />} />
+          <Route
+            path="/painel-administrador"
+            element={<PainelAdministrador />}
+          />
 
           <Route
             path="/administrador/usuarios"
