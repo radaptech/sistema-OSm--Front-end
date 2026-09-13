@@ -1,7 +1,17 @@
-import type { CredenciaisLogin } from '../../tipos/autenticacao'
+import type {
+  CredenciaisLogin,
+  RedefinicaoSenha,
+  SolicitacaoRecuperacaoSenha,
+} from '../../tipos/autenticacao'
 import { obterUsuarioSessao, usuarios } from '../bancoMock'
 import { construirSessao } from '../regrasMock'
-import { atraso, definirIdSessao, responderErro, responderJson, type Rota } from '../utilidadesMock'
+import {
+  atraso,
+  definirIdSessao,
+  responderErro,
+  responderJson,
+  type Rota,
+} from '../utilidadesMock'
 
 export const rotasAutenticacao: Rota[] = [
   {
@@ -49,6 +59,51 @@ export const rotasAutenticacao: Rota[] = [
       await atraso()
       definirIdSessao(null)
       return responderJson(null)
+    },
+  },
+  {
+    metodo: 'POST',
+    padrao: /^\/autenticacao\/esqueci-senha$/,
+    async tratar({ corpo }) {
+      await atraso()
+      const { email } = corpo as SolicitacaoRecuperacaoSenha
+      const usuario = usuarios.find(
+        (item) =>
+          item.ativo && item.email.toLowerCase() === email?.toLowerCase(),
+      )
+
+      // Sem e-mail de verdade no mock: o link sai no console, e a resposta não diz se o e-mail existe.
+      if (usuario) {
+        console.info(
+          `[mock] link de recuperação: /redefinir-senha?token=mock-${usuario.id}`,
+        )
+      }
+
+      return responderJson({
+        message:
+          'Se o e-mail estiver cadastrado, você receberá um link para redefinir a senha.',
+      })
+    },
+  },
+  {
+    metodo: 'POST',
+    padrao: /^\/autenticacao\/redefinir-senha$/,
+    async tratar({ corpo }) {
+      await atraso()
+      const { token, senha } = corpo as RedefinicaoSenha
+      const usuario = usuarios.find(
+        (item) => item.ativo && `mock-${item.id}` === token,
+      )
+
+      if (!usuario) {
+        return responderErro(
+          'link de recuperação inválido ou expirado, solicite um novo',
+          400,
+        )
+      }
+
+      usuario.senha = senha
+      return responderJson({ message: 'Senha redefinida com sucesso.' })
     },
   },
 ]
