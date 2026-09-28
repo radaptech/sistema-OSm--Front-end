@@ -75,7 +75,7 @@ Todo o tráfego HTTP passa por um wrapper nativo (`fetch`) padronizado — **nã
 - **Variáveis de Ambiente:** `.env.example` na raiz documenta `REACT_APP_URL_API`. O `api.ts` lê `process.env.REACT_APP_URL_API` com fallback para a URL de homologação e prefixa `https://` caso o protocolo seja omitido.
 - **Cabeçalhos Automáticos:** injeta `X-tenant-ID` sempre e `Content-Type: application/json` **exceto** quando o corpo for `FormData` (o navegador precisa definir o `boundary` sozinho).
 - **Resolução de Resposta:** lê JSON, texto ou binário/Blob conforme o `content-type` (`application/pdf`, `application/octet-stream`, `image/*` viram `Blob` — usado na impressão de OS).
-- **Integração de Alertas:** captura as chaves de erro do backend (`error`, `erro`, `message`, `detalhes`) e exibe o toast automaticamente; falha de rede vira "Não foi possível conectar ao servidor.".
+- **Integração de Alertas:** captura as chaves de erro do backend (`error`, `erro`, `message`, `detalhes`) e exibe o toast automaticamente; falha de rede vira "Não foi possível conectar ao servidor.". Em **5xx** a mensagem ganha " (código: …)" com o `X-Request-ID` da resposta — é o id que o back grava em todas as linhas de log daquele request, então o usuário manda o código e o suporte acha o erro.
 - **Métodos:** `api.get/post/put/patch/delete`, todos genéricos em `<T>`.
 - **React Query (`App.tsx`):** `retry: 1` e `refetchOnWindowFocus: false` — o `api.ts` já trata 401 globalmente, repetir a requisição só atrasaria o redirecionamento.
 
