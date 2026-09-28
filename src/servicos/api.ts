@@ -168,8 +168,12 @@ async function requisitar<T = unknown>(
       throw new Error('Sessão expirada.')
     }
 
+    // Só 5xx: é o erro que o usuário não resolve sozinho, e o código leva o
+    // suporte direto às linhas desse request no log do back (X-Request-ID).
+    const codigo = resposta.status >= 500 ? resposta.headers.get('X-Request-ID') : null
     const mensagemErro =
-      extrairMensagemErro(dados) ?? 'Ocorreu um erro inesperado. Tente novamente.'
+      (extrairMensagemErro(dados) ?? 'Ocorreu um erro inesperado. Tente novamente.') +
+      (codigo ? ` (código: ${codigo})` : '')
     toast.error(mensagemErro)
     throw new Error(mensagemErro)
   }
