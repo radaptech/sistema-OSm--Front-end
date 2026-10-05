@@ -12,7 +12,7 @@ export const esquemaManutencaoPreventiva = z.object({
   descricao: z
     .string()
     .min(3, 'Descreva o procedimento de manutenção.')
-    .max(1200, 'A descrição deve ter no máximo 1200 caracteres.'),
+    .max(3000, 'A descrição deve ter no máximo 3000 caracteres.'),
   intervaloDias: z
     .number('Informe o intervalo em dias.')
     .int('Informe um número inteiro de dias.')
