@@ -25,6 +25,11 @@ const HomeSolicitante = lazy(() =>
     default: m.HomeSolicitante,
   })),
 )
+const AbrirOSDireta = lazy(() =>
+  import('../paginas/AbrirOSDireta/AbrirOSDireta').then((m) => ({
+    default: m.AbrirOSDireta,
+  })),
+)
 const NovaSolicitacao = lazy(() =>
   import('../paginas/NovaSolicitacao/NovaSolicitacao').then((m) => ({
     default: m.NovaSolicitacao,
@@ -166,6 +171,10 @@ export function RotasPrincipais() {
         <Route element={<RotaProtegida perfis={['gestor']} />}>
           <Route path="/painel-gestor" element={<PainelGestor />} />
           <Route path="/dashboard-gestor" element={<DashboardGestor />} />
+        </Route>
+
+        <Route element={<RotaProtegida perfis={['gestor', 'administrador']} />}>
+          <Route path="/abrir-os-direta" element={<AbrirOSDireta />} />
         </Route>
 
         <Route element={<RotaProtegida perfis={['administrador']} />}>

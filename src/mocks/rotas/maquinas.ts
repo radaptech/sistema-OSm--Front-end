@@ -1,5 +1,6 @@
 import type { AtualizarMaquinaPayload, Maquina, NovaMaquinaPayload } from '../../tipos/maquina'
-import { lojas, maquinas, preventivas, setores, type PreventivaInterna } from '../bancoMock'
+import { lojas, maquinas, obterUsuarioSessao, preventivas, setores, type PreventivaInterna } from '../bancoMock'
+import { usuarioAlcanca } from '../regrasMock'
 import {
   atraso,
   extrairCorpo,
@@ -38,7 +39,11 @@ export const rotasMaquinas: Rota[] = [
     padrao: /^\/maquinas$/,
     async tratar({ query }) {
       await atraso()
-      let lista = maquinas
+      const usuario = obterUsuarioSessao()
+      if (!usuario) {
+        return responderErro('Não autenticado.', 401)
+      }
+      let lista = maquinas.filter((maquina) => usuarioAlcanca(usuario, maquina.lojaId, maquina.setorId))
 
       const setorId = query.get('setorId')
       if (setorId) {

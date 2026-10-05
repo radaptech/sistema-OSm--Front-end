@@ -5,7 +5,7 @@ import { CheckCircle2, XCircle } from 'lucide-react'
 import { Botao } from '../../componentes/Botao'
 import { CampoSelecao } from '../../componentes/CampoSelecao'
 import { useTecnicos } from '../../hooks/useTecnicos'
-import { niveisUrgencia, type IdUrgencia } from '../../tipos/ordemServico'
+import { SeletorUrgencia } from '../../componentes/SeletorUrgencia'
 import type { SolicitacaoOS } from '../../tipos/ordemServico'
 import {
   esquemaAbrirOrdemServico,
@@ -17,21 +17,6 @@ interface ModalAbrirOrdemServicoProps {
   solicitacao: SolicitacaoOS
   aoFechar: () => void
   aoSalvar: (dados: DadosAbrirOrdemServico) => void
-}
-
-const ESTILOS_URGENCIA: Record<IdUrgencia, { ativo: string; inativo: string }> = {
-  Baixa: {
-    ativo: 'border-emerald-500 bg-emerald-50 text-emerald-700',
-    inativo: 'border-slate-200 text-slate-500 hover:border-emerald-300',
-  },
-  Média: {
-    ativo: 'border-amber-500 bg-amber-50 text-amber-700',
-    inativo: 'border-slate-200 text-slate-500 hover:border-amber-300',
-  },
-  Alta: {
-    ativo: 'border-red-500 bg-red-50 text-red-700',
-    inativo: 'border-slate-200 text-slate-500 hover:border-red-300',
-  },
 }
 
 export function ModalAbrirOrdemServico({
@@ -62,9 +47,13 @@ export function ModalAbrirOrdemServico({
   }
 
   return createPortal(
-    <div className={`${classeFundo} fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm`}>
-      <div className={`${classeCartao} w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-pop`}>
-        <div className="flex items-start justify-between bg-marca-600 px-6 py-4">
+    <div
+      className={`${classeFundo} fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm`}
+    >
+      <div
+        className={`${classeCartao} shadow-pop w-full max-w-md overflow-hidden rounded-2xl bg-white`}
+      >
+        <div className="bg-marca-600 flex items-start justify-between px-6 py-4">
           <div>
             <p className="font-mono text-xs font-bold tracking-widest text-white/80 uppercase">
               Painel do Gestor
@@ -92,45 +81,23 @@ export function ModalAbrirOrdemServico({
           noValidate
           className="flex max-h-[75vh] flex-col gap-5 overflow-y-auto p-6"
         >
-          <div className="flex flex-col gap-2">
-            <span className="font-mono text-xs font-semibold tracking-wide text-marca-500 uppercase">
-              Nível de Urgência *
-            </span>
-            <Controller
-              control={control}
-              name="urgencia"
-              render={({ field }) => (
-                <div className="grid grid-cols-3 gap-2">
-                  {niveisUrgencia.map((nivel) => {
-                    const ativo = field.value === nivel
-                    return (
-                      <button
-                        key={nivel}
-                        type="button"
-                        onClick={() => field.onChange(nivel)}
-                        className={`rounded-xl border-2 px-3 py-2.5 text-sm font-semibold transition-all duration-200 ${
-                          ativo
-                            ? ESTILOS_URGENCIA[nivel].ativo
-                            : ESTILOS_URGENCIA[nivel].inativo
-                        }`}
-                      >
-                        {nivel}
-                      </button>
-                    )
-                  })}
-                </div>
-              )}
-            />
-            {errors.urgencia && (
-              <span className="text-xs text-red-500">{errors.urgencia.message}</span>
+          <Controller
+            control={control}
+            name="urgencia"
+            render={({ field }) => (
+              <SeletorUrgencia
+                valor={field.value}
+                aoSelecionar={field.onChange}
+                mensagemErro={errors.urgencia?.message}
+              />
             )}
-          </div>
+          />
 
           <div className="flex flex-col gap-1">
-            <span className="font-mono text-xs font-semibold tracking-wide text-marca-500 uppercase">
+            <span className="text-marca-500 font-mono text-xs font-semibold tracking-wide uppercase">
               Data/Hora
             </span>
-            <p className="rounded-xl border border-slate-200/60 bg-slate-50 px-4 py-2.5 text-slate-700 font-mono text-sm text-marca-800">
+            <p className="text-marca-800 rounded-xl border border-slate-200/60 bg-slate-50 px-4 py-2.5 font-mono text-sm text-slate-700">
               {agora.toLocaleString('pt-BR')}
             </p>
           </div>
@@ -143,7 +110,9 @@ export function ModalAbrirOrdemServico({
                 rotulo="Técnico Responsável *"
                 mensagemErro={errors.tecnicoId?.message}
                 value={field.value || ''}
-                onChange={(evento) => field.onChange(Number(evento.target.value))}
+                onChange={(evento) =>
+                  field.onChange(Number(evento.target.value))
+                }
               >
                 <option value="">Selecionar técnico...</option>
                 {tecnicos.map((tecnico) => (
@@ -162,7 +131,10 @@ export function ModalAbrirOrdemServico({
               </Botao>
             </div>
             <div className="flex-1">
-              <Botao type="submit" className="flex items-center justify-center gap-2">
+              <Botao
+                type="submit"
+                className="flex items-center justify-center gap-2"
+              >
                 <CheckCircle2 size={16} />
                 Abrir OS
               </Botao>

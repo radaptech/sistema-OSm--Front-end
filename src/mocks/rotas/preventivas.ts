@@ -1,6 +1,6 @@
 import type { PreventivaListada, PreventivaManutencao } from '../../tipos/maquina'
-import { lojas, maquinas, preventivas, usuarios, type PreventivaInterna } from '../bancoMock'
-import { preventivaEstaVencida, sincronizarPreventivasVencidas } from '../regrasMock'
+import { lojas, maquinas, obterUsuarioSessao, preventivas, usuarios, type PreventivaInterna } from '../bancoMock'
+import { preventivaEstaVencida, sincronizarPreventivasVencidas, usuarioAlcanca } from '../regrasMock'
 import { atraso, gerarId, responderErro, responderJson, type Rota } from '../utilidadesMock'
 
 function paraPreventivaListada(preventiva: PreventivaInterna): PreventivaListada | null {
@@ -42,9 +42,15 @@ export const rotasPreventivas: Rota[] = [
         lista = lista.filter((preventiva) => preventiva.maquinaId === Number(maquinaId))
       }
 
+      const usuario = obterUsuarioSessao()
+      if (!usuario) {
+        return responderErro('Não autenticado.', 401)
+      }
+
       const listadas = lista
         .map(paraPreventivaListada)
         .filter((item): item is PreventivaListada => item !== null)
+        .filter((item) => usuarioAlcanca(usuario, item.lojaId, item.setorId))
 
       return responderJson(listadas)
     },
