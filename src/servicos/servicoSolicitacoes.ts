@@ -6,6 +6,7 @@ import type { NovaSolicitacaoReparoPayload } from '../tipos/reparo'
 import type {
   AberturaOrdemServicoPayload,
   RejeicaoSolicitacaoPayload,
+  NovaSolicitacaoDiretaPayload,
   NovaSolicitacaoOSPayload,
   OrdemServico,
   ResumoSolicitacoes,
@@ -91,6 +92,11 @@ export const servicoSolicitacoes = {
   // passa pelo Técnico. O instante da abertura é fato do servidor.
   abrirOS: ({ solicitacaoId, ...dados }: AberturaOrdemServicoPayload) =>
     api.post<OrdemServico>(`/solicitacoes/${solicitacaoId}/abrir-os`, dados),
+
+  // Gestor/Administrador abre a OS direto, sem fila e sem foto (quando o Solicitante não
+  // está disponível). Responde a OS criada, como abrirOS.
+  criarDireta: (dados: NovaSolicitacaoDiretaPayload) =>
+    api.post<OrdemServico>('/solicitacoes/direta', dados),
 
   // Encerra a solicitação sem abrir OS. O motivo é obrigatório e volta para o Solicitante.
   rejeitar: ({ solicitacaoId, ...dados }: RejeicaoSolicitacaoPayload) =>

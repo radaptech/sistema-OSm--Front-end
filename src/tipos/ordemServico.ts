@@ -23,7 +23,6 @@ export const tiposDefeito = ['Predial', 'Corretiva'] as const
 
 export type TipoDefeito = (typeof tiposDefeito)[number]
 
-
 // Marcador único e opcional. Marcá-lo é o que liga o relógio de máquina parada da OS
 // (ver `afetaProducao` em OrdemServico): sem ele, a máquina continua operando e a OS não
 // acumula tempo de parada.
@@ -48,7 +47,13 @@ export const statusSolicitacao = [
 
 export type StatusSolicitacao = (typeof statusSolicitacao)[number]
 
-export const origensSolicitacao = ['solicitante', 'preventiva'] as const
+// 'direta': Gestor/Administrador abriu a OS sem passar pela fila (sem foto, já nasce
+// Convertida) — solicitanteId/solicitanteNome são de quem abriu.
+export const origensSolicitacao = [
+  'solicitante',
+  'preventiva',
+  'direta',
+] as const
 
 export type OrigemSolicitacao = (typeof origensSolicitacao)[number]
 
@@ -96,6 +101,20 @@ export type IdUrgencia = (typeof niveisUrgencia)[number]
 
 export interface AberturaOrdemServicoPayload {
   solicitacaoId: number
+  urgencia: IdUrgencia
+  tecnicoId: number
+}
+
+// POST /solicitacoes/direta — solicitação e OS de uma vez, sem foto. Maquinário manda
+// maquinaId (o setor sai da máquina); reparo manda item + setorId. O técnico tem que
+// atender a loja da solicitação — o servidor recusa com 400 se não atender.
+export interface NovaSolicitacaoDiretaPayload {
+  tipo: TipoSolicitacao
+  maquinaId?: number
+  item?: string
+  setorId?: number
+  descricao: string
+  impactos: MarcadorImpacto[]
   urgencia: IdUrgencia
   tecnicoId: number
 }

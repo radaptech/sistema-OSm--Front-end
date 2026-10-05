@@ -60,6 +60,22 @@ export function gestorTemAcesso(
   )
 }
 
+// Espelha o EXISTS de escopo do servidor (ListarMaquinas/ListarPreventivas): admin vê o
+// tenant, gestor pelos escopos, técnico pelas lojas (todos os setores) e solicitante só o
+// próprio setor. Sem isso o modo mock mostraria máquinas que a API real esconde.
+export function usuarioAlcanca(usuario: UsuarioInterno, lojaId: number, setorId: number): boolean {
+  switch (usuario.perfil) {
+    case 'administrador':
+      return true
+    case 'gestor':
+      return gestorTemAcesso(construirEscoposGestor(usuario), lojaId, setorId)
+    case 'tecnico':
+      return usuario.lojasIds.includes(lojaId)
+    default:
+      return usuario.lojasIds.includes(lojaId) && usuario.setoresIds.includes(setorId)
+  }
+}
+
 export function construirSessao(usuario: UsuarioInterno): SessaoUsuario {
   const ehSolicitante = usuario.perfil === 'solicitante'
   const setorPrincipal = ehSolicitante
