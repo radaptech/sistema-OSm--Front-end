@@ -1,5 +1,19 @@
-import type { AtualizarMaquinaPayload, Maquina, NovaMaquinaPayload } from '../../tipos/maquina'
-import { lojas, maquinas, obterUsuarioSessao, preventivas, setores, type PreventivaInterna } from '../bancoMock'
+import type {
+  AtualizarMaquinaPayload,
+  HistoricoMaquina,
+  Maquina,
+  NovaMaquinaPayload,
+} from '../../tipos/maquina'
+import {
+  lojas,
+  maquinas,
+  obterUsuarioSessao,
+  ordensServico,
+  preventivas,
+  setores,
+  solicitacoes,
+  type PreventivaInterna,
+} from '../bancoMock'
 import { usuarioAlcanca } from '../regrasMock'
 import {
   atraso,
@@ -43,7 +57,12 @@ export const rotasMaquinas: Rota[] = [
       if (!usuario) {
         return responderErro('Não autenticado.', 401)
       }
-      let lista = maquinas.filter((maquina) => usuarioAlcanca(usuario, maquina.lojaId, maquina.setorId))
+      // ?ativa=false só vale para o administrador, como no servidor.
+      const inativas = query.get('ativa') === 'false' && usuario.perfil === 'administrador'
+      let lista = maquinas.filter(
+        (maquina) =>
+          (maquina.ativa !== false) !== inativas && usuarioAlcanca(usuario, maquina.lojaId, maquina.setorId),
+      )
 
       const setorId = query.get('setorId')
       if (setorId) {
@@ -152,26 +171,101 @@ export const rotasMaquinas: Rota[] = [
     },
   },
   {
+    // Soft delete, como no servidor: recusa com solicitação/OS em aberto.
     metodo: 'DELETE',
     padrao: /^\/maquinas\/(\d+)$/,
     async tratar({ params }) {
       await atraso()
-      const id = Number(params[0])
-      const indice = maquinas.findIndex((item) => item.id === id)
+      const maquina = maquinas.find((item) => item.id === Number(params[0]))
 
-      if (indice === -1) {
+      if (!maquina) {
         return responderErro('Máquina não encontrada.', 404)
       }
 
-      maquinas.splice(indice, 1)
-
-      for (let i = preventivas.length - 1; i >= 0; i -= 1) {
-        if (preventivas[i].maquinaId === id) {
-          preventivas.splice(i, 1)
-        }
+      if (historicoDaMaquina(maquina.id).emAberto > 0) {
+        return responderErro(
+          'a máquina tem solicitação ou OS em aberto; conclua ou rejeite antes de desativar',
+          409,
+        )
       }
+
+      maquina.ativa = false
+      return responderJson(null)
+    },
+  },
+  {
+    metodo: 'POST',
+    padrao: /^\/maquinas\/(\d+)\/reativar$/,
+    async tratar({ params }) {
+      await atraso()
+      const maquina = maquinas.find((item) => item.id === Number(params[0]))
+
+      if (!maquina) {
+        return responderErro('Máquina não encontrada.', 404)
+      }
+
+      maquina.ativa = true
+      return responderJson(null)
+    },
+  },
+  {
+    metodo: 'GET',
+    padrao: /^\/maquinas\/(\d+)\/historico$/,
+    async tratar({ params }) {
+      await atraso()
+      const id = Number(params[0])
+      return maquinas.some((item) => item.id === id)
+        ? responderJson(historicoDaMaquina(id))
+        : responderErro('Máquina não encontrada.', 404)
+    },
+  },
+  {
+    metodo: 'POST',
+    padrao: /^\/maquinas\/(\d+)\/excluir$/,
+    async tratar({ params, corpo }) {
+      await atraso()
+      const id = Number(params[0])
+      const { senha, confirmacao } = corpo as { senha: string; confirmacao: string }
+      const maquina = maquinas.find((item) => item.id === id)
+
+      if (obterUsuarioSessao()?.senha !== senha) {
+        return responderErro('senha incorreta', 403)
+      }
+      if (!maquina) {
+        return responderErro('Máquina não encontrada.', 404)
+      }
+      if (confirmacao.trim() !== maquina.numeroPatrimonio) {
+        return responderErro('dados inválidos: o patrimônio digitado não confere com o da máquina', 400)
+      }
+
+      remover(ordensServico, (os) => os.maquinaId === id)
+      remover(solicitacoes, (sol) => sol.maquinaId === id)
+      remover(preventivas, (prev) => prev.maquinaId === id)
+      remover(maquinas, (item) => item.id === id)
 
       return responderJson(null)
     },
   },
 ]
+
+function remover<T>(lista: T[], casa: (item: T) => boolean): void {
+  for (let i = lista.length - 1; i >= 0; i -= 1) {
+    if (casa(lista[i])) {
+      lista.splice(i, 1)
+    }
+  }
+}
+
+function historicoDaMaquina(id: number): HistoricoMaquina {
+  const doMaquina = ordensServico.filter((os) => os.maquinaId === id)
+  const sols = solicitacoes.filter((sol) => sol.maquinaId === id)
+  return {
+    solicitacoes: sols.length,
+    ordensServico: doMaquina.length,
+    notasFiscais: doMaquina.reduce((total, os) => total + (os.custo?.notasFiscais?.length ?? 0), 0),
+    preventivas: preventivas.filter((prev) => prev.maquinaId === id).length,
+    emAberto:
+      sols.filter((sol) => sol.status === 'Pendente').length +
+      doMaquina.filter((os) => os.statusExecucao !== 'Concluída').length,
+  }
+}

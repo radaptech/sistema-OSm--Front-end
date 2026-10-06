@@ -4,11 +4,12 @@ import { servicoMaquinas } from '../servicos/servicoMaquinas'
 interface ParametrosUseMaquinas {
   setorId?: number
   lojaId?: number
+  ativa?: false
 }
 
-export function useMaquinas({ setorId, lojaId }: ParametrosUseMaquinas = {}) {
+export function useMaquinas({ setorId, lojaId, ativa }: ParametrosUseMaquinas = {}) {
   return useQuery({
-    queryKey: ['maquinas', { setorId, lojaId }],
-    queryFn: () => servicoMaquinas.listar({ setorId, lojaId }),
+    queryKey: ['maquinas', { setorId, lojaId, ativa }],
+    queryFn: () => servicoMaquinas.listar({ setorId, lojaId, ativa }),
   })
 }
