@@ -14,51 +14,64 @@ export const LIMITES_DESCRICAO = {
 // resolvida no superRefine, a partir do tipo selecionado no momento do envio.
 // Setor, loja, solicitante e data/hora não são enviados: o servidor deriva da máquina
 // selecionada e da sessão autenticada.
+export const camposNovaSolicitacao = {
+  tipo: z.enum(tiposSolicitacao),
+  maquinaId: z.number().int().nonnegative().optional(),
+  item: z
+    .string()
+    .max(100, 'O item deve ter no máximo 100 caracteres.')
+    .optional(),
+  descricao: z.string(),
+  impactos: z.array(z.enum(marcadoresImpacto)),
+}
+
+type CamposPorTipo = Pick<
+  DadosNovaSolicitacao,
+  'tipo' | 'maquinaId' | 'item' | 'descricao'
+>
+
+// Exportada para a OS direta do Gestor (esquemaAbrirOSDireta) cobrar as mesmas regras.
+export function validarCamposPorTipo(
+  dados: CamposPorTipo,
+  contexto: z.RefinementCtx,
+) {
+  if (dados.tipo === 'reparo') {
+    if (!dados.item?.trim()) {
+      contexto.addIssue({
+        code: 'custom',
+        path: ['item'],
+        message: 'Informe o item que precisa de reparo.',
+      })
+    }
+  } else if (!dados.maquinaId) {
+    contexto.addIssue({
+      code: 'custom',
+      path: ['maquinaId'],
+      message: 'Selecione uma máquina.',
+    })
+  }
+
+  const { minimo, maximo } = LIMITES_DESCRICAO[dados.tipo]
+
+  if (dados.descricao.trim().length < minimo) {
+    contexto.addIssue({
+      code: 'custom',
+      path: ['descricao'],
+      message: `Descreva o problema com no mínimo ${minimo} caracteres.`,
+    })
+  }
+
+  if (dados.descricao.length > maximo) {
+    contexto.addIssue({
+      code: 'custom',
+      path: ['descricao'],
+      message: `A descrição deve ter no máximo ${maximo} caracteres.`,
+    })
+  }
+}
+
 export const esquemaNovaSolicitacao = z
-  .object({
-    tipo: z.enum(tiposSolicitacao),
-    maquinaId: z.number().int().nonnegative().optional(),
-    item: z
-      .string()
-      .max(100, 'O item deve ter no máximo 100 caracteres.')
-      .optional(),
-    descricao: z.string(),
-    impactos: z.array(z.enum(marcadoresImpacto)),
-  })
-  .superRefine((dados, contexto) => {
-    if (dados.tipo === 'reparo') {
-      if (!dados.item?.trim()) {
-        contexto.addIssue({
-          code: 'custom',
-          path: ['item'],
-          message: 'Informe o item que precisa de reparo.',
-        })
-      }
-    } else if (!dados.maquinaId) {
-      contexto.addIssue({
-        code: 'custom',
-        path: ['maquinaId'],
-        message: 'Selecione uma máquina.',
-      })
-    }
-
-    const { minimo, maximo } = LIMITES_DESCRICAO[dados.tipo]
-
-    if (dados.descricao.trim().length < minimo) {
-      contexto.addIssue({
-        code: 'custom',
-        path: ['descricao'],
-        message: `Descreva o problema com no mínimo ${minimo} caracteres.`,
-      })
-    }
-
-    if (dados.descricao.length > maximo) {
-      contexto.addIssue({
-        code: 'custom',
-        path: ['descricao'],
-        message: `A descrição deve ter no máximo ${maximo} caracteres.`,
-      })
-    }
-  })
+  .object(camposNovaSolicitacao)
+  .superRefine(validarCamposPorTipo)
 
 export type DadosNovaSolicitacao = z.infer<typeof esquemaNovaSolicitacao>

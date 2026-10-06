@@ -25,6 +25,11 @@ const HomeSolicitante = lazy(() =>
     default: m.HomeSolicitante,
   })),
 )
+const AbrirOSDireta = lazy(() =>
+  import('../paginas/AbrirOSDireta/AbrirOSDireta').then((m) => ({
+    default: m.AbrirOSDireta,
+  })),
+)
 const NovaSolicitacao = lazy(() =>
   import('../paginas/NovaSolicitacao/NovaSolicitacao').then((m) => ({
     default: m.NovaSolicitacao,
@@ -77,6 +82,11 @@ const AdministradorMaquinas = lazy(() =>
     (m) => ({
       default: m.AdministradorMaquinas,
     }),
+  ),
+)
+const AdministradorStatusMaquinas = lazy(() =>
+  import('../paginas/AdministradorStatusMaquinas/AdministradorStatusMaquinas').then(
+    (m) => ({ default: m.AdministradorStatusMaquinas }),
   ),
 )
 const AdministradorCustosPendentes = lazy(() =>
@@ -168,6 +178,10 @@ export function RotasPrincipais() {
           <Route path="/dashboard-gestor" element={<DashboardGestor />} />
         </Route>
 
+        <Route element={<RotaProtegida perfis={['gestor', 'administrador']} />}>
+          <Route path="/abrir-os-direta" element={<AbrirOSDireta />} />
+        </Route>
+
         <Route element={<RotaProtegida perfis={['administrador']} />}>
           <Route
             path="/painel-administrador"
@@ -195,6 +209,10 @@ export function RotasPrincipais() {
           <Route
             path="/administrador/maquinas"
             element={<AdministradorMaquinas />}
+          />
+          <Route
+            path="/administrador/maquinas/status"
+            element={<AdministradorStatusMaquinas />}
           />
           <Route path="/cadastrar-maquina" element={<CadastrarMaquina />} />
           <Route path="/cadastrar-maquina/:id" element={<CadastrarMaquina />} />

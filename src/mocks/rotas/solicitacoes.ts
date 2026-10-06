@@ -2,6 +2,7 @@ import { agoraParaBackend, converterDataBackend } from '../../utilitarios/dataBa
 import type {
   AnexoSolicitacao,
   IdUrgencia,
+  NovaSolicitacaoDiretaPayload,
   NovaSolicitacaoOSPayload,
   OrdemServico,
   ResumoSolicitacoes,
@@ -92,6 +93,93 @@ export const rotasSolicitacoes: Rota[] = [
 
       solicitacoes.push(nova)
       return responderJson(nova, 201)
+    },
+  },
+  {
+    // OS direta do Gestor/Administrador: solicitação 'direta' já Convertida + OS, sem
+    // foto e sem fila. Mesmas recusas do servidor: setor fora do escopo e técnico que
+    // não atende a loja.
+    metodo: 'POST',
+    padrao: /^\/solicitacoes\/direta$/,
+    async tratar({ corpo }) {
+      await atraso()
+      const usuario = obterUsuarioSessao()
+      if (!usuario) {
+        return responderErro('Não autenticado.', 401)
+      }
+      if (usuario.perfil !== 'gestor' && usuario.perfil !== 'administrador') {
+        return responderErro('Acesso negado.', 403)
+      }
+
+      const payload = corpo as NovaSolicitacaoDiretaPayload
+      const maquina =
+        payload.tipo === 'maquinario' ? maquinas.find((item) => item.id === payload.maquinaId) : undefined
+      const setor = setores.find((item) => item.id === (maquina ? maquina.setorId : payload.setorId))
+      if (!setor || (payload.tipo === 'maquinario' && !maquina)) {
+        return responderErro('dados inválidos: máquina ou setor não encontrado', 400)
+      }
+      if (usuario.perfil === 'gestor' && !gestorTemAcesso(construirEscoposGestor(usuario), setor.lojaId, setor.id)) {
+        return responderErro('dados inválidos: setor fora do seu escopo', 400)
+      }
+
+      const tecnico = usuarios.find((item) => item.id === payload.tecnicoId && item.perfil === 'tecnico')
+      if (!tecnico || !tecnico.lojasIds.includes(setor.lojaId)) {
+        return responderErro('dados inválidos: técnico não atende esta loja', 400)
+      }
+
+      const loja = lojas.find((item) => item.id === setor.lojaId)
+      const agora = agoraParaBackend()
+      const nova: SolicitacaoOS = {
+        id: gerarId(solicitacoes),
+        tipo: payload.tipo,
+        maquinaId: maquina?.id ?? null,
+        maquinaNome: maquina?.nome ?? null,
+        maquinaCodigo: maquina?.numeroPatrimonio ?? null,
+        maquinaFotoUrl: maquina?.fotoUrl,
+        itemDescricao: maquina ? null : (payload.item ?? null),
+        status: 'Convertida',
+        descricao: payload.descricao,
+        solicitanteId: usuario.id,
+        solicitanteNome: usuario.nome,
+        criadoEm: agora,
+        setorId: setor.id,
+        setorNome: setor.nome,
+        lojaId: setor.lojaId,
+        lojaNome: loja?.nome ?? '',
+        impactos: maquina ? payload.impactos : [],
+        origem: 'direta',
+        anexos: [],
+      }
+
+      const novaOrdem: OrdemServico = {
+        id: gerarId(ordensServico),
+        solicitacaoId: nova.id,
+        tipo: nova.tipo,
+        maquinaId: nova.maquinaId,
+        maquinaNome: nova.maquinaNome,
+        maquinaCodigo: nova.maquinaCodigo,
+        itemDescricao: nova.itemDescricao,
+        descricao: nova.descricao,
+        setorId: nova.setorId,
+        setorNome: nova.setorNome,
+        lojaId: nova.lojaId,
+        lojaNome: nova.lojaNome,
+        solicitanteNome: nova.solicitanteNome,
+        urgencia: payload.urgencia,
+        tecnicoId: tecnico.id,
+        tecnicoNome: tecnico.nome,
+        tecnicoArea: tecnico.area,
+        statusExecucao: 'Aberta',
+        finalizada: false,
+        afetaProducao: nova.impactos.includes('Afeta Produção'),
+        dataSolicitacao: agora,
+        dataAbertura: agora,
+        pausas: [],
+      }
+
+      solicitacoes.push(nova)
+      ordensServico.push(novaOrdem)
+      return responderJson(novaOrdem, 201)
     },
   },
   {
@@ -279,6 +367,11 @@ export const rotasSolicitacoes: Rota[] = [
 
       if (!tecnico) {
         return responderErro('Técnico não encontrado.', 404)
+      }
+
+      // Mesma regra do servidor (criarOrdemServico): o técnico tem que atender a loja.
+      if (!tecnico.lojasIds.includes(solicitacao.lojaId)) {
+        return responderErro('dados inválidos: técnico não atende esta loja', 400)
       }
 
       const novaOrdem: OrdemServico = {

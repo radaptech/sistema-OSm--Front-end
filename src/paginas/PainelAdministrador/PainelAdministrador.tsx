@@ -2,6 +2,8 @@ import {
   Building2,
   CircleDollarSign,
   ClipboardCheck,
+  ClipboardPlus,
+  Power,
   Store,
   Tag,
   UserCog,
@@ -28,8 +30,8 @@ export function PainelAdministrador() {
             </h1>
           </div>
           <p className="text-sm text-slate-500">
-            Acesso total ao tenant — gerencie usuários, lojas, setores e máquinas do
-            sistema.
+            Acesso total ao tenant — gerencie usuários, lojas, setores e
+            máquinas do sistema.
           </p>
         </div>
 
@@ -60,10 +62,22 @@ export function PainelAdministrador() {
             aoClicar={() => navegar('/administrador/maquinas')}
           />
           <CardAcao
+            titulo="Ativar / Desativar Máquinas"
+            descricao="Reativar, desativar ou excluir de vez"
+            Icone={Power}
+            aoClicar={() => navegar('/administrador/maquinas/status')}
+          />
+          <CardAcao
             titulo="Empresas Terceirizadas"
             descricao="Empresas parceiras para reparo de máquinas"
             Icone={Building2}
             aoClicar={() => navegar('/administrador/empresas-terceirizadas')}
+          />
+          <CardAcao
+            titulo="Abrir OS"
+            descricao="Abre uma OS direto, sem passar pela fila"
+            Icone={ClipboardPlus}
+            aoClicar={() => navegar('/abrir-os-direta')}
           />
           <CardAcao
             titulo="Custos Pendentes"
