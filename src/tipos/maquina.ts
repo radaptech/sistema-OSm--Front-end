@@ -18,6 +18,17 @@ export interface Maquina {
   lojaId: number
   lojaNome?: string
   fotoUrl?: string
+  ativa?: boolean
+}
+
+// GET /maquinas/:id/historico — o que a exclusão definitiva leva junto. emAberto é
+// solicitação pendente ou OS não concluída: é o que impede a desativação.
+export interface HistoricoMaquina {
+  solicitacoes: number
+  ordensServico: number
+  notasFiscais: number
+  preventivas: number
+  emAberto: number
 }
 
 export interface PreventivaManutencao {

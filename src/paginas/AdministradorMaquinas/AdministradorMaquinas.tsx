@@ -81,7 +81,7 @@ export function AdministradorMaquinas() {
     }
 
     await excluir(maquinaParaExcluir.id)
-    toast.success('Máquina excluída com sucesso.')
+    toast.success('Máquina desativada.')
     setMaquinaParaExcluir(null)
   }
 
@@ -194,7 +194,7 @@ export function AdministradorMaquinas() {
                 <button
                   type="button"
                   onClick={() => setMaquinaParaExcluir(maquina)}
-                  aria-label="Excluir máquina"
+                  aria-label="Desativar máquina"
                   className="flex items-center justify-center rounded-xl bg-red-50 px-3.5 py-2.5 text-red-500 shadow-sm transition hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-400"
                 >
                   <Trash2 size={16} />
@@ -211,8 +211,8 @@ export function AdministradorMaquinas() {
 
       {maquinaParaExcluir && (
         <ModalConfirmarExclusao
-          titulo="Excluir Máquina"
-          mensagem={`Tem certeza que deseja excluir "${maquinaParaExcluir.nome}"? Essa ação não pode ser desfeita.`}
+          titulo="Desativar Máquina"
+          mensagem={`"${maquinaParaExcluir.nome}" sairá das listagens e deixará de gerar preventivas. Dá para reativá-la em Ativar / Desativar Máquinas.`}
           confirmando={excluindo}
           aoConfirmar={aoConfirmarExclusao}
           aoFechar={() => setMaquinaParaExcluir(null)}

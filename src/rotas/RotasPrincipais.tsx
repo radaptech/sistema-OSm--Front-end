@@ -84,6 +84,11 @@ const AdministradorMaquinas = lazy(() =>
     }),
   ),
 )
+const AdministradorStatusMaquinas = lazy(() =>
+  import('../paginas/AdministradorStatusMaquinas/AdministradorStatusMaquinas').then(
+    (m) => ({ default: m.AdministradorStatusMaquinas }),
+  ),
+)
 const AdministradorCustosPendentes = lazy(() =>
   import('../paginas/AdministradorCustosPendentes/AdministradorCustosPendentes').then(
     (m) => ({ default: m.AdministradorCustosPendentes }),
@@ -204,6 +209,10 @@ export function RotasPrincipais() {
           <Route
             path="/administrador/maquinas"
             element={<AdministradorMaquinas />}
+          />
+          <Route
+            path="/administrador/maquinas/status"
+            element={<AdministradorStatusMaquinas />}
           />
           <Route path="/cadastrar-maquina" element={<CadastrarMaquina />} />
           <Route path="/cadastrar-maquina/:id" element={<CadastrarMaquina />} />

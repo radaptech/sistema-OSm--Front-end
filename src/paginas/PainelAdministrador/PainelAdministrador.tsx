@@ -3,6 +3,7 @@ import {
   CircleDollarSign,
   ClipboardCheck,
   ClipboardPlus,
+  Power,
   Store,
   Tag,
   UserCog,
@@ -59,6 +60,12 @@ export function PainelAdministrador() {
             descricao="Cadastro de máquinas e preventivas"
             Icone={Wrench}
             aoClicar={() => navegar('/administrador/maquinas')}
+          />
+          <CardAcao
+            titulo="Ativar / Desativar Máquinas"
+            descricao="Reativar, desativar ou excluir de vez"
+            Icone={Power}
+            aoClicar={() => navegar('/administrador/maquinas/status')}
           />
           <CardAcao
             titulo="Empresas Terceirizadas"
