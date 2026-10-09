@@ -2,6 +2,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { useEstadoAutenticacao } from '../estado/estadoAutenticacao'
 import { servicoAutenticacao } from '../servicos/servicoAutenticacao'
+import { avisarOutrasAbasSessaoMudou } from '../utilitarios/canalSessao'
 
 // Sair de verdade são três coisas, e faltar qualquer uma quebra o login seguinte:
 //
@@ -24,6 +25,8 @@ export function useSair() {
 
   return async function aoSair() {
     await servicoAutenticacao.sair().catch(() => {})
+    // O cookie é do navegador, não da aba: as outras abas também acabaram de sair.
+    avisarOutrasAbasSessaoMudou()
     clienteQuery.clear()
     sair()
     navegar('/login', { replace: true })
