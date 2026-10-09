@@ -1,4 +1,5 @@
 interface BarraMensal {
+  chave: string
   rotulo: string
   valor: number
   valorFormatado: string
@@ -7,36 +8,58 @@ interface BarraMensal {
 interface GraficoBarrasProps {
   titulo: string
   dados: BarraMensal[]
+  selecionada: string | null
+  aoSelecionar: (chave: string) => void
 }
 
 const COR_BARRA = '#2a78d6'
 
-export function GraficoBarras({ titulo, dados }: GraficoBarrasProps) {
+export function GraficoBarras({
+  titulo,
+  dados,
+  selecionada,
+  aoSelecionar,
+}: GraficoBarrasProps) {
   const valorMaximo = Math.max(...dados.map((item) => item.valor), 1)
 
   return (
-    <div className="rounded-2xl bg-white p-4 shadow-card">
-      <h3 className="font-display text-sm font-semibold text-slate-700">{titulo}</h3>
+    <div className="shadow-card rounded-2xl bg-white p-4">
+      <h3 className="font-display text-sm font-semibold text-slate-700">
+        {titulo}
+      </h3>
 
-      <div className="mt-4 flex h-36 items-end gap-2">
-        {dados.map((item) => {
-          const alturaPercentual = Math.max((item.valor / valorMaximo) * 100, 3)
+      <div className="mt-4 flex h-36 items-end gap-1 sm:gap-2">
+        {dados.map((item, indice) => {
+          // Mês sem custo fica sem barra; o mínimo de 3% só mantém visível um valor baixo.
+          const alturaPercentual =
+            item.valor > 0 ? Math.max((item.valor / valorMaximo) * 100, 3) : 0
+
+          const ativa = item.chave === selecionada
+          // Com um mês escolhido, os outros recuam: fica claro de qual mês são os
+          // números dos cards e da rosca.
+          const esmaecida = selecionada !== null && !ativa
 
           return (
-            <div
-              key={item.rotulo}
-              className="group relative flex flex-1 flex-col items-center"
+            // A coluna inteira é o botão, para dar para clicar num mês sem custo
+            // (barra de altura zero) e ver que ele não teve nada.
+            <button
+              type="button"
+              key={item.chave}
+              onClick={() => aoSelecionar(item.chave)}
+              aria-pressed={ativa}
+              aria-label={`${item.chave}: ${item.valorFormatado}`}
+              className="group relative flex h-full min-w-0 flex-1 cursor-pointer flex-col items-center rounded-md"
             >
               <div
-                className="pointer-events-none absolute -top-7 left-1/2 -translate-x-1/2 rounded-md bg-slate-800 px-2 py-1 font-mono text-[10px] font-semibold whitespace-nowrap text-white opacity-0 transition group-hover:opacity-100"
+                className="pointer-events-none absolute -top-7 left-1/2 -translate-x-1/2 rounded-md bg-slate-800 px-2 py-1 font-mono text-[10px] font-semibold whitespace-nowrap text-slate-50 opacity-0 transition group-hover:opacity-100"
                 role="tooltip"
               >
                 {item.valorFormatado}
               </div>
 
-              <div className="flex h-full w-full items-end">
+              <div className="flex min-h-0 w-full flex-1 items-end">
                 <div
-                  className="w-full rounded-t-[4px] transition group-hover:bg-marca-800"
+                  className={`w-full rounded-t-[4px] transition-opacity ${esmaecida ? 'opacity-35 group-hover:opacity-60' : 'group-hover:opacity-80'}`}
                   style={{
                     height: `${alturaPercentual}%`,
                     backgroundColor: COR_BARRA,
@@ -44,10 +67,14 @@ export function GraficoBarras({ titulo, dados }: GraficoBarrasProps) {
                 />
               </div>
 
-              <span className="mt-1.5 font-mono text-[10px] text-slate-400">
+              {/* No celular 12 rótulos "MM/AA" encostam uns nos outros: mostra um sim, um não
+                  (o valor de cada barra continua no tooltip). */}
+              <span
+                className={`mt-1.5 font-mono text-[10px] whitespace-nowrap ${ativa ? 'text-marca-600 font-bold' : `text-slate-400 ${indice % 2 ? 'max-sm:invisible' : ''}`}`}
+              >
                 {item.rotulo}
               </span>
-            </div>
+            </button>
           )
         })}
       </div>

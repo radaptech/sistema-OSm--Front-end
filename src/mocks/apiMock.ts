@@ -9,6 +9,7 @@ import { rotasPreventivas } from './rotas/preventivas'
 import { rotasSetores } from './rotas/setores'
 import { rotasSolicitacoes } from './rotas/solicitacoes'
 import { rotasTecnicos, rotasUsuarios } from './rotas/usuarios'
+import './historicoMock'
 import { responderErro, type MetodoHttp, type Rota } from './utilidadesMock'
 
 const rotas: Rota[] = [
