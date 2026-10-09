@@ -13,7 +13,7 @@ import type {
   TipoDefeito,
 } from '../tipos/ordemServico'
 import type { EscopoAcessoGestor, SessaoUsuario } from '../tipos/autenticacao'
-import type { IndicadoresMaquina } from '../tipos/indicadorMaquina'
+import type { IndicadoresMaquina, ResumoIndicadores } from '../tipos/indicadorMaquina'
 import {
   maquinas,
   ordensServico,
@@ -275,11 +275,9 @@ function ordenarChaveMes(mes: string): number {
   return Number(aaaa) * 100 + Number(mm)
 }
 
-export function computarIndicadores(maquinaId: number): IndicadoresMaquina {
-  const historico = ordensServico.filter(
-    (ordem) => ordem.maquinaId === maquinaId && ordem.statusExecucao === 'Concluída',
-  )
-
+// Mesma divisão do back (model/indicadorMaquina.go): um resumo do histórico inteiro e
+// um por mês de encerramento, que o painel exibe ao clicar na barra do mês.
+function resumirIndicadores(historico: OrdemServico[]): ResumoIndicadores {
   const horasParadaTotal = arredondar(
     historico.reduce((soma, ordem) => soma + (ordem.horasParada ?? 0), 0),
   )
@@ -327,7 +325,15 @@ export function computarIndicadores(maquinaId: number): IndicadoresMaquina {
     horasParada: arredondar(horasPorTipo.get(tipo) ?? 0),
   }))
 
-  const custoPorMes = new Map<string, number>()
+  return { horasParadaTotal, mttrHoras, mtbfHoras, custoTotal, porTipoDefeito }
+}
+
+export function computarIndicadores(maquinaId: number): IndicadoresMaquina {
+  const historico = ordensServico.filter(
+    (ordem) => ordem.maquinaId === maquinaId && ordem.statusExecucao === 'Concluída',
+  )
+
+  const ordensPorMes = new Map<string, OrdemServico[]>()
 
   for (const ordem of historico) {
     if (!ordem.dataFim) {
@@ -336,21 +342,13 @@ export function computarIndicadores(maquinaId: number): IndicadoresMaquina {
 
     const data = converterDataBackend(ordem.dataFim)
     const chave = `${String(data.getMonth() + 1).padStart(2, '0')}/${data.getFullYear()}`
-    custoPorMes.set(chave, (custoPorMes.get(chave) ?? 0) + (ordem.custo?.custoTotal ?? 0))
+    ordensPorMes.set(chave, [...(ordensPorMes.get(chave) ?? []), ordem])
   }
 
-  const porMes = Array.from(custoPorMes.entries())
-    .map(([mes, custoTotalMes]) => ({ mes, custoTotal: arredondar(custoTotalMes) }))
+  const porMes = Array.from(ordensPorMes.entries())
+    .map(([mes, ordensDoMes]) => ({ mes, ...resumirIndicadores(ordensDoMes) }))
     .sort((a, b) => ordenarChaveMes(a.mes) - ordenarChaveMes(b.mes))
-    .slice(-6)
+    .slice(-12)
 
-  return {
-    maquinaId,
-    horasParadaTotal,
-    mttrHoras,
-    mtbfHoras,
-    custoTotal,
-    porTipoDefeito,
-    porMes,
-  }
+  return { maquinaId, ...resumirIndicadores(historico), porMes }
 }

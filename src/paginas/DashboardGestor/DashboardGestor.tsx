@@ -19,6 +19,8 @@ import { agruparPorEscopoGestor } from '../../utilitarios/acessoGestor'
 import { formatarHoras } from '../../utilitarios/formatarHoras'
 import { formatarMoeda } from '../../utilitarios/formatarMoeda'
 import type { Maquina } from '../../tipos/maquina'
+import type { ResumoIndicadores } from '../../tipos/indicadorMaquina'
+import { tiposDefeito } from '../../tipos/ordemServico'
 import { CORES_TIPO_DEFEITO } from './coresTipoDefeito'
 import { CardIndicador } from './componentes/CardIndicador'
 import { GraficoBarras } from './componentes/GraficoBarras'
@@ -30,7 +32,11 @@ export function DashboardGestor() {
     useEstadoAutenticacao((estado) => estado.escoposGestor) ?? []
   const { data: lojas = [] } = useLojas()
   const { data: setores = [] } = useSetores()
-  const [maquinaSelecionadaId, setMaquinaSelecionadaId] = useState<number | null>(null)
+  const [maquinaSelecionadaId, setMaquinaSelecionadaId] = useState<
+    number | null
+  >(null)
+  // "MM/YYYY" do mês clicado no gráfico; null mostra o histórico inteiro.
+  const [mesSelecionado, setMesSelecionado] = useState<string | null>(null)
 
   const { data: maquinas = [], isLoading: carregandoMaquinas } = useMaquinas()
   const grupos = agruparPorEscopoGestor(maquinas, escoposGestor, lojas, setores)
@@ -49,20 +55,55 @@ export function DashboardGestor() {
   const { data: indicadores, isLoading: carregandoIndicadores } =
     useIndicadoresMaquina(maquinaSelecionada?.id ?? null)
 
+  // Mês sem OS encerrada não vem do servidor: o resumo dele é zero em tudo.
+  const resumo: ResumoIndicadores | undefined =
+    indicadores && mesSelecionado
+      ? (indicadores.porMes.find((item) => item.mes === mesSelecionado) ?? {
+          horasParadaTotal: 0,
+          mttrHoras: 0,
+          mtbfHoras: 0,
+          custoTotal: 0,
+          porTipoDefeito: tiposDefeito.map((tipoDefeito) => ({
+            tipoDefeito,
+            horasParada: 0,
+          })),
+        })
+      : indicadores
+
   const segmentosRosca =
-    indicadores?.porTipoDefeito.map((item) => ({
+    resumo?.porTipoDefeito.map((item) => ({
       rotulo: item.tipoDefeito,
       valor: item.horasParada,
       valorFormatado: formatarHoras(item.horasParada),
       cor: CORES_TIPO_DEFEITO[item.tipoDefeito],
     })) ?? []
 
-  const barrasMensais =
-    indicadores?.porMes.map((item) => ({
-      rotulo: item.mes,
-      valor: item.custoTotal,
-      valorFormatado: formatarMoeda(item.custoTotal),
-    })) ?? []
+  // O servidor só devolve os meses que tiveram custo; o eixo mostra sempre os 12
+  // meses do calendário até o atual, com zero nos vazios.
+  const custoPorMes = new Map(
+    indicadores?.porMes.map((item) => [item.mes, item.custoTotal]),
+  )
+  const hoje = new Date()
+  const barrasMensais = indicadores
+    ? Array.from({ length: 12 }, (_, indice) => {
+        const data = new Date(
+          hoje.getFullYear(),
+          hoje.getMonth() - 11 + indice,
+          1,
+        )
+        const mes = String(data.getMonth() + 1).padStart(2, '0')
+        const chave = `${mes}/${data.getFullYear()}`
+        const custo = custoPorMes.get(chave) ?? 0
+
+        return {
+          chave,
+          // "05/26": 12 colunas não comportam o ano inteiro no celular.
+          rotulo: `${mes}/${String(data.getFullYear()).slice(2)}`,
+          valor: custo,
+          valorFormatado: formatarMoeda(custo),
+        }
+      })
+    : []
 
   return (
     <div className="flex min-h-svh flex-col bg-slate-50">
@@ -102,7 +143,9 @@ export function DashboardGestor() {
         {!carregandoMaquinas && grupos.length === 0 && (
           <div className="flex flex-col items-center gap-2 rounded-2xl border-2 border-dashed border-slate-200/60 bg-white py-12 text-slate-400">
             <PackageSearch size={28} className="text-slate-400" />
-            <p className="text-sm">Nenhuma máquina disponível nos seus setores/lojas.</p>
+            <p className="text-sm">
+              Nenhuma máquina disponível nos seus setores/lojas.
+            </p>
           </div>
         )}
 
@@ -110,7 +153,11 @@ export function DashboardGestor() {
           <SeletorMaquinaDashboard
             grupos={grupos}
             maquinaSelecionadaId={maquinaSelecionada?.id ?? null}
-            aoSelecionar={(maquina) => setMaquinaSelecionadaId(maquina.id)}
+            aoSelecionar={(maquina) => {
+              setMaquinaSelecionadaId(maquina.id)
+              // O mês da máquina anterior não diz nada sobre esta.
+              setMesSelecionado(null)
+            }}
           />
         )}
 
@@ -118,7 +165,7 @@ export function DashboardGestor() {
           <div className="flex flex-col gap-4">
             <div className="flex flex-wrap items-center gap-x-2 gap-y-1 border-b border-slate-200/60 pb-2">
               <Wrench size={16} className="shrink-0 text-emerald-300" />
-              <h2 className="min-w-0 font-display text-sm font-bold break-words text-slate-800">
+              <h2 className="font-display min-w-0 text-sm font-bold break-words text-slate-800">
                 {maquinaSelecionada.nome}
               </h2>
               <span className="shrink-0 font-mono text-xs text-slate-400">
@@ -129,10 +176,17 @@ export function DashboardGestor() {
             {/* Esqueleto no formato exato do painel (4 indicadores + rosca + barras):
                 quando os números chegam nada muda de lugar. */}
             {carregandoIndicadores && (
-              <div role="status" aria-busy="true" aria-label="Carregando indicadores">
+              <div
+                role="status"
+                aria-busy="true"
+                aria-label="Carregando indicadores"
+              >
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                   {Array.from({ length: 4 }, (_, indice) => (
-                    <div key={indice} className="shadow-card rounded-2xl bg-white p-4">
+                    <div
+                      key={indice}
+                      className="shadow-card rounded-2xl bg-white p-4"
+                    >
                       <Esqueleto className="h-4 w-4 rounded" />
                       <Esqueleto className="mt-3 h-3 w-20" />
                       <Esqueleto className="mt-2 h-5 w-16" />
@@ -150,41 +204,69 @@ export function DashboardGestor() {
               </div>
             )}
 
-            {indicadores && (
+            {indicadores && resumo && (
               <>
+                <div className="-mb-1 flex flex-wrap items-center justify-between gap-2">
+                  <p className="font-mono text-[10px] font-bold tracking-widest text-slate-500 uppercase">
+                    {mesSelecionado
+                      ? `Exibindo ${mesSelecionado}`
+                      : 'Exibindo histórico completo'}
+                  </p>
+                  {mesSelecionado ? (
+                    <button
+                      type="button"
+                      onClick={() => setMesSelecionado(null)}
+                      className="text-marca-600 text-xs font-semibold hover:underline"
+                    >
+                      Ver histórico completo
+                    </button>
+                  ) : (
+                    <p className="text-xs text-slate-400">
+                      Clique num mês do gráfico para filtrar
+                    </p>
+                  )}
+                </div>
+
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                   <CardIndicador
                     Icone={Clock}
                     rotulo="Horas Parada"
-                    valor={formatarHoras(indicadores.horasParadaTotal)}
+                    valor={formatarHoras(resumo.horasParadaTotal)}
                   />
                   <CardIndicador
                     Icone={Timer}
                     rotulo="MTTR"
-                    valor={formatarHoras(indicadores.mttrHoras)}
+                    valor={formatarHoras(resumo.mttrHoras)}
                   />
                   <CardIndicador
                     Icone={Activity}
                     rotulo="MTBF"
-                    valor={formatarHoras(indicadores.mtbfHoras)}
+                    valor={formatarHoras(resumo.mtbfHoras)}
                   />
                   <CardIndicador
                     Icone={CircleDollarSign}
                     rotulo="Custo Total"
-                    valor={formatarMoeda(indicadores.custoTotal)}
+                    valor={formatarMoeda(resumo.custoTotal)}
                   />
                 </div>
 
                 <GraficoRosca
                   titulo="Paradas por Tipo de OS"
+                  subtitulo="Horas de máquina parada, por tipo de serviço"
                   dados={segmentosRosca}
-                  rotuloCentral="Total"
-                  valorCentral={formatarHoras(indicadores.horasParadaTotal)}
+                  rotuloCentral="Parada total"
+                  valorCentral={formatarHoras(resumo.horasParadaTotal)}
                 />
 
                 <GraficoBarras
-                  titulo="Custo Mensal (últimos 6 meses)"
+                  titulo="Custo Mensal (últimos 12 meses)"
                   dados={barrasMensais}
+                  selecionada={mesSelecionado}
+                  aoSelecionar={(chave) =>
+                    setMesSelecionado((atual) =>
+                      atual === chave ? null : chave,
+                    )
+                  }
                 />
               </>
             )}
