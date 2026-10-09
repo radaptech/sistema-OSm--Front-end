@@ -1,5 +1,6 @@
 import { useEffect, type ReactNode } from 'react'
 import { useSessao } from '../hooks/useSessao'
+import { useSincronizarSessaoEntreAbas } from '../hooks/useSincronizarSessaoEntreAbas'
 import { useEstadoAutenticacao } from '../estado/estadoAutenticacao'
 import { CarregandoSessao } from './CarregandoSessao'
 
@@ -14,6 +15,7 @@ export function PortaoSessao({ children }: PortaoSessaoProps) {
   const { data: sessao, isPending } = useSessao()
   const entrar = useEstadoAutenticacao((estado) => estado.entrar)
   const autenticado = useEstadoAutenticacao((estado) => estado.autenticado)
+  useSincronizarSessaoEntreAbas()
 
   useEffect(() => {
     if (sessao) {

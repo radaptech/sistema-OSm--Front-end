@@ -10,6 +10,7 @@ import { CartaoAutenticacao } from '../../componentes/CartaoAutenticacao'
 import { useEstadoAutenticacao } from '../../estado/estadoAutenticacao'
 import { servicoAutenticacao } from '../../servicos/servicoAutenticacao'
 import { ROTA_POR_PERFIL } from '../../rotas/rotaPorPerfil'
+import { avisarOutrasAbasSessaoMudou } from '../../utilitarios/canalSessao'
 import { esquemaLogin, type DadosLogin } from './esquemaLogin'
 
 export function TelaLogin() {
@@ -33,6 +34,7 @@ export function TelaLogin() {
     const sessao = await servicoAutenticacao.entrar(dados)
 
     entrar(sessao)
+    avisarOutrasAbasSessaoMudou()
     toast.success('Login realizado com sucesso.')
     navegar(ROTA_POR_PERFIL[sessao.perfil])
   }
