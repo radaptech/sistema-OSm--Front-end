@@ -4,6 +4,7 @@ import { toast } from 'react-toastify'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { CabecalhoTopo } from '../../componentes/CabecalhoTopo'
 import { FiltroTipoOS } from '../../componentes/FiltroTipoOS'
+import { Paginacao } from '../../componentes/Paginacao'
 import { EsqueletoLista, EsqueletoCardOS } from '../../componentes/Esqueleto'
 import { useEstadoAutenticacao } from '../../estado/estadoAutenticacao'
 import { useTodasSolicitacoes } from '../../hooks/useTodasSolicitacoes'
@@ -46,6 +47,8 @@ import {
   type FiltrosAvancadosOS,
 } from './filtrosOS'
 
+const TAMANHO_PAGINA_FINALIZADAS = 12
+
 interface SelecaoOS {
   ordem: OrdemServico
   imprimir: boolean
@@ -66,6 +69,7 @@ export function PainelGestor() {
     FILTROS_AVANCADOS_OS_VAZIOS,
   )
   const [modalFiltrosAberto, setModalFiltrosAberto] = useState(false)
+  const [paginaFinalizadas, setPaginaFinalizadas] = useState(1)
   const [solicitacaoParaAbrirOS, setSolicitacaoParaAbrirOS] =
     useState<SolicitacaoOS | null>(null)
   const [solicitacaoParaRejeitar, setSolicitacaoParaRejeitar] =
@@ -240,12 +244,45 @@ export function PainelGestor() {
     lojas,
     setores,
   )
+  // Paginação client-side das finalizadas: a lista cresce sem parar (é histórico), e as
+  // demais abas não precisam porque esvaziam conforme o fluxo anda. Volta para a página 1
+  // quando os filtros mudam -- ajuste durante a renderização, mesmo padrão das listagens
+  // do Administrador.
+  const chaveFiltrosFinalizadas = `${filtroTipo}|${JSON.stringify(filtrosAvancados)}`
+  const [chaveFiltrosFinalizadasAnterior, setChaveFiltrosFinalizadasAnterior] =
+    useState(chaveFiltrosFinalizadas)
+  if (chaveFiltrosFinalizadas !== chaveFiltrosFinalizadasAnterior) {
+    setChaveFiltrosFinalizadasAnterior(chaveFiltrosFinalizadas)
+    setPaginaFinalizadas(1)
+  }
+  const totalPaginasFinalizadas = Math.max(
+    1,
+    Math.ceil(ordensFinalizadas.length / TAMANHO_PAGINA_FINALIZADAS),
+  )
+  const paginaAtualFinalizadas = Math.min(
+    paginaFinalizadas,
+    totalPaginasFinalizadas,
+  )
+  const ordensFinalizadasDaPagina = ordensFinalizadas.slice(
+    (paginaAtualFinalizadas - 1) * TAMANHO_PAGINA_FINALIZADAS,
+    paginaAtualFinalizadas * TAMANHO_PAGINA_FINALIZADAS,
+  )
+  // Agrupa só a página atual. Com alguma OS no total, esconde loja/setor sem item NESTA
+  // página: senão a página 2 diria "Nenhuma OS finalizada" para uma loja que tem OS na 1.
   const gruposOSFinalizadas = agruparPorEscopoGestor(
-    ordensFinalizadas,
+    ordensFinalizadasDaPagina,
     escoposGestor,
     lojas,
     setores,
-  )
+  ).flatMap((grupo) => {
+    if (ordensFinalizadas.length === 0) {
+      return [grupo]
+    }
+    const subgrupos = grupo.subgrupos.filter(
+      (subgrupo) => subgrupo.itens.length > 0,
+    )
+    return subgrupos.length > 0 ? [{ ...grupo, subgrupos }] : []
+  })
   const gruposPreventivas = agruparPorEscopoGestor(
     preventivas,
     escoposGestor,
@@ -393,6 +430,14 @@ export function PainelGestor() {
                   )}
                 />
               ))}
+
+            {!carregandoOrdensServico && totalPaginasFinalizadas > 1 && (
+              <Paginacao
+                pagina={paginaAtualFinalizadas}
+                totalPaginas={totalPaginasFinalizadas}
+                aoMudarPagina={setPaginaFinalizadas}
+              />
+            )}
           </div>
         )}
 
