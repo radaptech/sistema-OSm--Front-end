@@ -23,6 +23,7 @@ export interface UsuarioInterno {
   setoresIds: number[]
   acessoTotalSetores: boolean
   area?: AreaTecnico
+  valorHora?: number
   ativo: boolean
   // Só para o seed do Gestor de demonstração: o cadastro real deriva o escopo de
   // lojasIds/setoresIds/acessoTotalSetores (mesmo conjunto para todas as lojas
