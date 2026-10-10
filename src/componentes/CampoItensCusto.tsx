@@ -1,6 +1,8 @@
 import { Plus, Trash2 } from 'lucide-react'
 import { CampoTexto } from './CampoTexto'
 import { formatarMoeda } from '../utilitarios/formatarMoeda'
+import { cobraMaoDeObra, rotulosCustoOS } from '../utilitarios/rotulosCustoOS'
+import type { TipoOS } from '../tipos/ordemServico'
 
 // Uma TAREFA enquanto ela está no formulário: o que foi feito, o material que consumiu e
 // a mão de obra que cobrou. Os dois valores convivem na mesma linha de propósito — trocar
@@ -28,9 +30,10 @@ export interface ErroItemCusto {
 interface CampoItensCustoProps {
   itens: ItemCustoFormulario[]
   aoMudar: (itens: ItemCustoFormulario[]) => void
-  // Falso em OS de terceiros e de reparo: lá quem trabalhou foi a empresa externa, ou o
-  // serviço não cobra hora técnica. A coluna some da linha, e o servidor recusa de novo.
-  permitirHoraTecnica: boolean
+  // O tipo decide a segunda coluna e os rótulos (rotulosCustoOS): maquinário lança
+  // Manutenção + Hora do Técnico, terceiros lança Valor Peças + Valor Mão de Obra (da
+  // empresa), e reparo só o material — lá a coluna some e o servidor recusa de novo.
+  tipo: TipoOS
   // Mensagem do array inteiro (ex: "lance ao menos uma tarefa").
   erro?: string
   errosPorItem?: (ErroItemCusto | undefined)[]
@@ -45,7 +48,7 @@ interface CampoItensCustoProps {
 export function CampoItensCusto({
   itens,
   aoMudar,
-  permitirHoraTecnica,
+  tipo,
   erro,
   errosPorItem,
   desabilitado = false,
@@ -56,6 +59,8 @@ export function CampoItensCusto({
   const totalManutencao = itens.reduce((soma, item) => soma + (item.custoManutencao ?? 0), 0)
   const totalHoraTecnica = itens.reduce((soma, item) => soma + (item.custoHoraTecnico ?? 0), 0)
   const total = totalManutencao + totalHoraTecnica
+  const permitirHoraTecnica = cobraMaoDeObra(tipo)
+  const rotulos = rotulosCustoOS(tipo)
 
   function adicionar() {
     aoMudar([
@@ -96,9 +101,11 @@ export function CampoItensCusto({
       </div>
 
       <p className="text-xs text-slate-400">
-        {permitirHoraTecnica
-          ? 'Uma linha por serviço feito, com a peça e a mão de obra dele. Se a OS trocou duas peças, lance as duas separadas — é assim que dá para conferir cada uma contra a nota depois.'
-          : 'Uma linha por serviço feito. Se a OS consumiu dois materiais, lance os dois separados — é assim que dá para conferir cada um contra a nota depois.'}
+        {tipo === 'terceiros'
+          ? 'Uma linha por serviço da empresa, separando o valor das peças e o da mão de obra, como vem na nota fiscal dela.'
+          : permitirHoraTecnica
+            ? 'Uma linha por serviço feito, com a peça e a mão de obra dele. Se a OS trocou duas peças, lance as duas separadas — é assim que dá para conferir cada uma contra a nota depois.'
+            : 'Uma linha por serviço feito. Se a OS consumiu dois materiais, lance os dois separados — é assim que dá para conferir cada um contra a nota depois.'}
       </p>
 
       {itens.length === 0 && (
@@ -146,7 +153,7 @@ export function CampoItensCusto({
               }`}
             >
               <CampoTexto
-                rotulo="Manutenção (R$) *"
+                rotulo={`${rotulos.material} (R$) *`}
                 type="number"
                 min={0}
                 step="0.01"
@@ -161,11 +168,11 @@ export function CampoItensCusto({
                 mensagemErro={erroItem?.custoManutencao}
               />
 
-              {/* Sem asterisco: a tarefa pode ser só material, sem hora cobrada. Some
-                  inteira fora de maquinário, onde a coluna é proibida no banco. */}
+              {/* Sem asterisco: a tarefa pode ser só material, sem mão de obra cobrada.
+                  Some inteira em reparo, onde a coluna é proibida no banco. */}
               {permitirHoraTecnica && (
                 <CampoTexto
-                  rotulo="Hora do Técnico (R$)"
+                  rotulo={`${rotulos.maoDeObra} (R$)`}
                   type="number"
                   min={0}
                   step="0.01"
@@ -189,17 +196,19 @@ export function CampoItensCusto({
 
       {itens.length > 0 && (
         <div className="flex flex-col gap-1 rounded-lg bg-lime-100 px-3 py-2.5">
-          {/* Os dois subtotais só aparecem onde existem os dois: em reparo e terceiros o
-              total já É a manutenção, e repetir o mesmo número duas vezes é ruído. */}
+          {/* Os dois subtotais só aparecem onde existem os dois: em reparo o total já É
+              o material, e repetir o mesmo número duas vezes é ruído. */}
           {permitirHoraTecnica && (
             <>
               <div className="flex items-center justify-between text-xs">
-                <span className="text-marca-800 font-mono tracking-wide uppercase">Manutenção</span>
+                <span className="text-marca-800 font-mono tracking-wide uppercase">
+                  {rotulos.material}
+                </span>
                 <span className="text-marca-800 font-mono">{formatarMoeda(totalManutencao)}</span>
               </div>
               <div className="flex items-center justify-between text-xs">
                 <span className="text-marca-800 font-mono tracking-wide uppercase">
-                  Hora do Técnico
+                  {rotulos.maoDeObra}
                 </span>
                 <span className="text-marca-800 font-mono">{formatarMoeda(totalHoraTecnica)}</span>
               </div>

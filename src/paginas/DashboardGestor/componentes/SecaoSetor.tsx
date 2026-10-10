@@ -1,0 +1,208 @@
+import { ChevronRight, Tag, Wrench } from 'lucide-react'
+import { Esqueleto } from '../../../componentes/Esqueleto'
+import { ImagemProgressiva } from '../../../componentes/ImagemProgressiva'
+import { formatarHoras } from '../../../utilitarios/formatarHoras'
+import { formatarMoeda } from '../../../utilitarios/formatarMoeda'
+import type { Maquina } from '../../../tipos/maquina'
+import type { ResumoIndicadores } from '../../../tipos/indicadorMaquina'
+import { BadgeCriticidade } from './BadgeCriticidade'
+
+interface SecaoSetorProps {
+  setorNome: string
+  maquinas: Maquina[]
+  // undefined enquanto os indicadores da loja carregam: a seção já aparece com as
+  // máquinas, e só os números entram em esqueleto.
+  resumoSetor: ResumoIndicadores | undefined
+  resumoPorMaquina: Map<number, ResumoIndicadores>
+  mostrarResumo?: boolean
+  // Clicar no nome do setor filtra a tela por ele (mesmo efeito do chip do topo).
+  // Ausente quando o setor já é o escolhido.
+  aoSelecionarSetor?: () => void
+  atraso: number
+  aoSelecionarMaquina: (maquina: Maquina) => void
+}
+
+// Um setor da loja: os quatro indicadores dele no topo e as máquinas embaixo, cada uma
+// com o próprio resumo. Clicar na máquina abre a etapa individual.
+export function SecaoSetor({
+  setorNome,
+  maquinas,
+  resumoSetor,
+  resumoPorMaquina,
+  mostrarResumo = true,
+  aoSelecionarSetor,
+  atraso,
+  aoSelecionarMaquina,
+}: SecaoSetorProps) {
+  return (
+    <section
+      style={{ animationDelay: `${atraso}ms` }}
+      className="shadow-card animate-surgir flex min-w-0 flex-col gap-4 rounded-2xl bg-white p-4"
+    >
+      <div className="flex min-w-0 flex-wrap items-center justify-between gap-x-3 gap-y-1">
+        {aoSelecionarSetor ? (
+          <button
+            type="button"
+            onClick={aoSelecionarSetor}
+            title="Ver só este setor"
+            className="group flex min-w-0 items-center gap-2 text-left"
+          >
+            <TituloSetor setorNome={setorNome} />
+            <ChevronRight
+              size={16}
+              className="group-hover:text-marca-600 shrink-0 text-slate-300 transition-transform group-hover:translate-x-0.5"
+            />
+          </button>
+        ) : (
+          <div className="flex min-w-0 items-center gap-2">
+            <TituloSetor setorNome={setorNome} />
+          </div>
+        )}
+        <p className="font-mono text-[11px] text-slate-400">
+          {maquinas.length} {maquinas.length === 1 ? 'máquina' : 'máquinas'}
+          {resumoSetor &&
+            ` · ${resumoSetor.quantidadeOs} ${resumoSetor.quantidadeOs === 1 ? 'OS encerrada' : 'OS encerradas'}`}
+        </p>
+      </div>
+
+      {mostrarResumo && (
+        <div className="grid grid-cols-2 gap-2 rounded-xl border border-slate-200/60 bg-slate-50/50 p-3 sm:grid-cols-4">
+          <Metrica
+            rotulo="Horas Parada"
+            valor={resumoSetor && formatarHoras(resumoSetor.horasParadaTotal)}
+          />
+          <Metrica
+            rotulo="MTTR"
+            valor={resumoSetor && formatarHoras(resumoSetor.mttrHoras)}
+          />
+          <Metrica
+            rotulo="MTBF"
+            valor={resumoSetor && formatarHoras(resumoSetor.mtbfHoras)}
+          />
+          <Metrica
+            rotulo="Custo Total"
+            valor={resumoSetor && formatarMoeda(resumoSetor.custoTotal)}
+          />
+        </div>
+      )}
+
+      {maquinas.length === 0 ? (
+        <p className="rounded-xl border border-dashed border-slate-200/60 px-4 py-3 text-xs text-slate-400">
+          Nenhuma máquina neste setor.
+        </p>
+      ) : (
+        <div className="grid gap-2 sm:grid-cols-2">
+          {maquinas.map((maquina) => (
+            <CardMaquina
+              key={maquina.id}
+              maquina={maquina}
+              // Sem resumo com a loja já carregada = máquina sem OS no período.
+              resumo={resumoSetor && resumoPorMaquina.get(maquina.id)}
+              carregando={!resumoSetor}
+              aoSelecionar={aoSelecionarMaquina}
+            />
+          ))}
+        </div>
+      )}
+    </section>
+  )
+}
+
+function TituloSetor({ setorNome }: { setorNome: string }) {
+  return (
+    <>
+      <span className="bg-marca-100 text-marca-600 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg">
+        <Tag size={14} />
+      </span>
+      <h2 className="font-display truncate text-base font-bold text-slate-900">
+        {setorNome}
+      </h2>
+    </>
+  )
+}
+
+interface MetricaProps {
+  rotulo: string
+  valor: string | undefined
+}
+
+function Metrica({ rotulo, valor }: MetricaProps) {
+  return (
+    <div className="flex min-w-0 flex-col gap-1">
+      <span className="truncate font-mono text-[10px] font-semibold text-slate-400 uppercase">
+        {rotulo}
+      </span>
+      {valor === undefined ? (
+        <Esqueleto className="h-5 w-16" />
+      ) : (
+        <span className="truncate font-mono text-sm font-bold text-slate-800 sm:text-base">
+          {valor}
+        </span>
+      )}
+    </div>
+  )
+}
+
+interface CardMaquinaProps {
+  maquina: Maquina
+  resumo: ResumoIndicadores | undefined
+  carregando: boolean
+  aoSelecionar: (maquina: Maquina) => void
+}
+
+function CardMaquina({
+  maquina,
+  resumo,
+  carregando,
+  aoSelecionar,
+}: CardMaquinaProps) {
+  return (
+    <button
+      type="button"
+      onClick={() => aoSelecionar(maquina)}
+      className="group hover:border-marca-500/40 flex min-w-0 items-center gap-3 rounded-xl border border-slate-200/60 bg-white p-2.5 text-left transition-colors hover:bg-slate-50"
+    >
+      <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-slate-100">
+        {maquina.fotoUrl ? (
+          <ImagemProgressiva
+            src={maquina.fotoUrl}
+            alt={maquina.nome}
+            className="h-full w-full object-cover"
+          />
+        ) : (
+          <Wrench size={18} className="text-slate-400" />
+        )}
+      </div>
+
+      <div className="flex min-w-0 flex-1 flex-col gap-1">
+        <p className="truncate text-sm font-bold text-slate-800">
+          {maquina.nome}
+        </p>
+        <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+          {maquina.numeroPatrimonio && (
+            <span className="font-mono text-[10px] text-slate-400">
+              {maquina.numeroPatrimonio}
+            </span>
+          )}
+          {maquina.criticidade && (
+            <BadgeCriticidade criticidade={maquina.criticidade} />
+          )}
+        </div>
+        {carregando ? (
+          <Esqueleto className="h-3 w-40" />
+        ) : (
+          <p className="truncate font-mono text-[11px] text-slate-500">
+            {resumo && resumo.quantidadeOs > 0
+              ? `${formatarHoras(resumo.horasParadaTotal)} parada · ${formatarMoeda(resumo.custoTotal)}`
+              : 'Sem OS encerrada no período'}
+          </p>
+        )}
+      </div>
+
+      <ChevronRight
+        size={16}
+        className="group-hover:text-marca-600 shrink-0 text-slate-300 transition-transform group-hover:translate-x-0.5"
+      />
+    </button>
+  )
+}

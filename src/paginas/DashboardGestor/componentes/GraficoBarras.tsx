@@ -1,4 +1,4 @@
-interface BarraMensal {
+export interface BarraMensal {
   chave: string
   rotulo: string
   valor: number

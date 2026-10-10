@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQuery } from '@tanstack/react-query'
@@ -11,7 +11,7 @@ import { SeletorPerfil } from '../../componentes/SeletorPerfil'
 import { CabecalhoSubpagina } from '../../componentes/CabecalhoSubpagina'
 import { servicoUsuarios } from '../../servicos/servicoUsuarios'
 import {
-  esquemaCadastrarUsuario,
+  criarEsquemaCadastrarUsuario,
   type DadosCadastrarUsuario,
 } from './esquemaCadastrarUsuario'
 import { CamposAcesso } from './componentes/CamposAcesso'
@@ -26,12 +26,18 @@ const VALORES_PADRAO: DadosCadastrarUsuario = {
   setoresIds: [],
   acessoTotalSetores: false,
   area: undefined,
+  valorHora: undefined,
 }
 
 export function CadastrarUsuario() {
   const navegar = useNavigate()
   const { id } = useParams<{ id: string }>()
   const emEdicao = Boolean(id)
+
+  const esquema = useMemo(
+    () => criarEsquemaCadastrarUsuario(emEdicao),
+    [emEdicao],
+  )
 
   const { data: usuarioExistente } = useQuery({
     queryKey: ['usuario', id],
@@ -47,7 +53,7 @@ export function CadastrarUsuario() {
     reset,
     formState: { errors },
   } = useForm<DadosCadastrarUsuario>({
-    resolver: zodResolver(esquemaCadastrarUsuario),
+    resolver: zodResolver(esquema),
     defaultValues: VALORES_PADRAO,
   })
 
@@ -65,6 +71,9 @@ export function CadastrarUsuario() {
       lojasIds: usuarioExistente.lojasIds,
       setoresIds: usuarioExistente.setoresIds,
       acessoTotalSetores: usuarioExistente.acessoTotalSetores,
+      // Sem a área o técnico abria com o campo obrigatório em branco.
+      area: usuarioExistente.area,
+      valorHora: usuarioExistente.valorHora,
     })
   }, [usuarioExistente, reset])
 
@@ -84,7 +93,9 @@ export function CadastrarUsuario() {
 
   async function aoEnviar(dados: DadosCadastrarUsuario) {
     if (emEdicao && id) {
-      await atualizar({ id: Number(id), ...dados })
+      // Senha em branco não vai no payload: o servidor mantém a atual.
+      const { senha, ...resto } = dados
+      await atualizar({ id: Number(id), ...resto, ...(senha ? { senha } : {}) })
       toast.success('Usuário atualizado com sucesso.')
     } else {
       await criar(dados)
@@ -124,6 +135,7 @@ export function CadastrarUsuario() {
                   setValue('setoresIds', [])
                   setValue('acessoTotalSetores', false)
                   setValue('area', undefined)
+                  setValue('valorHora', undefined)
                 }}
               />
             </div>
@@ -152,9 +164,14 @@ export function CadastrarUsuario() {
                 {...register('email')}
               />
               <CampoTexto
-                rotulo="Senha *"
+                rotulo={emEdicao ? 'Nova senha' : 'Senha *'}
                 type="password"
-                placeholder="Senha de acesso"
+                autoComplete="new-password"
+                placeholder={
+                  emEdicao
+                    ? 'Em branco mantém a atual'
+                    : 'Senha de acesso'
+                }
                 mensagemErro={errors.senha?.message}
                 {...register('senha')}
               />
@@ -186,6 +203,29 @@ export function CadastrarUsuario() {
               erroSetores={errors.setoresIds?.message}
               erroArea={errors.area?.message}
             />
+
+            {/* Tarifa de referência do Técnico. Não preenche nada sozinha: o custo da OS
+                continua sendo o que ele lança no encerramento. */}
+            {perfil === 'tecnico' && (
+              <div className="sm:w-1/2 sm:pr-2.5">
+                <CampoTexto
+                  rotulo="Valor em Hora (R$)"
+                  type="number"
+                  inputMode="decimal"
+                  min={0}
+                  step="0.01"
+                  placeholder="Ex: 85,00"
+                  mensagemErro={errors.valorHora?.message}
+                  {...register('valorHora', {
+                    // Campo vazio vira undefined (opcional), e não NaN/0.
+                    setValueAs: (valor) =>
+                      valor === '' || valor === null || valor === undefined
+                        ? undefined
+                        : Number(valor),
+                  })}
+                />
+              </div>
+            )}
 
             <div className="mt-2 flex flex-col-reverse gap-3 sm:flex-row">
               <div className="flex-1">

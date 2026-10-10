@@ -8,6 +8,7 @@ import { CampoItensCusto } from '../../componentes/CampoItensCusto'
 import { CampoSelecao } from '../../componentes/CampoSelecao'
 import { CampoTextoArea } from '../../componentes/CampoTextoArea'
 import { calcularHoras } from '../../utilitarios/calcularHoras'
+import { cobraMaoDeObra } from '../../utilitarios/rotulosCustoOS'
 import { formatarHoras } from '../../utilitarios/formatarHoras'
 import { agoraParaBackend } from '../../utilitarios/dataBackend'
 import { formatarDataHora } from '../../utilitarios/formatarData'
@@ -39,9 +40,9 @@ export function ModalEncerrarOrdemServico({
 
   const dataInicio = ordemServico.dataInicio ?? ordemServico.dataAbertura
   const agora = agoraParaBackend()
-  // Só "Maquinário" cobra Custo Hora Técnico — em 'terceiros' quem trabalhou foi a
-  // empresa externa, em 'reparo' o serviço é pequeno demais para justificar hora técnica.
-  const exigirCustoHoraTecnico = ordemServico.tipo === 'maquinario'
+  // Mão de obra em maquinário (do Técnico) e em terceiros (da empresa); só 'reparo' não
+  // cobra — o serviço é pequeno demais para justificar mão de obra à parte.
+  const exigirCustoHoraTecnico = cobraMaoDeObra(ordemServico.tipo)
 
   // Prévia local, só para o Técnico conferir antes de encerrar. Os valores definitivos
   // são calculados pelo servidor a partir do histórico de pausas e voltam na resposta.
@@ -156,8 +157,8 @@ export function ModalEncerrarOrdemServico({
           {ordemServico.tipo === 'terceiros' && (
             <p className="rounded-lg bg-blue-50 px-3 py-2.5 text-xs text-blue-700">
               Serviço executado por {ordemServico.empresaTerceirizadaNome ?? 'empresa terceirizada'}:
-              não há Custo Hora Técnico a lançar aqui, só o Custo de Manutenção (confira contra a
-              nota fiscal da empresa).
+              lance o Valor Peças e o Valor Mão de Obra cobrados pela empresa, separados como na
+              nota fiscal dela.
             </p>
           )}
 
@@ -174,7 +175,7 @@ export function ModalEncerrarOrdemServico({
               <CampoItensCusto
                 itens={field.value}
                 aoMudar={field.onChange}
-                permitirHoraTecnica={exigirCustoHoraTecnico}
+                tipo={ordemServico.tipo}
                 // A mensagem do array inteiro (lista vazia, falta manutenção, hora técnica
                 // fora de maquinário) vive na raiz; as de cada linha vêm indexadas.
                 erro={errors.itens?.message ?? errors.itens?.root?.message}

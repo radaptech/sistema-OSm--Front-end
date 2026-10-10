@@ -2,9 +2,9 @@ import { z } from 'zod'
 import { criarEsquemaItensCusto } from '../../componentes/esquemaCustoOS'
 import { tiposDefeito } from '../../tipos/ordemServico'
 
-// Só "Maquinário" cobra Custo Hora Técnico. Em 'terceiros' (ver AcionamentoTerceiroPayload)
-// quem executou foi a empresa externa, não o Técnico; em 'reparo' o serviço é pequeno
-// demais para justificar hora técnica — só o Custo de Manutenção entra nos dois casos.
+// Mão de obra existe em maquinário (Hora do Técnico) e em terceiros (Valor Mão de Obra da
+// empresa, ao lado do Valor Peças). Só 'reparo' não cobra: o serviço é pequeno demais —
+// entra só o material. Quem decide é `cobraMaoDeObra` (utilitarios/rotulosCustoOS.ts).
 export function criarEsquemaEncerrarOrdemServico(exigirCustoHoraTecnico: boolean) {
   return z.object({
     // Classificação da OS: quem executou o serviço é quem sabe dizer se foi Predial ou

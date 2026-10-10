@@ -15,6 +15,7 @@ import { obterNomeAlvo } from '../../utilitarios/alvoOS'
 import { atrasoEntrada } from '../../utilitarios/atrasoEntrada'
 import { formatarDataHora } from '../../utilitarios/formatarData'
 import { formatarMoeda } from '../../utilitarios/formatarMoeda'
+import { cobraMaoDeObra, rotulosCustoOS } from '../../utilitarios/rotulosCustoOS'
 import type { OrdemServico, TipoOS } from '../../tipos/ordemServico'
 import { ModalLancarCustoManutencao } from './componentes/ModalLancarCustoManutencao'
 import type { DadosLancarCustoManutencao } from './esquemaLancarCustoManutencao'
@@ -144,7 +145,8 @@ export function AdministradorCustosPendentes() {
           )}
 
           {ordensConcluidas.map((ordem, indice) => {
-            const mostrarCustoHoraTecnico = ordem.tipo === 'maquinario'
+            const mostrarCustoHoraTecnico = cobraMaoDeObra(ordem.tipo)
+            const rotulos = rotulosCustoOS(ordem.tipo)
 
             return (
               <div
@@ -179,7 +181,7 @@ export function AdministradorCustosPendentes() {
                   <div className="mt-2 flex flex-wrap gap-x-6 gap-y-1 text-xs">
                     {mostrarCustoHoraTecnico && (
                       <p className="text-slate-400">
-                        Custo Hora Técnico{' '}
+                        {rotulos.custoMaoDeObra}{' '}
                         <span className="font-mono font-semibold text-slate-600">
                           {ordem.custo?.custoHoraTecnico != null
                             ? formatarMoeda(ordem.custo.custoHoraTecnico)
@@ -188,7 +190,7 @@ export function AdministradorCustosPendentes() {
                       </p>
                     )}
                     <p className="text-slate-400">
-                      Custo Manutenção{' '}
+                      {rotulos.custoMaterial}{' '}
                       <span className="font-mono font-semibold text-slate-600">
                         {ordem.custo?.custoManutencao !== undefined
                           ? formatarMoeda(ordem.custo.custoManutencao)
