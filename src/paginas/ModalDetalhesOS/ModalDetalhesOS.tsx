@@ -9,6 +9,7 @@ import { obterNomeAlvo, obterCodigoAlvo } from '../../utilitarios/alvoOS'
 import { formatarDataHora } from '../../utilitarios/formatarData'
 import { formatarHoras } from '../../utilitarios/formatarHoras'
 import { formatarMoeda } from '../../utilitarios/formatarMoeda'
+import { rotulosCustoOS } from '../../utilitarios/rotulosCustoOS'
 import type { OrdemServico } from '../../tipos/ordemServico'
 import { useSaidaAnimada } from '../../hooks/useSaidaAnimada'
 
@@ -30,6 +31,8 @@ export function ModalDetalhesOS({
   // Nome da loja, do técnico e da empresa vêm resolvidos na própria OS; horas e custo
   // total vêm calculados do servidor.
   const custo = ordemServico.custo
+  // Em terceiros os dois valores são peças e mão de obra da empresa (rotulosCustoOS).
+  const rotulos = rotulosCustoOS(ordemServico.tipo)
   // Sem o marcador "Afeta Produção" a máquina seguiu operando: não há tempo de parada a
   // reportar, e o servidor nem devolve `horasParada`.
   const horasParada = ordemServico.afetaProducao
@@ -207,7 +210,7 @@ export function ModalDetalhesOS({
                 </p>
               </div>
               <div>
-                <p className="text-xs text-slate-400">Custo Hora Técnico</p>
+                <p className="text-xs text-slate-400">{rotulos.custoMaoDeObra}</p>
                 <p className="font-mono font-semibold text-slate-700">
                   {custo?.custoHoraTecnico != null
                     ? formatarMoeda(custo.custoHoraTecnico)
@@ -215,7 +218,7 @@ export function ModalDetalhesOS({
                 </p>
               </div>
               <div>
-                <p className="text-xs text-slate-400">Custo Manutenção</p>
+                <p className="text-xs text-slate-400">{rotulos.custoMaterial}</p>
                 <p className="font-mono font-semibold text-slate-700">
                   {custo ? formatarMoeda(custo.custoManutencao) : '—'}
                 </p>
@@ -238,7 +241,8 @@ export function ModalDetalhesOS({
                         <span className="font-semibold">{formatarMoeda(item.custoManutencao)}</span>
                         {item.custoHoraTecnico !== null && (
                           <span className="ml-2 text-xs text-slate-400">
-                            + {formatarMoeda(item.custoHoraTecnico)} de hora
+                            + {formatarMoeda(item.custoHoraTecnico)}{' '}
+                            {ordemServico.tipo === 'terceiros' ? 'de mão de obra' : 'de hora'}
                           </span>
                         )}
                       </span>

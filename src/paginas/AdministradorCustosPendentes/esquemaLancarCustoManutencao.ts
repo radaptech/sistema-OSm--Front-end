@@ -8,7 +8,7 @@ import {
 // então os custos já chegam preenchidos do encerramento (item 11 do CLAUDE.md). Aqui o
 // Administrador só corrige, tipicamente conferindo cada valor contra a nota fiscal.
 //
-// O esquema depende do tipo da OS (só maquinário cobra hora do técnico), então é uma
+// O esquema depende do tipo da OS (reparo não cobra mão de obra), então é uma
 // função e não uma constante — mesmo desenho do encerramento. Antes era constante porque
 // os dois custos eram campos escalares e a regra de tipo vivia só no servidor; com a
 // lista, a regra passou a valer item a item e o formulário precisa conhecê-la para não

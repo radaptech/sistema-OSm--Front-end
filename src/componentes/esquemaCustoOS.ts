@@ -9,8 +9,9 @@ import { z } from 'zod'
 // `positive` porque 0 é valor de negócio legítimo (peça em garantia, serviço sem
 // material) — o mesmo motivo de o binding do back ser `gte=0` e nunca `required`.
 //
-// `custoHoraTecnico` é opcional: a tarefa pode ser só material. Quem barra a hora fora de
-// maquinário é `criarEsquemaItensCusto` abaixo, porque a regra depende do tipo da OS.
+// `custoHoraTecnico` é opcional: a tarefa pode ser só material. É a mão de obra da tarefa
+// — do Técnico em maquinário, da empresa em terceiros. Quem barra a coluna em reparo é
+// `criarEsquemaItensCusto` abaixo, porque a regra depende do tipo da OS.
 export const esquemaItemCusto = z.object({
   descricao: z
     .string()
@@ -28,10 +29,9 @@ export const esquemaItemCusto = z.object({
     .optional(),
 })
 
-// `permitirHoraTecnica` é true só em OS de maquinário: nos outros dois tipos a hora do
-// técnico é proibida (em terceiros quem trabalhou foi a empresa externa, em reparo o
-// serviço não cobra hora). O servidor repete a regra — aqui é só para o erro aparecer no
-// campo em vez de num toast.
+// `permitirHoraTecnica` é `cobraMaoDeObra(tipo)`: falso só em reparo, que não cobra mão de
+// obra. Em terceiros a coluna é a mão de obra da empresa (migration 000016 do back). O
+// servidor repete a regra — aqui é só para o erro aparecer no campo em vez de num toast.
 //
 // ⚠️ NÃO existe "maquinário exige hora técnica". A regra existia quando o custo era um
 // campo escalar obrigatório e, com uma linha por tarefa, ela obrigava o Técnico a inventar
@@ -51,7 +51,7 @@ export function criarEsquemaItensCusto(permitirHoraTecnica: boolean) {
           ctx.addIssue({
             code: 'custom',
             path: [indice, 'custoHoraTecnico'],
-            message: 'Só OS de maquinário cobra hora do técnico.',
+            message: 'Pequenos reparos não cobram mão de obra.',
           })
         }
       })

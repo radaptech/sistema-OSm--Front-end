@@ -5,6 +5,7 @@ import { CheckCircle2, XCircle } from 'lucide-react'
 import { Alternador } from '../../../componentes/Alternador'
 import { Botao } from '../../../componentes/Botao'
 import { CampoItensCusto } from '../../../componentes/CampoItensCusto'
+import { cobraMaoDeObra } from '../../../utilitarios/rotulosCustoOS'
 import { CampoNotasFiscais } from '../../../componentes/CampoNotasFiscais'
 import { CampoTextoArea } from '../../../componentes/CampoTextoArea'
 import { obterNomeAlvo } from '../../../utilitarios/alvoOS'
@@ -31,8 +32,8 @@ export function ModalLancarCustoManutencao({
   const { fechar, classeFundo, classeCartao } = useSaidaAnimada(aoFechar)
 
   const ehTerceiros = ordemServico.tipo === 'terceiros'
-  // Só "Maquinário" cobra Custo Hora Técnico — Pequenos Reparos e OS de terceiros não.
-  const mostrarCustoHoraTecnico = ordemServico.tipo === 'maquinario'
+  // Mão de obra em maquinário (do Técnico) e em terceiros (da empresa); Pequenos Reparos não.
+  const mostrarCustoHoraTecnico = cobraMaoDeObra(ordemServico.tipo)
 
   const {
     register,
@@ -146,8 +147,8 @@ export function ModalLancarCustoManutencao({
               <span className="font-semibold">
                 {ordemServico.empresaTerceirizadaNome}
               </span>{' '}
-              — não há Custo Hora Técnico aqui, confira só o Custo de Manutenção contra a
-              nota fiscal da empresa.
+              — confira o Valor Peças e o Valor Mão de Obra contra a nota fiscal da
+              empresa.
             </p>
           )}
 
@@ -164,7 +165,7 @@ export function ModalLancarCustoManutencao({
               <CampoItensCusto
                 itens={field.value}
                 aoMudar={field.onChange}
-                permitirHoraTecnica={mostrarCustoHoraTecnico}
+                tipo={ordemServico.tipo}
                 erro={errors.itens?.message ?? errors.itens?.root?.message}
                 errosPorItem={field.value.map((_, indice) => ({
                   descricao: errors.itens?.[indice]?.descricao?.message,
